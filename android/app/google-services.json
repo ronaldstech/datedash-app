@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "409694106333",
+    "project_id": "datedash-35789",
+    "storage_bucket": "datedash-35789.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:409694106333:android:e5c5d80ea3f99cce202134",
+        "android_client_info": {
+          "package_name": "com.example.datedash"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "409694106333-8703fkvopn9me0nauro1ki5frbbmamld.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-yx4TvOokFDgjq46kkAee2AOKfQ81u8M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "409694106333-8703fkvopn9me0nauro1ki5frbbmamld.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
