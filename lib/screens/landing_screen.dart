@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:ui';
 import '../widgets/swipe_view.dart';
 import '../widgets/profile_drawer.dart';
 
@@ -17,6 +19,7 @@ class _LandingScreenState extends State<LandingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
+      extendBody: true,
       appBar: AppBar(
         title: const Text(
           'DateDash',
@@ -30,67 +33,110 @@ class _LandingScreenState extends State<LandingScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          Builder(
-            builder: (context) {
-              return IconButton(
-                icon: const Icon(Icons.menu_rounded),
-                color: Colors.grey.shade700,
-                iconSize: 32,
-                onPressed: () {
-                  Scaffold.of(context).openEndDrawer();
-                },
+          StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (context, snapshot) {
+              final user = snapshot.data;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: IconButton(
+                  onPressed: () => Scaffold.of(context).openEndDrawer(),
+                  icon: user != null && user.photoURL != null
+                      ? CircleAvatar(
+                          radius: 16,
+                          backgroundColor: Colors.grey.shade200,
+                          backgroundImage: NetworkImage(user.photoURL!),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Iconsax.user,
+                            color: Colors.grey.shade700,
+                            size: 20,
+                          ),
+                        ),
+                ),
               );
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
         ],
       ),
       body: const SwipeView(),
       endDrawer: const ProfileDrawer(),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+        child: Container(
+          height: 70,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.8),
+            borderRadius: BorderRadius.circular(35),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(35),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(0, Iconsax.flash, Iconsax.flash5, 'Swipe'),
+                  _buildNavItem(1, Iconsax.discover, Iconsax.discover5, 'Explore'),
+                  _buildNavItem(2, Iconsax.heart, Iconsax.heart5, 'Likes', hasBadge: true),
+                  _buildNavItem(3, Iconsax.message, Iconsax.message5, 'Chat'),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: Theme.of(context).colorScheme.primary,
-          unselectedItemColor: Colors.grey.shade400,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.style_outlined),
-              activeIcon: Icon(
-                Icons.style_outlined,
-                shadows: [Shadow(color: Color(0x60FF4D85), blurRadius: 12)],
-              ),
-              label: 'Swipe',
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Iconsax.discover),
-              label: 'Explore',
-            ),
-            BottomNavigationBarItem(
-              icon: Badge(
-                backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, IconData activeIcon, String label, {bool hasBadge = false}) {
+    final isSelected = _currentIndex == index;
+    final color = isSelected ? const Color(0xFFFF4D85) : Colors.grey.shade400;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        color: Colors.transparent, // Increase tap area
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasBadge)
+              Badge(
+                backgroundColor: const Color(0xFFFF4D85),
                 label: const Text('3'),
-                child: const Icon(Iconsax.heart),
+                child: Icon(isSelected ? activeIcon : icon, color: color, size: 24),
+              )
+            else
+              Icon(isSelected ? activeIcon : icon, color: color, size: 24),
+            if (isSelected)
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                width: 4,
+                height: 4,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFF4D85),
+                  shape: BoxShape.circle,
+                ),
               ),
-              label: 'Likes',
-            ),
-            const BottomNavigationBarItem(icon: Icon(Iconsax.message), label: 'Chat'),
           ],
         ),
       ),

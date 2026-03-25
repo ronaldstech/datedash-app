@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../screens/auth/sign_in_screen.dart';
 
@@ -23,82 +24,113 @@ class ProfileDrawer extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Color(0xFFFF4D85),
-                    child: Icon(Iconsax.user, color: Colors.white, size: 30),
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            StreamBuilder<User?>(
+              stream: FirebaseAuth.instance.authStateChanges(),
+              builder: (context, snapshot) {
+                final user = snapshot.data;
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
                     children: [
-                      const Text(
-                        'User Name',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: const Color(0xFFFF4D85),
+                        backgroundImage: user?.photoURL != null 
+                            ? NetworkImage(user!.photoURL!) 
+                            : null,
+                        child: user?.photoURL == null 
+                            ? const Icon(Iconsax.user, color: Colors.white, size: 30)
+                            : null,
                       ),
-                      Text(
-                        'View and edit profile',
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              user?.displayName ?? 'Guest User',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              user?.email ?? 'View and edit profile',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.grey, fontSize: 13),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
             const Divider(),
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                  _buildItem(Iconsax.user, 'Profile'),
-                  _buildItem(Icons.monetization_on_rounded, 'Credits'),
-                  _buildItem(
-                    Icons.star_rounded,
-                    'Premium',
-                    color: const Color(0xFFFF4D85),
+                  const SizedBox(height: 10),
+                  _buildItem(context, Iconsax.profile_circle, 'My Profile', color: const Color(0xFFFF4D85)),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Divider(height: 1),
                   ),
-                  _buildItem(Iconsax.discover, 'Explore People'),
-                  _buildItem(
-                    Icons.favorite_rounded,
-                    'Matches',
-                    color: const Color(0xFFFF4D85),
+                  _buildGroup(
+                    context,
+                    Iconsax.activity,
+                    'My Activity',
+                    [
+                      _buildItem(context, Iconsax.heart_tick, 'Matches', color: const Color(0xFFFF4D85)),
+                      _buildItem(context, Iconsax.eye, 'Visitors'),
+                      _buildItem(context, Iconsax.heart5, 'Likes', color: const Color(0xFFFF4D85)),
+                      _buildItem(context, Iconsax.document_text, 'Blog'),
+                      _buildItem(context, Iconsax.video_circle, 'Live Videos'),
+                    ],
                   ),
-                  _buildItem(Icons.calendar_month_rounded, 'Bookings'),
-                  _buildItem(Icons.remove_red_eye_rounded, 'Visitors'),
-                  _buildItem(Icons.people_rounded, 'Friends'),
-                  _buildItem(Icons.person_add_rounded, 'Friend Requests'),
-                  _buildItem(
-                    Icons.card_giftcard_rounded,
-                    'Gifts',
-                    color: Colors.purple,
+                  _buildGroup(
+                    context,
+                    Iconsax.user_octagon,
+                    'Social',
+                    [
+                      _buildItem(context, Iconsax.discover_1, 'Explore People'),
+                      _buildItem(context, Iconsax.user_add, 'Friend Requests'),
+                      _buildItem(context, Iconsax.people, 'My People'),
+                    ],
                   ),
-                  _buildItem(Iconsax.heart, 'Likes'),
-                  _buildItem(Icons.groups_rounded, 'My People'),
-                  _buildItem(
-                    Icons.local_fire_department_rounded,
-                    'Hot',
-                    color: Colors.orange,
+                  _buildGroup(
+                    context,
+                    Iconsax.wallet_2,
+                    'Finance',
+                    [
+                      _buildItem(context, Iconsax.ranking, 'Premium', color: const Color(0xFFFFD700)),
+                      _buildItem(context, Iconsax.gift, 'Gifts', color: Colors.purple.shade400),
+                      _buildItem(context, Iconsax.receipt_21, 'Transactions'),
+                      _buildItem(context, Iconsax.money_2, 'Credits'),
+                    ],
                   ),
-                  _buildItem(Icons.article_rounded, 'Blog'),
-                  _buildItem(Icons.videocam_rounded, 'Live Videos'),
-                  const Divider(),
-                  _buildItem(Iconsax.setting_2, 'Settings'),
-                  _buildItem(Icons.dark_mode_rounded, 'Night Mode'),
-                  _buildItem(Icons.receipt_long_rounded, 'Transactions'),
-                  const Divider(),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Divider(height: 1),
+                  ),
+                  _buildItem(context, Iconsax.setting_2, 'Settings'),
+                  _buildItem(context, Iconsax.moon, 'Night Mode'),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Divider(height: 1),
+                  ),
                   _buildItem(
-                    Icons.logout_rounded,
+                    context,
+                    Iconsax.logout,
                     'Logout',
-                    color: Colors.red,
+                    color: Colors.red.shade400,
                     onTap: () => _handleLogout(context),
                   ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -108,18 +140,44 @@ class ProfileDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildItem(IconData icon, String title, {Color? color, VoidCallback? onTap}) {
+  Widget _buildGroup(BuildContext context, IconData icon, String title, List<Widget> children) {
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        leading: Icon(icon, color: Colors.grey.shade800, size: 22),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+            letterSpacing: 0.2,
+          ),
+        ),
+        iconColor: const Color(0xFFFF4D85),
+        collapsedIconColor: Colors.grey.shade400,
+        childrenPadding: const EdgeInsets.only(left: 12, bottom: 8),
+        children: children,
+      ),
+    );
+  }
+
+  Widget _buildItem(BuildContext context, IconData icon, String title, {Color? color, VoidCallback? onTap}) {
     return ListTile(
-      leading: Icon(icon, color: color ?? Colors.grey.shade700),
+      leading: Icon(icon, color: color ?? Colors.grey.shade600, size: 22),
       title: Text(
         title,
         style: TextStyle(
-          fontSize: 16,
+          fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: color ?? Colors.black87,
+          color: Colors.grey.shade800,
         ),
       ),
+      dense: true,
+      visualDensity: VisualDensity.compact,
       onTap: onTap ?? () {},
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
     );
   }
 }

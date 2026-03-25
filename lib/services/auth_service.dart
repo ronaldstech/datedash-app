@@ -3,6 +3,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   // Get user state changes
   Stream<User?> get user => _auth.authStateChanges();
@@ -34,18 +35,14 @@ class AuthService {
   // Sign in with Google
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      // Integration for google_sign_in v7.0.0+
-      final GoogleSignIn googleSignIn = GoogleSignIn.instance;
-      
-      // Mandatory initialization
-      await googleSignIn.initialize();
-      
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      await _googleSignIn.initialize(
+        serverClientId: '409694106333-8703fkvopn9me0nauro1ki5frbbmamld.apps.googleusercontent.com',
+      );
+      final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
       if (googleUser == null) return null;
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
@@ -57,7 +54,7 @@ class AuthService {
 
   // Sign out
   Future<void> signOut() async {
-    await GoogleSignIn.instance.signOut();
+    await _googleSignIn.signOut();
     await _auth.signOut();
   }
 }
