@@ -18,7 +18,7 @@ class _LandingScreenState extends State<LandingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       extendBody: true,
       appBar: AppBar(
         title: const Text(
@@ -73,7 +73,7 @@ class _LandingScreenState extends State<LandingScreen> {
         child: Container(
           height: 70,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.8),
+            color: const Color.fromARGB(255, 248, 201, 232).withOpacity(0.8),
             borderRadius: BorderRadius.circular(35),
             boxShadow: [
               BoxShadow(
@@ -91,8 +91,19 @@ class _LandingScreenState extends State<LandingScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildNavItem(0, Iconsax.flash, Iconsax.flash5, 'Swipe'),
-                  _buildNavItem(1, Iconsax.discover, Iconsax.discover5, 'Explore'),
-                  _buildNavItem(2, Iconsax.heart, Iconsax.heart5, 'Likes', hasBadge: true),
+                  _buildNavItem(
+                    1,
+                    Iconsax.discover,
+                    Iconsax.discover5,
+                    'Explore',
+                  ),
+                  _buildNavItem(
+                    2,
+                    Iconsax.heart,
+                    Iconsax.heart5,
+                    'Likes',
+                    hasBadge: true,
+                  ),
                   _buildNavItem(3, Iconsax.message, Iconsax.message5, 'Chat'),
                 ],
               ),
@@ -103,9 +114,17 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, IconData activeIcon, String label, {bool hasBadge = false}) {
+  Widget _buildNavItem(
+    int index,
+    IconData icon,
+    IconData activeIcon,
+    String label, {
+    bool hasBadge = false,
+  }) {
     final isSelected = _currentIndex == index;
-    final color = isSelected ? const Color(0xFFFF4D85) : Colors.grey.shade400;
+    final color = isSelected
+        ? const Color(0xFFFF4D85)
+        : const Color.fromARGB(255, 0, 0, 0);
 
     return GestureDetector(
       onTap: () {
@@ -123,10 +142,24 @@ class _LandingScreenState extends State<LandingScreen> {
               Badge(
                 backgroundColor: const Color(0xFFFF4D85),
                 label: const Text('3'),
-                child: Icon(isSelected ? activeIcon : icon, color: color, size: 24),
+                child: Icon(
+                  isSelected ? activeIcon : icon,
+                  color: color,
+                  size: isSelected ? 28 : 24,
+                  shadows: isSelected
+                      ? [Shadow(color: color.withOpacity(0.3), blurRadius: 12)]
+                      : null,
+                ),
               )
             else
-              Icon(isSelected ? activeIcon : icon, color: color, size: 24),
+              Icon(
+                isSelected ? activeIcon : icon,
+                color: color,
+                size: isSelected ? 28 : 24,
+                shadows: isSelected
+                    ? [Shadow(color: color.withOpacity(0.3), blurRadius: 12)]
+                    : null,
+              ),
             if (isSelected)
               Container(
                 margin: const EdgeInsets.only(top: 4),
