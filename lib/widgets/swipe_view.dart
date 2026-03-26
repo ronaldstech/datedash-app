@@ -17,19 +17,22 @@ class _SwipeViewState extends State<SwipeView> {
       name: 'Emma',
       age: 24,
       bio: 'Love hiking and good coffee ☕',
-      imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=800&auto=format&fit=crop',
+      imageUrl:
+          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=800&auto=format&fit=crop',
     ),
     Profile(
       name: 'Sophia',
       age: 26,
       bio: 'Art enthusiast and dog mom 🐶',
-      imageUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop',
+      imageUrl:
+          'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop',
     ),
     Profile(
       name: 'Isabella',
       age: 23,
       bio: 'Travel, food, and photography ✈️',
-      imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop',
+      imageUrl:
+          'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop',
     ),
   ];
 
@@ -78,7 +81,10 @@ class _SwipeViewState extends State<SwipeView> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(28),
                   gradient: LinearGradient(
-                    colors: [Colors.transparent, Colors.black.withOpacity(0.85)],
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.85),
+                    ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     stops: const [0.55, 1.0],
@@ -112,7 +118,11 @@ class _SwipeViewState extends State<SwipeView> {
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        const Icon(Iconsax.location, color: Colors.white70, size: 16),
+                        const Icon(
+                          Iconsax.location,
+                          color: Colors.white70,
+                          size: 16,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '1 mile away',
@@ -127,10 +137,7 @@ class _SwipeViewState extends State<SwipeView> {
                     const SizedBox(height: 12),
                     Text(
                       profile.bio,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   ],
                 ),
