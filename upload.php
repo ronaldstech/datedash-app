@@ -1,67 +1,118 @@
 <?php
 /**
- * Datedash Image Upload Proxy
- * Handles multipart/form-data image uploads and returns JSON response with URLs.
+ * File Upload Handler for DateDash Chat
+ * Upload endpoint for chat images and media files
+ * Usage: POST multipart/form-data with 'file' parameter
  */
 
-// Allow CORS for Flutter Web if needed
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 
-$target_dir = "uploads/";
-if (!file_exists($target_dir)) {
-    mkdir($target_dir, 0777, true);
-}
-
-// Check if image file was uploaded
-if (!isset($_FILES["image"])) {
-    echo json_encode(["status" => "error", "message" => "No image file provided."]);
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit;
 }
 
-$file = $_FILES["image"];
-$imageFileType = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
-
-// Generate a unique filename to prevent overwriting
-$unique_name = uniqid("profile_") . "." . $imageFileType;
-$target_file = $target_dir . $unique_name;
-
-// Check if image file is an actual image
-$check = getimagesize($file["tmp_name"]);
-if ($check === false) {
-    echo json_encode(["status" => "error", "message" => "File is not an image."]);
+// Check if request is POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     exit;
 }
 
-// Check file size (limit to 5MB)
-if ($file["size"] > 5000000) {
-    echo json_encode(["status" => "error", "message" => "File is too large (Max 5MB)."]);
+// Configuration
+$upload_dir = 'uploads/chats/';
+$max_file_size = 50 * 1024 * 1024; // 50MB
+$allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'audio/mpeg', 'audio/m4a'];
+
+// Create upload directory if it doesn't exist
+if (!is_dir($upload_dir)) {
+    @mkdir($upload_dir, 0755, true);
+}
+
+// Validate request
+if (!isset($_FILES['file'])) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'No file provided']);
     exit;
 }
 
-// Allow certain file formats
-$allowed_types = ["jpg", "jpeg", "png", "webp"];
-if (!in_array($imageFileType, $allowed_types)) {
-    echo json_encode(["status" => "error", "message" => "Only JPG, JPEG, PNG & WEBP files are allowed."]);
+$file = $_FILES['file'];
+
+// Validate file
+if ($file['error'] !== UPLOAD_ERR_OK) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'File upload error: ' . $file['error']]);
     exit;
 }
 
-// Try to upload file
-if (move_uploaded_file($file["tmp_name"], $target_file)) {
-    // Construct the full URL
-    // NOTE: You should replace 'yourdomain.com' with your actual server URL
-    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-    $host = $_SERVER['HTTP_HOST'];
-    $dir = dirname($_SERVER['PHP_SELF']);
-    $base_url = "$protocol://$host" . ($dir === "/" ? "" : $dir) . "/";
-    $actual_link = $base_url . $target_file;
+if ($file['size'] > $max_file_size) {
+    http_response_code(413);
+    echo json_encode(['success' => false, 'error' => 'File too large. Maximum size: 50MB']);
+    exit;
+}
 
-    echo json_encode([
-        "status" => "success",
-        "message" => "File uploaded successfully.",
-        "url" => $actual_link
-    ]);
-} else {
-    echo json_encode(["status" => "error", "message" => "Sorry, there was an error uploading your file."]);
+if (!in_array($file['type'], $allowed_types)) {
+    http_response_code(415);
+    echo json_encode(['success' => false, 'error' => 'File type not allowed']);
+    exit;
+}
+
+// Get optional parameters
+$chat_id = isset($_POST['chatId']) ? sanitize_filename($_POST['chatId']) : 'general';
+$user_id = isset($_POST['userId']) ? sanitize_filename($_POST['userId']) : 'unknown';
+$file_type = isset($_POST['fileType']) ? sanitize_filename($_POST['fileType']) : 'images';
+
+// Create subdirectory for this file type and chat
+$type_dir = $upload_dir . $file_type . '/';
+if (!is_dir($type_dir)) {
+    @mkdir($type_dir, 0755, true);
+}
+
+// Generate unique filename
+$timestamp = time();
+$random = bin2hex(random_bytes(4));
+$original_name = pathinfo($file['name'], PATHINFO_FILENAME);
+$file_ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+$new_filename = $timestamp . '_' . $user_id . '_' . $random . '.' . $file_ext;
+$upload_path = $type_dir . $new_filename;
+
+// Move uploaded file
+if (!move_uploaded_file($file['tmp_name'], $upload_path)) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Failed to save file']);
+    exit;
+}
+
+// Set proper permissions
+@chmod($upload_path, 0644);
+
+// Return success response with file URL
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'];
+$base_url = $protocol . '://' . $host;
+$file_url = $base_url . '/' . $upload_path;
+
+http_response_code(200);
+echo json_encode([
+    'success' => true,
+    'message' => 'File uploaded successfully',
+    'file_url' => $file_url,
+    'file_path' => $upload_path,
+    'file_name' => $new_filename,
+    'timestamp' => $timestamp
+]);
+exit;
+
+/**
+ * Sanitize filename to prevent directory traversal
+ */
+function sanitize_filename($filename) {
+    $filename = str_replace(['/', '\\', '..'], '', $filename);
+    $filename = preg_replace('/[^a-zA-Z0-9_-]/', '', $filename);
+    return strlen($filename) > 0 ? $filename : 'unknown';
 }
 ?>

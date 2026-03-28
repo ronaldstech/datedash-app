@@ -8,7 +8,6 @@ import 'likes_screen.dart';
 import 'chat_list_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
-import '../widgets/bordered_search_bar.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -23,7 +22,7 @@ class _LandingScreenState extends State<LandingScreen> {
     return Consumer<ProfileProvider>(
       builder: (context, profileProvider, _) {
         final currentIndex = profileProvider.currentTabIndex;
-        
+
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
           extendBody: true,
@@ -40,7 +39,30 @@ class _LandingScreenState extends State<LandingScreen> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             actions: [
-              const BorderedSearchBar(),
+              Stack(
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(
+                      Iconsax.notification,
+                      color: Theme.of(context).iconTheme.color?.withOpacity(0.7),
+                      size: 22,
+                    ),
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFF4D85),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               Consumer<ProfileProvider>(
                 builder: (context, profileProvider, _) {
                   final photoUrl = profileProvider.photoURL;
@@ -57,12 +79,17 @@ class _LandingScreenState extends State<LandingScreen> {
                           : Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).dividerColor.withOpacity(0.1),
+                                color: Theme.of(context)
+                                    .dividerColor
+                                    .withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 Iconsax.user,
-                                color: Theme.of(context).iconTheme.color?.withOpacity(0.7),
+                                color: Theme.of(context)
+                                    .iconTheme
+                                    .color
+                                    ?.withOpacity(0.7),
                                 size: 20,
                               ),
                             ),
@@ -73,15 +100,15 @@ class _LandingScreenState extends State<LandingScreen> {
               const SizedBox(width: 4),
             ],
           ),
-      body: IndexedStack(
-        index: currentIndex,
-        children: [
-          const SwipeView(),
-          const ExploreScreen(),
-          LikesScreen(),
-          const ChatListScreen(),
-        ],
-      ),
+          body: IndexedStack(
+            index: currentIndex,
+            children: [
+              const SwipeView(),
+              const ExploreScreen(),
+              LikesScreen(),
+              const ChatListScreen(),
+            ],
+          ),
           endDrawer: const ProfileDrawer(),
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
@@ -94,7 +121,10 @@ class _LandingScreenState extends State<LandingScreen> {
                 borderRadius: BorderRadius.circular(35),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.light ? 0.1 : 0.3),
+                    color: Colors.black.withOpacity(
+                        Theme.of(context).brightness == Brightness.light
+                            ? 0.1
+                            : 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -107,7 +137,8 @@ class _LandingScreenState extends State<LandingScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildNavItem(0, Iconsax.flash, Iconsax.flash5, 'Swipe', currentIndex, profileProvider),
+                      _buildNavItem(0, Iconsax.flash, Iconsax.flash5, 'Swipe',
+                          currentIndex, profileProvider),
                       _buildNavItem(
                         1,
                         Iconsax.discover,
@@ -125,7 +156,15 @@ class _LandingScreenState extends State<LandingScreen> {
                         profileProvider,
                         hasBadge: true,
                       ),
-                      _buildNavItem(3, Iconsax.message, Iconsax.message5, 'Chat', currentIndex, profileProvider),
+                      _buildNavItem(
+                        3,
+                        Iconsax.message,
+                        Iconsax.message5,
+                        'Chat',
+                        currentIndex,
+                        profileProvider,
+                        hasBadge: true,
+                      ),
                     ],
                   ),
                 ),
@@ -159,18 +198,37 @@ class _LandingScreenState extends State<LandingScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (hasBadge)
+            if (hasBadge && (index == 2 ? profileProvider.likesCount : profileProvider.unreadMessageCount) > 0)
               Badge(
                 backgroundColor: const Color(0xFFFF4D85),
-                label: const Text('3'),
+                label: Text((index == 2 ? profileProvider.likesCount : profileProvider.unreadMessageCount).toString()),
                 child: Icon(
                   isSelected ? activeIcon : icon,
                   color: color,
                   size: isSelected ? 28 : 24,
                   shadows: isSelected
-                      ? [Shadow(color: (color ?? Colors.transparent).withOpacity(0.3), blurRadius: 12)]
+                      ? [
+                          Shadow(
+                              color: (color ?? Colors.transparent)
+                                  .withOpacity(0.3),
+                              blurRadius: 12)
+                        ]
                       : null,
                 ),
+              )
+            else if (hasBadge && (index == 2 ? profileProvider.likesCount : profileProvider.unreadMessageCount) == 0)
+              Icon(
+                isSelected ? activeIcon : icon,
+                color: color,
+                size: isSelected ? 28 : 24,
+                shadows: isSelected
+                    ? [
+                        Shadow(
+                            color:
+                                (color ?? Colors.transparent).withOpacity(0.3),
+                            blurRadius: 12)
+                      ]
+                    : null,
               )
             else
               Icon(
@@ -178,7 +236,12 @@ class _LandingScreenState extends State<LandingScreen> {
                 color: color,
                 size: isSelected ? 28 : 24,
                 shadows: isSelected
-                    ? [Shadow(color: (color ?? Colors.transparent).withOpacity(0.3), blurRadius: 12)]
+                    ? [
+                        Shadow(
+                            color:
+                                (color ?? Colors.transparent).withOpacity(0.3),
+                            blurRadius: 12)
+                      ]
                     : null,
               ),
             if (isSelected)

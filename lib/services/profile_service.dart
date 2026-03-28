@@ -65,9 +65,16 @@ class ProfileService {
 
       // Basic implementation: fetch all users (ideal for this scale)
       QuerySnapshot snapshot = await _usersCollection.get();
+      debugPrint('Total users in Firestore: ${snapshot.docs.length}');
       
       final filteredDocs = snapshot.docs.where((doc) {
-        return doc.id != currentUserId && !swipedIds.contains(doc.id);
+        final isSelf = doc.id == currentUserId;
+        final isSwiped = swipedIds.contains(doc.id);
+        
+        if (isSelf) debugPrint('Filtering out self: ${doc.id}');
+        if (isSwiped) debugPrint('Filtering out swiped: ${doc.id}');
+        
+        return !isSelf && !isSwiped;
       }).toList();
       
       debugPrint('Users after filtering: ${filteredDocs.length}');
@@ -77,7 +84,14 @@ class ProfileService {
         try {
           final data = doc.data() as Map<String, dynamic>;
           data['uid'] = doc.id;
-          profiles.add(UserProfile.fromMap(data));
+          final profile = UserProfile.fromMap(data);
+          
+          // Debugging: check if profile is being parsed correctly
+          if (profile.firstName == null) {
+            debugPrint('Warning: User ${doc.id} has no firstName');
+          }
+          
+          profiles.add(profile);
         } catch (e) {
           debugPrint('Error parsing user ${doc.id}: $e');
         }
@@ -104,6 +118,25 @@ class ProfileService {
     }
   }
 
+  /// Deletes all swipe records made by the user — resets who they can see
+  Future<void> resetSwipes(String userId) async {
+    try {
+      final batch = _firestore.batch();
+      final snapshot = await _firestore
+          .collection('swipes')
+          .where('fromId', isEqualTo: userId)
+          .get();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+      debugPrint('Swipes reset for user: $userId (${snapshot.docs.length} records deleted)');
+    } catch (e) {
+      debugPrint('Error resetting swipes: $e');
+      rethrow;
+    }
+  }
+
   /// Returns a stream of profiles who liked the current user
   Stream<List<UserProfile>> getReceivedLikesStream(String userId) {
     return _firestore
@@ -123,5 +156,15 @@ class ProfileService {
       }
       return profiles;
     });
+  }
+
+  /// Returns a stream of the number of likes the current user has received
+  Stream<int> getLikesCountStream(String userId) {
+    return _firestore
+        .collection('swipes')
+        .where('toId', isEqualTo: userId)
+        .where('type', isEqualTo: 'like')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
   }
 }

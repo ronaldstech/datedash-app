@@ -18,6 +18,17 @@ dependencies:
   image_picker: 1.0.4
   provider: ^6.1.1
   geolocator: 10.1.0
+  sqflite: ^2.3.0
+  path: ^1.8.0
+  connectivity_plus: ^5.0.0
+  emoji_picker_flutter: ^1.6.3
+  giphy_get: ^3.6.0
+  http_parser: ^4.0.2
+  path_provider: ^2.1.5
+  image_cropper: ^5.0.0
+  record: ^6.2.0
+  audioplayers: ^6.4.0
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

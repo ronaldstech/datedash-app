@@ -21,9 +21,9 @@ class ExploreScreen extends StatelessWidget {
             centerTitle: false,
             floating: true,
             snap: true,
-            actions: [
-              const BorderedSearchBar(),
-              const SizedBox(width: 8),
+            actions: const [
+              BorderedSearchBar(),
+              SizedBox(width: 8),
             ],
           ),
           const SliverToBoxAdapter(
@@ -189,7 +189,8 @@ class ExploreScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.black.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(10),

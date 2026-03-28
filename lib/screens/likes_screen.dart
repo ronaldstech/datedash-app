@@ -47,19 +47,21 @@ class LikesScreen extends StatelessWidget {
                 centerTitle: false,
                 floating: true,
                 snap: true,
-                actions: [
-                  const BorderedSearchBar(),
-                  const SizedBox(width: 8),
+                actions: const [
+                  BorderedSearchBar(),
+                  SizedBox(width: 8),
                 ],
               ),
               if (likes.isNotEmpty) ...[
-                SliverToBoxAdapter(child: _buildNewLikesSection(context, likes)),
+                SliverToBoxAdapter(
+                    child: _buildNewLikesSection(context, likes)),
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     child: Text(
                       'All Likes',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                     ),
                   ),
                 ),
@@ -74,7 +76,10 @@ class LikesScreen extends StatelessWidget {
                         Icon(
                           Iconsax.heart_slash,
                           size: 64,
-                          color: Theme.of(context).iconTheme.color?.withOpacity(0.3),
+                          color: Theme.of(context)
+                              .iconTheme
+                              .color
+                              ?.withOpacity(0.3),
                         ),
                         const SizedBox(height: 16),
                         const Text(
@@ -126,10 +131,10 @@ class LikesScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: newLikes.length,
             itemBuilder: (context, index) {
-              final photo = newLikes[index].photos.isNotEmpty 
-                  ? newLikes[index].photos.first 
+              final photo = newLikes[index].photos.isNotEmpty
+                  ? newLikes[index].photos.first
                   : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
-              
+
               return Container(
                 margin: const EdgeInsets.only(right: 12),
                 child: Column(
@@ -175,8 +180,8 @@ class LikesScreen extends StatelessWidget {
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final profile = likes[index];
-            final photo = profile.photos.isNotEmpty 
-                ? profile.photos.first 
+            final photo = profile.photos.isNotEmpty
+                ? profile.photos.first
                 : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
 
             return Container(
@@ -228,7 +233,8 @@ class LikesScreen extends StatelessWidget {
                                 color: Colors.white, size: 12),
                             const SizedBox(width: 4),
                             Text(
-                              profile.getDistanceDisplay(profileProvider.userProfile),
+                              profile.getDistanceDisplay(
+                                  profileProvider.userProfile),
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.8),
                                 fontSize: 12,

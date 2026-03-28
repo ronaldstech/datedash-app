@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_profile_model.dart';
 import '../providers/profile_provider.dart';
+import '../screens/chat_screen.dart';
+import '../services/chat_service.dart';
 import '../services/profile_service.dart';
 import 'action_button.dart';
 import 'profile_detail_sheet.dart';
@@ -21,11 +23,31 @@ class _SwipeViewState extends State<SwipeView> {
   int _currentIndex = 0;
   int _currentPhotoIndex = 0;
   bool _isLoading = true;
+  int _lastSwipesVersion = -1; // tracks the provider's swipesVersion
 
   @override
   void initState() {
     super.initState();
     _loadProfiles();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final version = context.watch<ProfileProvider>().swipesVersion;
+    if (version != _lastSwipesVersion && _lastSwipesVersion != -1) {
+      // swipesVersion changed — reset triggered
+      _lastSwipesVersion = version;
+      setState(() {
+        _profiles = [];
+        _currentIndex = 0;
+        _currentPhotoIndex = 0;
+        _isLoading = true;
+      });
+      _loadProfiles();
+    } else {
+      _lastSwipesVersion = version;
+    }
   }
 
   Future<void> _loadProfiles() async {
@@ -388,13 +410,32 @@ class _SwipeViewState extends State<SwipeView> {
           Navigator.pop(context);
           _handleSwipe('dislike');
         },
-        onMessage: () {
-          final profileProvider = context.read<ProfileProvider>();
-          if (profile.allowMessages) {
-            Navigator.pop(context);
-            profileProvider.setTabIndex(3);
-          } else {
+        onMessage: () async {
+          if (!profile.allowMessages) {
             _showPremiumSnack('This user has disabled direct messaging.');
+            return;
+          }
+          Navigator.pop(context); // close sheet
+          final myUid = FirebaseAuth.instance.currentUser?.uid;
+          if (myUid == null || profile.uid == null) return;
+          
+          // Create/get chat then navigate
+          await ChatService().getOrCreateChat(myUid, profile.uid!);
+          
+          if (mounted) {
+            // Use this.context because the bottom sheet's context is now disposed
+            Navigator.push(
+              this.context,
+              MaterialPageRoute(
+                builder: (_) => ChatScreen(
+                  otherUserId: profile.uid!,
+                  otherUserName: profile.firstName ?? 'User',
+                  otherUserPhoto: profile.photos.isNotEmpty
+                      ? profile.photos.first
+                      : null,
+                ),
+              ),
+            );
           }
         },
       ),

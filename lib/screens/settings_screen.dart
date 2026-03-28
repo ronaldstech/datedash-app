@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import '../theme/theme_provider.dart';
+import '../providers/profile_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -61,6 +62,9 @@ class SettingsScreen extends StatelessWidget {
             'Language',
             'English (US)',
           ),
+          const SizedBox(height: 20),
+          _buildSectionHeader('Discovery'),
+          _buildResetSwipesTile(context),
           const SizedBox(height: 20),
           _buildSectionHeader('Support'),
           _buildSettingTile(
@@ -145,6 +149,112 @@ class SettingsScreen extends StatelessWidget {
           color: Theme.of(context).hintColor,
         ),
         onTap: onTap ?? () {},
+      ),
+    );
+  }
+
+  Widget _buildResetSwipesTile(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.orange.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.orange.withOpacity(0.2)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.15),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Iconsax.refresh, color: Colors.orange, size: 22),
+        ),
+        title: const Text(
+          'Reset Swipes',
+          style: TextStyle(
+            color: Colors.orange,
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+          ),
+        ),
+        subtitle: const Text(
+          'See previously swiped profiles again',
+          style: TextStyle(color: Colors.orange, fontSize: 12),
+        ),
+        trailing: const Icon(Iconsax.arrow_right_3, size: 18, color: Colors.orange),
+        onTap: () => _showResetSwipesDialog(context),
+      ),
+    );
+  }
+
+  void _showResetSwipesDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Row(
+          children: [
+            Icon(Iconsax.refresh, color: Colors.orange),
+            SizedBox(width: 10),
+            Text('Reset Swipes', style: TextStyle(fontWeight: FontWeight.w800)),
+          ],
+        ),
+        content: const Text(
+          'This will clear your entire swipe history. You will see all users again, including those you disliked.\n\nThis action cannot be undone.',
+          style: TextStyle(height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.orange),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await context.read<ProfileProvider>().resetSwipes();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Row(
+                        children: [
+                          Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Swipes reset! Fresh profiles are loading.',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                      backgroundColor: Colors.orange,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      margin: const EdgeInsets.all(16),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Failed to reset swipes. Please try again.'),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      margin: const EdgeInsets.all(16),
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Reset', style: TextStyle(fontWeight: FontWeight.w700)),
+          ),
+        ],
       ),
     );
   }

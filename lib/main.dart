@@ -8,6 +8,7 @@ import 'screens/landing_screen.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_provider.dart';
 import 'providers/profile_provider.dart';
+import 'services/chat_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,8 +26,46 @@ void main() async {
   );
 }
 
-class DateDashApp extends StatelessWidget {
+class DateDashApp extends StatefulWidget {
   const DateDashApp({super.key});
+
+  @override
+  State<DateDashApp> createState() => _DateDashAppState();
+}
+
+class _DateDashAppState extends State<DateDashApp> with WidgetsBindingObserver {
+  final ChatService _chatService = ChatService();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _setUserOnline(true);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _setUserOnline(false);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _setUserOnline(true);
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _setUserOnline(false);
+    }
+  }
+
+  Future<void> _setUserOnline(bool isOnline) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await _chatService.setUserOnline(user.uid, isOnline);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
