@@ -113,12 +113,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: CircleAvatar(
                   radius: 61,
                   backgroundColor: _primaryColor.withOpacity(0.1),
-                  backgroundImage: _profile.photos.isNotEmpty 
-                      ? NetworkImage(_profile.photos.first) 
-                      : (_user?.photoURL != null ? NetworkImage(_user!.photoURL!) : null) as ImageProvider?,
-                  child: (_profile.photos.isEmpty && _user?.photoURL == null)
-                      ? Icon(Iconsax.user, size: 50, color: _primaryColor)
-                      : null,
+                  child: ClipOval(
+                    child: (_profile.photos.isNotEmpty || _user?.photoURL != null)
+                        ? Image.network(
+                            _profile.photos.isNotEmpty
+                                ? _profile.photos.first
+                                : _user!.photoURL!,
+                            width: 122,
+                            height: 122,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: _primaryColor,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Iconsax.user,
+                                  size: 50, color: _primaryColor);
+                            },
+                          )
+                        : Icon(Iconsax.user, size: 50, color: _primaryColor),
+                  ),
                 ),
               ),
             ),

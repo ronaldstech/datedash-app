@@ -18,114 +18,122 @@ class LandingScreen extends StatefulWidget {
 }
 
 class _LandingScreenState extends State<LandingScreen> {
-  int _currentIndex = 0;
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      extendBody: true,
-      appBar: AppBar(
-        title: const Text(
-          'DateDash',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 26,
-            color: Color(0xFFFF4D85),
-            letterSpacing: -0.5,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          const BorderedSearchBar(),
-          Consumer<ProfileProvider>(
-            builder: (context, profileProvider, _) {
-              final photoUrl = profileProvider.photoURL;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton(
-                  onPressed: () => Scaffold.of(context).openEndDrawer(),
-                  icon: photoUrl != null
-                      ? CircleAvatar(
-                          radius: 16,
-                          backgroundColor: Colors.grey.shade200,
-                          backgroundImage: NetworkImage(photoUrl),
-                        )
-                      : Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).dividerColor.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Iconsax.user,
-                            color: Theme.of(context).iconTheme.color?.withOpacity(0.7),
-                            size: 20,
-                          ),
-                        ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(width: 4),
-        ],
-      ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: const [
-          SwipeView(),
-          ExploreScreen(),
-          LikesScreen(),
-          ChatListScreen(),
-        ],
-      ),
-      endDrawer: const ProfileDrawer(),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
-        child: Container(
-          height: 70,
-          decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.light
-                ? const Color.fromARGB(255, 248, 201, 232).withOpacity(0.8)
-                : const Color(0xFF1F1F3D).withOpacity(0.9),
-            borderRadius: BorderRadius.circular(35),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.light ? 0.1 : 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+    return Consumer<ProfileProvider>(
+      builder: (context, profileProvider, _) {
+        final currentIndex = profileProvider.currentTabIndex;
+        
+        return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          extendBody: true,
+          appBar: AppBar(
+            title: const Text(
+              'DateDash',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 26,
+                color: Color(0xFFFF4D85),
+                letterSpacing: -0.5,
               ),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            actions: [
+              const BorderedSearchBar(),
+              Consumer<ProfileProvider>(
+                builder: (context, profileProvider, _) {
+                  final photoUrl = profileProvider.photoURL;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: IconButton(
+                      onPressed: () => Scaffold.of(context).openEndDrawer(),
+                      icon: photoUrl != null
+                          ? CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Colors.grey.shade200,
+                              backgroundImage: NetworkImage(photoUrl),
+                            )
+                          : Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).dividerColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Iconsax.user,
+                                color: Theme.of(context).iconTheme.color?.withOpacity(0.7),
+                                size: 20,
+                              ),
+                            ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 4),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(35),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildNavItem(0, Iconsax.flash, Iconsax.flash5, 'Swipe'),
-                  _buildNavItem(
-                    1,
-                    Iconsax.discover,
-                    Iconsax.discover5,
-                    'Explore',
+          body: IndexedStack(
+            index: currentIndex,
+            children: const [
+              SwipeView(),
+              ExploreScreen(),
+              LikesScreen(),
+              ChatListScreen(),
+            ],
+          ),
+          endDrawer: const ProfileDrawer(),
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+            child: Container(
+              height: 70,
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color.fromARGB(255, 248, 201, 232).withOpacity(0.8)
+                    : const Color(0xFF1F1F3D).withOpacity(0.9),
+                borderRadius: BorderRadius.circular(35),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.light ? 0.1 : 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
                   ),
-                  _buildNavItem(
-                    2,
-                    Iconsax.heart,
-                    Iconsax.heart5,
-                    'Likes',
-                    hasBadge: true,
-                  ),
-                  _buildNavItem(3, Iconsax.message, Iconsax.message5, 'Chat'),
                 ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(35),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildNavItem(0, Iconsax.flash, Iconsax.flash5, 'Swipe', currentIndex, profileProvider),
+                      _buildNavItem(
+                        1,
+                        Iconsax.discover,
+                        Iconsax.discover5,
+                        'Explore',
+                        currentIndex,
+                        profileProvider,
+                      ),
+                      _buildNavItem(
+                        2,
+                        Iconsax.heart,
+                        Iconsax.heart5,
+                        'Likes',
+                        currentIndex,
+                        profileProvider,
+                        hasBadge: true,
+                      ),
+                      _buildNavItem(3, Iconsax.message, Iconsax.message5, 'Chat', currentIndex, profileProvider),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -133,20 +141,18 @@ class _LandingScreenState extends State<LandingScreen> {
     int index,
     IconData icon,
     IconData activeIcon,
-    String label, {
+    String label,
+    int currentIndex,
+    ProfileProvider profileProvider, {
     bool hasBadge = false,
   }) {
-    final isSelected = _currentIndex == index;
+    final isSelected = currentIndex == index;
     final color = isSelected
         ? const Color(0xFFFF4D85)
         : Theme.of(context).iconTheme.color?.withOpacity(0.5);
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
-      },
+      onTap: () => profileProvider.setTabIndex(index),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         color: Colors.transparent, // Increase tap area

@@ -644,6 +644,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           value: _profile.showDistance,
           onChanged: (val) => _profile.showDistance = val,
         ),
+        _buildSwitch(
+          label: 'Allow Messages',
+          value: _profile.allowMessages,
+          onChanged: (val) => _profile.allowMessages = val,
+        ),
       ]),
     ];
   }
@@ -834,6 +839,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return GestureDetector(
           onTap: hasPhoto ? null : _pickAndUploadImages,
           child: Container(
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(20),
@@ -846,15 +852,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 width: 2,
                 style: hasPhoto ? BorderStyle.solid : BorderStyle.none,
               ),
-              image: hasPhoto
-                  ? DecorationImage(
-                      image: NetworkImage(_profile.photos[index]),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
             ),
             child: Stack(
               children: [
+                if (hasPhoto)
+                  Positioned.fill(
+                    child: Image.network(
+                      _profile.photos[index],
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: Colors.grey.shade200,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFFFF4D85),
+                            ),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey.shade300,
+                          child: const Center(
+                            child: Icon(
+                              Iconsax.image,
+                              color: Colors.grey,
+                              size: 32,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 if (!hasPhoto)
                   Center(
                     child: Column(

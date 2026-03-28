@@ -10,6 +10,7 @@ class ProfileProvider with ChangeNotifier {
   User? _currentUser;
   StreamSubscription<User?>? _userSubscription;
   StreamSubscription<UserProfile?>? _profileSubscription;
+  int _currentTabIndex = 0;
 
   ProfileProvider() {
     _userSubscription = FirebaseAuth.instance.userChanges().listen((user) {
@@ -32,6 +33,12 @@ class ProfileProvider with ChangeNotifier {
 
   UserProfile? get userProfile => _userProfile;
   User? get currentUser => _currentUser;
+  int get currentTabIndex => _currentTabIndex;
+
+  void setTabIndex(int index) {
+    _currentTabIndex = index;
+    notifyListeners();
+  }
 
   /// Returns the display name with fallback logic:
   /// Firestore firstName -> Google displayName -> 'Guest User'

@@ -5,6 +5,7 @@ import '../models/user_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../services/profile_service.dart';
 import 'action_button.dart';
+import 'profile_detail_sheet.dart';
 
 class SwipeView extends StatefulWidget {
   const SwipeView({super.key});
@@ -181,6 +182,19 @@ class _SwipeViewState extends State<SwipeView> {
                             ),
                           );
                         },
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint('SwipeView: Image load error: $error');
+                          return Container(
+                            color: Colors.grey.shade300,
+                            child: const Center(
+                              child: Icon(
+                                Iconsax.image,
+                                color: Colors.grey,
+                                size: 48,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     // Gradient Overlay
@@ -189,7 +203,7 @@ class _SwipeViewState extends State<SwipeView> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              Colors.black.withOpacity(0.35), // Top gradient for indicators
+                              Colors.black.withOpacity(0.4), // Top gradient for indicators
                               Colors.transparent,
                               Colors.black.withOpacity(0.85), // Bottom gradient for info
                             ],
@@ -225,65 +239,100 @@ class _SwipeViewState extends State<SwipeView> {
                     ),
                     // Profile Info (Bottom)
                     Positioned(
-                      bottom: 24,
-                      left: 24,
-                      right: 24,
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  '${profile.firstName ?? 'Someone'}, ${profile.age ?? '??'}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 34,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: -0.5,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        '${profile.firstName ?? 'Someone'}, ${profile.age ?? '??'}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: -0.5,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (profile.isVerified) ...[
+                                      const SizedBox(width: 8),
+                                      const Icon(
+                                        Icons.verified,
+                                        color: Colors.blueAccent,
+                                        size: 24,
+                                      ),
+                                    ],
+                                  ],
                                 ),
-                              ),
-                              if (profile.isVerified) ...[
-                                const SizedBox(width: 8),
-                                const Icon(
-                                  Icons.verified,
-                                  color: Colors.blueAccent,
-                                  size: 26,
+                                const SizedBox(height: 4),
+                                Consumer<ProfileProvider>(
+                                  builder: (context, profileProvider, _) {
+                                    return Row(
+                                      children: [
+                                        const Icon(
+                                          Iconsax.location,
+                                          color: Colors.white70,
+                                          size: 14,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          profile.getDistanceDisplay(profileProvider.userProfile),
+                                          style: TextStyle(
+                                            color: Colors.white.withOpacity(0.9),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 ),
                               ],
-                            ],
+                            ),
                           ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              const Icon(
-                                Iconsax.location,
-                                color: Colors.white70,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                profile.location ?? 'Somewhere',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
+                          // Arrow Up Button for full details
+                          GestureDetector(
+                            onTap: () => _showProfileDetails(profile),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Colors.transparent, Colors.black.withOpacity(0.3)],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
                                 ),
                               ),
-                            ],
-                          ),
-                          if (profile.bio != null && profile.bio!.isNotEmpty) ...[
-                            const SizedBox(height: 12),
-                            Text(
-                              profile.bio!,
-                              style: const TextStyle(color: Colors.white, fontSize: 16),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.keyboard_arrow_up,
+                                    color: Colors.white.withOpacity(0.8),
+                                    size: 28,
+                                  ),
+                                  Text(
+                                    'Pull for details',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.6),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
+                          ),
                         ],
                       ),
                     ),
@@ -292,7 +341,7 @@ class _SwipeViewState extends State<SwipeView> {
               ),
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -300,18 +349,58 @@ class _SwipeViewState extends State<SwipeView> {
                 icon: Iconsax.close_circle,
                 color: const Color(0xFFFF5E5E),
                 onTap: _nextProfile,
-                size: 68,
+                size: 64,
               ),
               ActionButton(
                 icon: Iconsax.heart5,
                 color: Theme.of(context).colorScheme.primary,
                 onTap: _nextProfile,
-                size: 68,
+                size: 64,
               ),
             ],
           ),
           const SizedBox(height: 100),
         ],
+      ),
+    );
+  }
+
+  void _showProfileDetails(UserProfile profile) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ProfileDetailSheet(
+        profile: profile,
+        onLike: () {
+          Navigator.pop(context);
+          _nextProfile();
+        },
+        onDislike: () {
+          Navigator.pop(context);
+          _nextProfile();
+        },
+        onMessage: () {
+          final profileProvider = context.read<ProfileProvider>();
+          if (profile.allowMessages) {
+            Navigator.pop(context);
+            profileProvider.setTabIndex(3);
+          } else {
+            _showPremiumSnack('This user has disabled direct messaging.');
+          }
+        },
+      ),
+    );
+  }
+
+  void _showPremiumSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(fontWeight: FontWeight.w600)),
+        backgroundColor: const Color(0xFFFF4D85),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        margin: const EdgeInsets.all(20),
       ),
     );
   }

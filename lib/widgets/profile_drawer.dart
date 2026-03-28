@@ -41,13 +41,30 @@ class ProfileDrawer extends StatelessWidget {
                       CircleAvatar(
                         radius: 30,
                         backgroundColor: const Color(0xFFFF4D85),
-                        backgroundImage: photoUrl != null
-                            ? NetworkImage(photoUrl)
-                            : null,
-                        child: photoUrl == null
-                            ? const Icon(Iconsax.user,
-                                color: Colors.white, size: 30)
-                            : null,
+                        child: ClipOval(
+                          child: photoUrl != null
+                              ? Image.network(
+                                  photoUrl,
+                                  width: 60,
+                                  height: 60,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Iconsax.user,
+                                        color: Colors.white, size: 30);
+                                  },
+                                )
+                              : const Icon(Iconsax.user,
+                                  color: Colors.white, size: 30),
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(

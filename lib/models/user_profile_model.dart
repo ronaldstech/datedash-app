@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
 
 class UserProfile {
   // 🧾 Basic Profile (Required)
@@ -64,6 +65,7 @@ class UserProfile {
   // 🔐 Privacy / Safety 
   bool showAge;
   bool showDistance;
+  bool allowMessages;
 
   UserProfile({
     this.firstName,
@@ -107,6 +109,7 @@ class UserProfile {
     this.promptTwoTruths,
     this.showAge = true,
     this.showDistance = true,
+    this.allowMessages = true,
     this.latitude,
     this.longitude,
   });
@@ -119,6 +122,39 @@ class UserProfile {
       age--;
     }
     return age;
+  }
+
+  /// Returns a human-readable distance between this profile and the current user.
+  String getDistanceDisplay(UserProfile? currentUserProfile) {
+    // If the swiped user has hidden their distance, don't show it
+    if (!showDistance) return location ?? 'Somewhere';
+
+    if (currentUserProfile == null ||
+        latitude == null ||
+        longitude == null ||
+        currentUserProfile.latitude == null ||
+        currentUserProfile.longitude == null) {
+      return location ?? 'Somewhere';
+    }
+
+    try {
+      double distanceInMeters = Geolocator.distanceBetween(
+        currentUserProfile.latitude!,
+        currentUserProfile.longitude!,
+        latitude!,
+        longitude!,
+      );
+
+      double distanceInKm = distanceInMeters / 1000;
+
+      if (distanceInKm < 1) {
+        return 'Less than 1 km away';
+      } else {
+        return '${distanceInKm.toStringAsFixed(1)} km away';
+      }
+    } catch (e) {
+      return location ?? 'Somewhere';
+    }
   }
 
   factory UserProfile.empty() {
@@ -169,6 +205,7 @@ class UserProfile {
         promptTwoTruths: map['promptTwoTruths']?.toString(),
         showAge: map['showAge'] ?? true,
         showDistance: map['showDistance'] ?? true,
+        allowMessages: map['allowMessages'] ?? true,
         latitude: _parseDouble(map['latitude']),
         longitude: _parseDouble(map['longitude']),
       );
@@ -246,6 +283,7 @@ class UserProfile {
       'promptTwoTruths': promptTwoTruths,
       'showAge': showAge,
       'showDistance': showDistance,
+      'allowMessages': allowMessages,
       'latitude': latitude,
       'longitude': longitude,
       'lastUpdated': FieldValue.serverTimestamp(),
@@ -308,54 +346,69 @@ class UserProfile {
   bool isCategoryComplete(String category) {
     switch (category.toLowerCase()) {
       case 'basic':
+        // Page 1: Basic Profile
         return (firstName?.isNotEmpty ?? false) &&
             dob != null &&
             (gender?.isNotEmpty ?? false) &&
             (interestedIn?.isNotEmpty ?? false) &&
-            (location?.isNotEmpty ?? false) &&
-            photos.isNotEmpty &&
             (bio?.isNotEmpty ?? false);
       case 'personal':
-        return (height?.isNotEmpty ?? false) &&
-            (bodyType?.isNotEmpty ?? false) &&
-            (ethnicity?.isNotEmpty ?? false) &&
-            (religion?.isNotEmpty ?? false) &&
+        // Page 2: Personal Details
+        return (height?.isNotEmpty ?? false) ||
+            (bodyType?.isNotEmpty ?? false) ||
+            (ethnicity?.isNotEmpty ?? false) ||
+            (religion?.isNotEmpty ?? false) ||
             languages.isNotEmpty;
       case 'lifestyle':
+        // Page 3: Lifestyle & Habits
         return (smoking?.isNotEmpty ?? false) &&
             (drinking?.isNotEmpty ?? false) &&
             (fitness?.isNotEmpty ?? false) &&
             (diet?.isNotEmpty ?? false) &&
             (sleepingHabits?.isNotEmpty ?? false);
       case 'work':
+        // Page 4: Work & Education
         return (occupation?.isNotEmpty ?? false) &&
             (industry?.isNotEmpty ?? false) &&
             (educationLevel?.isNotEmpty ?? false) &&
             (school?.isNotEmpty ?? false);
       case 'goals':
+        // Page 5: Relationship Goals
         return lookingFor.isNotEmpty &&
             openToLongDistance != null &&
             (wantKids?.isNotEmpty ?? false);
       case 'interests':
-        return hobbies.isNotEmpty &&
-            musicGenres.isNotEmpty &&
-            moviesShows.isNotEmpty &&
+        // Page 6: Interests & Hobbies
+        return hobbies.isNotEmpty ||
+            musicGenres.isNotEmpty ||
+            moviesShows.isNotEmpty ||
             weekendActivities.isNotEmpty;
       case 'personality':
-        return (introvertExtrovert?.isNotEmpty ?? false) &&
-            (loveLanguage?.isNotEmpty ?? false) &&
-            (mbti?.isNotEmpty ?? false) &&
-            (politicalViews?.isNotEmpty ?? false) &&
+        // Page 7: Personality & Values
+        return (introvertExtrovert?.isNotEmpty ?? false) ||
+            (loveLanguage?.isNotEmpty ?? false) ||
+            (mbti?.isNotEmpty ?? false) ||
+            (politicalViews?.isNotEmpty ?? false) ||
             (coreValues?.isNotEmpty ?? false);
       case 'media':
-        return photos.length >= 4; // Min 4 photos as requested
+        // Page 8: Media & Verification
+        return photos.isNotEmpty; // Changed from 4 to 1
+      case 'location':
+        // Page 9: Location
+        return (location?.isNotEmpty ?? false) && 
+               latitude != null && 
+               longitude != null;
       case 'prompts':
-        return (promptPerfectDate?.isNotEmpty ?? false) &&
-            (promptFallForYou?.isNotEmpty ?? false) &&
-            (promptGreenFlag?.isNotEmpty ?? false) &&
-            (promptTwoTruths?.isNotEmpty ?? false);
+        // Page 10: Prompts
+        // At least 2 prompts should be filled to be considered complete
+        int filled = 0;
+        if (promptPerfectDate?.isNotEmpty ?? false) filled++;
+        if (promptFallForYou?.isNotEmpty ?? false) filled++;
+        if (promptGreenFlag?.isNotEmpty ?? false) filled++;
+        if (promptTwoTruths?.isNotEmpty ?? false) filled++;
+        return filled >= 2;
       case 'privacy':
-        return true; // Simple switches, always "complete" in terms of state
+        return true; 
       default:
         return true;
     }
