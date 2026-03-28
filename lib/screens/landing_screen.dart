@@ -78,8 +78,8 @@ class _LandingScreenState extends State<LandingScreen> {
         children: [
           const SwipeView(),
           const ExploreScreen(),
-          const LikesScreen(),
-          ChatListScreen(),
+          LikesScreen(),
+          const ChatListScreen(),
         ],
       ),
           endDrawer: const ProfileDrawer(),
