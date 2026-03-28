@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../services/profile_service.dart';
@@ -60,17 +61,24 @@ class _SwipeViewState extends State<SwipeView> {
     }
   }
 
-  void _nextProfile() {
+  void _handleSwipe(String type) {
+    if (_profiles.isEmpty) return;
+    
+    final targetProfile = _profiles[_currentIndex];
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (currentUserId != null && targetProfile.uid != null) {
+      _profileService.swipeUser(currentUserId, targetProfile.uid!, type);
+    }
+
     setState(() {
-      if (_profiles.isNotEmpty) {
-        if (_currentIndex < _profiles.length - 1) {
-          _currentIndex++;
-        } else {
-          // No more profiles for now, could fetch more
-          _currentIndex = 0; // Loop for demo or show empty
-        }
-        _currentPhotoIndex = 0; // Reset photo index for new profile
+      if (_currentIndex < _profiles.length - 1) {
+        _currentIndex++;
+      } else {
+        _profiles = []; // No more profiles
+        _currentIndex = 0;
       }
+      _currentPhotoIndex = 0;
     });
   }
 
@@ -348,13 +356,13 @@ class _SwipeViewState extends State<SwipeView> {
               ActionButton(
                 icon: Iconsax.close_circle,
                 color: const Color(0xFFFF5E5E),
-                onTap: _nextProfile,
+                onTap: () => _handleSwipe('dislike'),
                 size: 64,
               ),
               ActionButton(
                 icon: Iconsax.heart5,
                 color: Theme.of(context).colorScheme.primary,
-                onTap: _nextProfile,
+                onTap: () => _handleSwipe('like'),
                 size: 64,
               ),
             ],
@@ -374,11 +382,11 @@ class _SwipeViewState extends State<SwipeView> {
         profile: profile,
         onLike: () {
           Navigator.pop(context);
-          _nextProfile();
+          _handleSwipe('like');
         },
         onDislike: () {
           Navigator.pop(context);
-          _nextProfile();
+          _handleSwipe('dislike');
         },
         onMessage: () {
           final profileProvider = context.read<ProfileProvider>();

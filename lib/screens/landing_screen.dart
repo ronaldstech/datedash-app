@@ -73,15 +73,15 @@ class _LandingScreenState extends State<LandingScreen> {
               const SizedBox(width: 4),
             ],
           ),
-          body: IndexedStack(
-            index: currentIndex,
-            children: const [
-              SwipeView(),
-              ExploreScreen(),
-              LikesScreen(),
-              ChatListScreen(),
-            ],
-          ),
+      body: IndexedStack(
+        index: currentIndex,
+        children: [
+          const SwipeView(),
+          const ExploreScreen(),
+          const LikesScreen(),
+          ChatListScreen(),
+        ],
+      ),
           endDrawer: const ProfileDrawer(),
           bottomNavigationBar: Padding(
             padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),

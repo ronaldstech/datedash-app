@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
 class UserProfile {
+  String? uid;
   // 🧾 Basic Profile (Required)
   String? firstName;
   DateTime? dob;
@@ -112,6 +113,7 @@ class UserProfile {
     this.allowMessages = true,
     this.latitude,
     this.longitude,
+    this.uid,
   });
 
   int? get age {
@@ -208,6 +210,7 @@ class UserProfile {
         allowMessages: map['allowMessages'] ?? true,
         latitude: _parseDouble(map['latitude']),
         longitude: _parseDouble(map['longitude']),
+        uid: map['uid']?.toString(),
       );
     } catch (e) {
       debugPrint('UserProfile error parsing map: $e');
@@ -286,6 +289,7 @@ class UserProfile {
       'allowMessages': allowMessages,
       'latitude': latitude,
       'longitude': longitude,
+      'uid': uid,
       'lastUpdated': FieldValue.serverTimestamp(),
     };
   }

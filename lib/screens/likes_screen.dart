@@ -1,80 +1,119 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../widgets/bordered_search_bar.dart';
+import '../models/user_profile_model.dart';
+import '../providers/profile_provider.dart';
+import '../services/profile_service.dart';
 
 class LikesScreen extends StatelessWidget {
-  const LikesScreen({super.key});
+  final ProfileService _profileService = ProfileService();
+
+  LikesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      return const Scaffold(
+        body: Center(child: Text('Please sign in to see likes')),
+      );
+    }
+
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            title: Text(
-              'Likes',
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
-            elevation: 0,
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            surfaceTintColor: Colors.transparent,
-            centerTitle: false,
-            floating: true,
-            snap: true,
-            actions: [
-              const BorderedSearchBar(),
-              const SizedBox(width: 8),
-            ],
-          ),
-          SliverToBoxAdapter(child: _buildNewLikesSection(context)),
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Text(
-                'All Likes',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+      body: StreamBuilder<List<UserProfile>>(
+        stream: _profileService.getReceivedLikesStream(currentUser.uid),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFFFF4D85)),
+            );
+          }
+
+          final likes = snapshot.data ?? [];
+
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                title: const Text(
+                  'Likes',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+                elevation: 0,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                surfaceTintColor: Colors.transparent,
+                centerTitle: false,
+                floating: true,
+                snap: true,
+                actions: [
+                  const BorderedSearchBar(),
+                  const SizedBox(width: 8),
+                ],
               ),
-            ),
-          ),
-          _buildLikesGrid(context),
-          const SliverToBoxAdapter(child: SizedBox(height: 110)),
-        ],
+              if (likes.isNotEmpty) ...[
+                SliverToBoxAdapter(child: _buildNewLikesSection(context, likes)),
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Text(
+                      'All Likes',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ),
+                _buildLikesGrid(context, likes),
+              ] else
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Iconsax.heart_slash,
+                          size: 64,
+                          color: Theme.of(context).iconTheme.color?.withOpacity(0.3),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'No likes yet',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Keep swiping to find matches!',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              const SliverToBoxAdapter(child: SizedBox(height: 110)),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildNewLikesSection(BuildContext context) {
-    final newLikes = [
-      {
-        'name': 'Sarah',
-        'age': '22',
-        'img': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330'
-      },
-      {
-        'name': 'Jessica',
-        'age': '25',
-        'img': 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80'
-      },
-      {
-        'name': 'Emily',
-        'age': '24',
-        'img': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2'
-      },
-      {
-        'name': 'Chloe',
-        'age': '23',
-        'img': 'https://images.unsplash.com/photo-1517841905240-472988babdf9'
-      },
-    ];
+  Widget _buildNewLikesSection(BuildContext context, List<UserProfile> likes) {
+    // Show only the most recent in the horizontal "New" section
+    final newLikes = likes.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Text(
-            'New Likes (4)',
-            style: TextStyle(
+            'New Likes (${likes.length})',
+            style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFFFF4D85)),
@@ -87,6 +126,10 @@ class LikesScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: newLikes.length,
             itemBuilder: (context, index) {
+              final photo = newLikes[index].photos.isNotEmpty 
+                  ? newLikes[index].photos.first 
+                  : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
+              
               return Container(
                 margin: const EdgeInsets.only(right: 12),
                 child: Column(
@@ -105,8 +148,7 @@ class LikesScreen extends StatelessWidget {
                             Theme.of(context).scaffoldBackgroundColor,
                         child: CircleAvatar(
                           radius: 32,
-                          backgroundImage:
-                              NetworkImage(newLikes[index]['img']!),
+                          backgroundImage: NetworkImage(photo),
                         ),
                       ),
                     ),
@@ -120,40 +162,7 @@ class LikesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLikesGrid(BuildContext context) {
-    final allLikes = [
-      {
-        'name': 'Olivia',
-        'age': '26',
-        'img': 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1'
-      },
-      {
-        'name': 'Sophia',
-        'age': '24',
-        'img': 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04'
-      },
-      {
-        'name': 'Ava',
-        'age': '23',
-        'img': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb'
-      },
-      {
-        'name': 'Mia',
-        'age': '25',
-        'img': 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e'
-      },
-      {
-        'name': 'Isabella',
-        'age': '22',
-        'img': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d'
-      },
-      {
-        'name': 'Charlotte',
-        'age': '27',
-        'img': 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df'
-      },
-    ];
-
+  Widget _buildLikesGrid(BuildContext context, List<UserProfile> likes) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       sliver: SliverGrid(
@@ -165,11 +174,16 @@ class LikesScreen extends StatelessWidget {
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
+            final profile = likes[index];
+            final photo = profile.photos.isNotEmpty 
+                ? profile.photos.first 
+                : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
+
             return Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 image: DecorationImage(
-                  image: NetworkImage(allLikes[index]['img']!),
+                  image: NetworkImage(photo),
                   fit: BoxFit.cover,
                 ),
                 boxShadow: [
@@ -198,7 +212,7 @@ class LikesScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${allLikes[index]['name']}, ${allLikes[index]['age']}',
+                      '${profile.firstName ?? 'Someone'}, ${profile.age ?? '??'}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -206,26 +220,30 @@ class LikesScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Iconsax.location,
-                            color: Colors.white, size: 12),
-                        const SizedBox(width: 4),
-                        Text(
-                          '2.5 km away',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
+                    Consumer<ProfileProvider>(
+                      builder: (context, profileProvider, _) {
+                        return Row(
+                          children: [
+                            const Icon(Iconsax.location,
+                                color: Colors.white, size: 12),
+                            const SizedBox(width: 4),
+                            Text(
+                              profile.getDistanceDisplay(profileProvider.userProfile),
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.8),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
               ),
             );
           },
-          childCount: allLikes.length,
+          childCount: likes.length,
         ),
       ),
     );
