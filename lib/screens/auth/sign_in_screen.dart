@@ -65,6 +65,12 @@ class _SignInScreenState extends State<SignInScreen> {
           SnackBar(content: Text(e.message ?? 'An error occurred')),
         );
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

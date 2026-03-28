@@ -33,6 +33,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       await _authService.signUpWithEmail(
         _emailController.text.trim(),
         _passwordController.text.trim(),
+        _nameController.text.trim(),
       );
       // Optional: You could update the user profile with the name here
       if (mounted) {
@@ -68,6 +69,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
           SnackBar(content: Text(e.message ?? 'An error occurred')),
         );
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -76,7 +83,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -100,7 +107,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               'Join DateDash and find your perfect match',
               style: TextStyle(
                 fontSize: 16,

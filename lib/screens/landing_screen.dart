@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:ui';
 import '../widgets/swipe_view.dart';
 import '../widgets/profile_drawer.dart';
+import 'explore_screen.dart';
+import 'likes_screen.dart';
+import 'chat_list_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/profile_provider.dart';
+import '../widgets/bordered_search_bar.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -33,29 +38,29 @@ class _LandingScreenState extends State<LandingScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (context, snapshot) {
-              final user = snapshot.data;
+          const BorderedSearchBar(),
+          Consumer<ProfileProvider>(
+            builder: (context, profileProvider, _) {
+              final photoUrl = profileProvider.photoURL;
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: IconButton(
                   onPressed: () => Scaffold.of(context).openEndDrawer(),
-                  icon: user != null && user.photoURL != null
+                  icon: photoUrl != null
                       ? CircleAvatar(
                           radius: 16,
                           backgroundColor: Colors.grey.shade200,
-                          backgroundImage: NetworkImage(user.photoURL!),
+                          backgroundImage: NetworkImage(photoUrl),
                         )
                       : Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
+                            color: Theme.of(context).dividerColor.withOpacity(0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             Iconsax.user,
-                            color: Colors.grey.shade700,
+                            color: Theme.of(context).iconTheme.color?.withOpacity(0.7),
                             size: 20,
                           ),
                         ),
@@ -66,18 +71,28 @@ class _LandingScreenState extends State<LandingScreen> {
           const SizedBox(width: 4),
         ],
       ),
-      body: const SwipeView(),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: const [
+          SwipeView(),
+          ExploreScreen(),
+          LikesScreen(),
+          ChatListScreen(),
+        ],
+      ),
       endDrawer: const ProfileDrawer(),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
         child: Container(
           height: 70,
           decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 248, 201, 232).withOpacity(0.8),
+            color: Theme.of(context).brightness == Brightness.light
+                ? const Color.fromARGB(255, 248, 201, 232).withOpacity(0.8)
+                : const Color(0xFF1F1F3D).withOpacity(0.9),
             borderRadius: BorderRadius.circular(35),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.light ? 0.1 : 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -124,7 +139,7 @@ class _LandingScreenState extends State<LandingScreen> {
     final isSelected = _currentIndex == index;
     final color = isSelected
         ? const Color(0xFFFF4D85)
-        : const Color.fromARGB(255, 0, 0, 0);
+        : Theme.of(context).iconTheme.color?.withOpacity(0.5);
 
     return GestureDetector(
       onTap: () {
@@ -147,7 +162,7 @@ class _LandingScreenState extends State<LandingScreen> {
                   color: color,
                   size: isSelected ? 28 : 24,
                   shadows: isSelected
-                      ? [Shadow(color: color.withOpacity(0.3), blurRadius: 12)]
+                      ? [Shadow(color: (color ?? Colors.transparent).withOpacity(0.3), blurRadius: 12)]
                       : null,
                 ),
               )
@@ -157,7 +172,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 color: color,
                 size: isSelected ? 28 : 24,
                 shadows: isSelected
-                    ? [Shadow(color: color.withOpacity(0.3), blurRadius: 12)]
+                    ? [Shadow(color: (color ?? Colors.transparent).withOpacity(0.3), blurRadius: 12)]
                     : null,
               ),
             if (isSelected)

@@ -66,5 +66,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your gallery to upload profile photos.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to take profile photos.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to your microphone to record audio for your profile video.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs your location to show you potential matches nearby.</string>
 </dict>
 </plist>

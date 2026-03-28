@@ -1,9 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'profile_service.dart';
+import '../models/user_profile_model.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  final ProfileService _profileService = ProfileService();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId:
+        '409694106333-8703fkvopn9me0nauro1ki5frbbmamld.apps.googleusercontent.com',
+  );
 
   // Get user state changes
   Stream<User?> get user => _auth.authStateChanges();
@@ -21,12 +27,20 @@ class AuthService {
   }
 
   // Register with email & password
-  Future<UserCredential?> signUpWithEmail(String email, String password) async {
+  Future<UserCredential?> signUpWithEmail(String email, String password, String name) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(
+      final cred = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      if (cred.user != null) {
+        // Initialize user document in Firestore with name
+        await _profileService.saveUserProfile(
+            cred.user!.uid, UserProfile(firstName: name));
+      }
+
+      return cred;
     } catch (e) {
       rethrow;
     }
@@ -35,18 +49,27 @@ class AuthService {
   // Sign in with Google
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      await _googleSignIn.initialize(
-        serverClientId: '409694106333-8703fkvopn9me0nauro1ki5frbbmamld.apps.googleusercontent.com',
-      );
-      final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return null;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
       );
 
-      return await _auth.signInWithCredential(credential);
+      final cred = await _auth.signInWithCredential(credential);
+
+      if (cred.user != null) {
+        // Check if profile exists, if not initialize it
+        final profile = await _profileService.getUserProfile(cred.user!.uid);
+        if (profile == null) {
+          await _profileService.saveUserProfile(
+              cred.user!.uid, UserProfile(firstName: cred.user?.displayName));
+        }
+      }
+
+      return cred;
     } catch (e) {
       rethrow;
     }

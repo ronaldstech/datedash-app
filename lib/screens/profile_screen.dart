@@ -1,0 +1,278 @@
+import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../models/user_profile_model.dart';
+import '../services/profile_service.dart';
+import 'edit_profile_screen.dart';
+import 'settings_screen.dart';
+
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final _profileService = ProfileService();
+  bool _isLoading = true;
+  UserProfile _profile = UserProfile.empty();
+  final Color _primaryColor = const Color(0xFFFF4D85);
+  final User? _user = FirebaseAuth.instance.currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() => _isLoading = true);
+    if (_user != null) {
+      final existingProfile = await _profileService.getUserProfile(_user.uid);
+      if (existingProfile != null) {
+        _profile = existingProfile;
+      }
+    }
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  void _navigateToEditScreen() async {
+    // Navigate to the full editor and wait until it pops back
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+    );
+    // Reload data to reflect any changes and update percentage globally
+    _loadProfile(); 
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.w800)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left_2),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Iconsax.setting_2),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: _isLoading 
+          ? Center(child: CircularProgressIndicator(color: _primaryColor))
+          : RefreshIndicator(
+              color: _primaryColor,
+              onRefresh: _loadProfile,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                children: [
+                  _buildProfileHeader(),
+                  const SizedBox(height: 36),
+                  _buildCompletionCard(),
+                  const SizedBox(height: 32),
+                  _buildStatsGrid(),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildProfileHeader() {
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: _primaryColor.withOpacity(0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  )
+                ],
+              ),
+              child: CircleAvatar(
+                radius: 65,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                child: CircleAvatar(
+                  radius: 61,
+                  backgroundColor: _primaryColor.withOpacity(0.1),
+                  backgroundImage: _profile.photos.isNotEmpty 
+                      ? NetworkImage(_profile.photos.first) 
+                      : (_user?.photoURL != null ? NetworkImage(_user!.photoURL!) : null) as ImageProvider?,
+                  child: (_profile.photos.isEmpty && _user?.photoURL == null)
+                      ? Icon(Iconsax.user, size: 50, color: _primaryColor)
+                      : null,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: _primaryColor,
+                shape: BoxShape.circle,
+                border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 3),
+              ),
+              child: const Icon(Iconsax.edit_2, color: Colors.white, size: 20),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Text(
+          _profile.firstName ?? _user?.displayName ?? 'Welcome back!',
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          _user?.email ?? '',
+          style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodySmall?.color, fontWeight: FontWeight.w500),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompletionCard() {
+    final bool isComplete = _profile.completionPercentage == 100;
+    
+    return GestureDetector(
+      onTap: _navigateToEditScreen,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isComplete 
+              ? [const Color(0xFF4CAF50), const Color(0xFF2E7D32)]
+              : [_primaryColor, const Color(0xFFFF7A9F)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: (isComplete ? Colors.green : _primaryColor).withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 65,
+                  height: 65,
+                  child: CircularProgressIndicator(
+                    value: _profile.completionPercentage / 100,
+                    strokeWidth: 6,
+                    backgroundColor: Colors.white.withOpacity(0.3),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                Text(
+                  '${_profile.completionPercentage}%',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ],
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isComplete ? 'Profile Complete!' : 'Complete Your Profile',
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    isComplete 
+                        ? 'Tap here to update your details'
+                        : 'Matches are 3x more likely with a full profile.',
+                    style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14, height: 1.3),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Iconsax.arrow_right_3, color: Colors.white, size: 24),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsGrid() {
+    return Row(
+      children: [
+        Expanded(child: _buildStatCard(Iconsax.heart5, 'Likes', '24')),
+        const SizedBox(width: 16),
+        Expanded(child: _buildStatCard(Iconsax.eye, 'Views', '156')),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(IconData icon, String title, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).brightness == Brightness.light 
+                ? Colors.black.withOpacity(0.04)
+                : Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _primaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: _primaryColor, size: 28),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(fontSize: 15, color: Theme.of(context).hintColor, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+}

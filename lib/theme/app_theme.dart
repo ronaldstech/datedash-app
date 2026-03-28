@@ -8,9 +8,8 @@ class AppTheme {
         seedColor: const Color(0xFFFF4D85), // Premium Pink
         primary: const Color(0xFFFF4D85),
         secondary: const Color(0xFFFF85A1),
-        background: const Color(0xFFFAFAFA),
-        surface: Colors.white,
-      ),
+      surface: const Color(0xFFFAFAFA),
+    ),
       useMaterial3: true,
       fontFamily: 'Roboto', // Default fallback
       appBarTheme: const AppBarTheme(
@@ -19,6 +18,39 @@ class AppTheme {
           statusBarIconBrightness: Brightness.dark, // For Android
           statusBarBrightness: Brightness.light, // For iOS
         ),
+      ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFFFF4D85), // Premium Pink
+        primary: const Color(0xFFFF4D85),
+        secondary: const Color(0xFFFF85A1),
+        brightness: Brightness.dark,
+        surface: const Color(0xFF1A1A2E), // Deep dark for surfaces
+        onSurface: Colors.white,
+      ),
+      useMaterial3: true,
+      fontFamily: 'Roboto',
+      scaffoldBackgroundColor: const Color(0xFF121223),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF1A1A2E),
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white),
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light, // For Android
+          statusBarBrightness: Brightness.dark, // For iOS
+        ),
+      ),
+      dividerColor: Colors.white10,
+      cardColor: const Color(0xFF1F1F3D),
+      listTileTheme: const ListTileThemeData(
+        iconColor: Colors.white70,
+        textColor: Colors.white,
       ),
     );
   }

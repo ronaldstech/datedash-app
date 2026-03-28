@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../screens/auth/sign_in_screen.dart';
+import '../screens/profile_screen.dart';
+import '../screens/settings_screen.dart';
+import '../theme/theme_provider.dart';
+import '../providers/profile_provider.dart';
 
 class ProfileDrawer extends StatelessWidget {
   const ProfileDrawer({super.key});
@@ -24,10 +28,12 @@ class ProfileDrawer extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            StreamBuilder<User?>(
-              stream: FirebaseAuth.instance.authStateChanges(),
-              builder: (context, snapshot) {
-                final user = snapshot.data;
+            Consumer<ProfileProvider>(
+              builder: (context, profileProvider, _) {
+                final photoUrl = profileProvider.photoURL;
+                final displayName = profileProvider.displayName;
+                final email = profileProvider.currentUser?.email ?? 'View and edit profile';
+
                 return Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
@@ -35,11 +41,12 @@ class ProfileDrawer extends StatelessWidget {
                       CircleAvatar(
                         radius: 30,
                         backgroundColor: const Color(0xFFFF4D85),
-                        backgroundImage: user?.photoURL != null 
-                            ? NetworkImage(user!.photoURL!) 
+                        backgroundImage: photoUrl != null
+                            ? NetworkImage(photoUrl)
                             : null,
-                        child: user?.photoURL == null 
-                            ? const Icon(Iconsax.user, color: Colors.white, size: 30)
+                        child: photoUrl == null
+                            ? const Icon(Iconsax.user,
+                                color: Colors.white, size: 30)
                             : null,
                       ),
                       const SizedBox(width: 16),
@@ -49,7 +56,7 @@ class ProfileDrawer extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              user?.displayName ?? 'Guest User',
+                              displayName,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 18,
@@ -57,9 +64,11 @@ class ProfileDrawer extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              user?.email ?? 'View and edit profile',
+                              email,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.grey, fontSize: 13),
+                              style: TextStyle(
+                                  color: Theme.of(context).hintColor,
+                                  fontSize: 13),
                             ),
                           ],
                         ),
@@ -75,7 +84,20 @@ class ProfileDrawer extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 children: [
                   const SizedBox(height: 10),
-                  _buildItem(context, Iconsax.profile_circle, 'My Profile', color: const Color(0xFFFF4D85)),
+                  _buildItem(
+                    context,
+                    Iconsax.profile_circle,
+                    'My Profile',
+                    color: const Color(0xFFFF4D85),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ProfileScreen()),
+                      );
+                    },
+                  ),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Divider(height: 1),
@@ -85,9 +107,11 @@ class ProfileDrawer extends StatelessWidget {
                     Iconsax.activity,
                     'My Activity',
                     [
-                      _buildItem(context, Iconsax.heart_tick, 'Matches', color: const Color(0xFFFF4D85)),
+                      _buildItem(context, Iconsax.heart_tick, 'Matches',
+                          color: const Color(0xFFFF4D85)),
                       _buildItem(context, Iconsax.eye, 'Visitors'),
-                      _buildItem(context, Iconsax.heart5, 'Likes', color: const Color(0xFFFF4D85)),
+                      _buildItem(context, Iconsax.heart5, 'Likes',
+                          color: const Color(0xFFFF4D85)),
                       _buildItem(context, Iconsax.document_text, 'Blog'),
                       _buildItem(context, Iconsax.video_circle, 'Live Videos'),
                     ],
@@ -107,8 +131,10 @@ class ProfileDrawer extends StatelessWidget {
                     Iconsax.wallet_2,
                     'Finance',
                     [
-                      _buildItem(context, Iconsax.ranking, 'Premium', color: const Color(0xFFFFD700)),
-                      _buildItem(context, Iconsax.gift, 'Gifts', color: Colors.purple.shade400),
+                      _buildItem(context, Iconsax.ranking, 'Premium',
+                          color: const Color(0xFFFFD700)),
+                      _buildItem(context, Iconsax.gift, 'Gifts',
+                          color: Colors.purple.shade400),
                       _buildItem(context, Iconsax.receipt_21, 'Transactions'),
                       _buildItem(context, Iconsax.money_2, 'Credits'),
                     ],
@@ -117,8 +143,30 @@ class ProfileDrawer extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Divider(height: 1),
                   ),
-                  _buildItem(context, Iconsax.setting_2, 'Settings'),
-                  _buildItem(context, Iconsax.moon, 'Night Mode'),
+                  _buildItem(
+                    context,
+                    Iconsax.setting_2,
+                    'Settings',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                      );
+                    },
+                  ),
+                  _buildItem(
+                    context,
+                    context.read<ThemeProvider>().isDarkMode
+                        ? Iconsax.sun_1
+                        : Iconsax.moon,
+                    context.read<ThemeProvider>().isDarkMode
+                        ? 'Light Mode'
+                        : 'Night Mode',
+                    onTap: () {
+                      context.read<ThemeProvider>().toggleTheme();
+                    },
+                  ),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Divider(height: 1),
@@ -140,37 +188,43 @@ class ProfileDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildGroup(BuildContext context, IconData icon, String title, List<Widget> children) {
+  Widget _buildGroup(BuildContext context, IconData icon, String title,
+      List<Widget> children) {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
-        leading: Icon(icon, color: Colors.grey.shade800, size: 22),
+        leading: Icon(icon,
+            color: Theme.of(context).iconTheme.color?.withOpacity(0.8),
+            size: 22),
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: Theme.of(context).textTheme.titleMedium?.color,
             letterSpacing: 0.2,
           ),
         ),
         iconColor: const Color(0xFFFF4D85),
-        collapsedIconColor: Colors.grey.shade400,
+        collapsedIconColor: Theme.of(context).hintColor.withOpacity(0.5),
         childrenPadding: const EdgeInsets.only(left: 12, bottom: 8),
         children: children,
       ),
     );
   }
 
-  Widget _buildItem(BuildContext context, IconData icon, String title, {Color? color, VoidCallback? onTap}) {
+  Widget _buildItem(BuildContext context, IconData icon, String title,
+      {Color? color, VoidCallback? onTap}) {
     return ListTile(
-      leading: Icon(icon, color: color ?? Colors.grey.shade600, size: 22),
+      leading: Icon(icon,
+          color: color ?? Theme.of(context).iconTheme.color?.withOpacity(0.7),
+          size: 22),
       title: Text(
         title,
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: Colors.grey.shade800,
+          color: Theme.of(context).textTheme.bodyMedium?.color,
         ),
       ),
       dense: true,
