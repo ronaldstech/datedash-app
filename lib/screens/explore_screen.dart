@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../widgets/bordered_search_bar.dart';
+import '../screens/category_profiles_screen.dart';
+import '../services/profile_service.dart';
 
 class ExploreScreen extends StatelessWidget {
   const ExploreScreen({super.key});
@@ -47,6 +49,7 @@ class ExploreScreen extends StatelessWidget {
   }
 
   Widget _buildCategoryGrid(BuildContext context) {
+    final ProfileService profileService = ProfileService();
     final categories = [
       {
         'title': 'Long Term',
@@ -120,26 +123,36 @@ class ExploreScreen extends StatelessWidget {
             final cat = categories[index];
             final colors = cat['colors'] as List<Color>;
 
-            return Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: colors,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: colors[0].withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        CategoryProfilesScreen(category: cat['title'] as String),
                   ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: Stack(
-                  children: [
+                );
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: colors,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colors[0].withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Stack(
+                    children: [
                     // Decorative icon in background
                     Positioned(
                       right: -10,
@@ -195,13 +208,20 @@ class ExploreScreen extends StatelessWidget {
                               color: Colors.black.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Text(
-                              '${cat['count']} people',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                              ),
+                            child: StreamBuilder<int>(
+                              stream: profileService
+                                  .getCategoryCountStream(cat['title'] as String),
+                              builder: (context, countSnapshot) {
+                                final count = countSnapshot.data ?? 0;
+                                return Text(
+                                  '$count people',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ],
@@ -210,7 +230,8 @@ class ExploreScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            );
+            ),
+          );
           },
           childCount: categories.length,
         ),

@@ -28,7 +28,7 @@ class _ImageEditorScreenState extends State<ImageEditorScreen> {
   late File _currentImage;
   final TextEditingController _captionController = TextEditingController();
 
-  List<DrawnPath> _paths = [];
+  final List<DrawnPath> _paths = [];
   DrawnPath? _currentPath;
 
   Color _selectedColor = Colors.red;

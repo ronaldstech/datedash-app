@@ -5,6 +5,8 @@ import '../models/user_profile_model.dart';
 import '../services/profile_service.dart';
 import 'edit_profile_screen.dart';
 import 'settings_screen.dart';
+import 'likes_screen.dart';
+import 'profile_viewers_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -245,52 +247,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildStatsGrid() {
+    if (_user == null) return const SizedBox.shrink();
+
     return Row(
       children: [
-        Expanded(child: _buildStatCard(Iconsax.heart5, 'Likes', '24')),
+        // Likes Stat
+        Expanded(
+          child: StreamBuilder<int>(
+            stream: _profileService.getLikesCountStream(_user.uid),
+            builder: (context, snapshot) {
+              return _buildStatCard(
+                Iconsax.heart5,
+                'Likes',
+                snapshot.data?.toString() ?? '0',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LikesScreen()),
+                ),
+              );
+            },
+          ),
+        ),
         const SizedBox(width: 16),
-        Expanded(child: _buildStatCard(Iconsax.eye, 'Views', '156')),
+        // Views Stat
+        Expanded(
+          child: StreamBuilder<int>(
+            stream: _profileService.getViewCountStream(_user.uid),
+            builder: (context, snapshot) {
+              return _buildStatCard(
+                Iconsax.eye,
+                'Views',
+                snapshot.data?.toString() ?? '0',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfileViewersScreen()),
+                ),
+              );
+            },
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildStatCard(IconData icon, String title, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).brightness == Brightness.light 
-                ? Colors.black.withOpacity(0.04)
-                : Colors.black.withOpacity(0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _primaryColor.withOpacity(0.1),
-              shape: BoxShape.circle,
+  Widget _buildStatCard(IconData icon, String title, String value,
+      {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.black.withOpacity(0.04)
+                  : Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            child: Icon(icon, color: _primaryColor, size: 28),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(fontSize: 15, color: Theme.of(context).hintColor, fontWeight: FontWeight.w600),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _primaryColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: _primaryColor, size: 28),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(
+                  fontSize: 15,
+                  color: Theme.of(context).hintColor,
+                  fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
       ),
     );
   }

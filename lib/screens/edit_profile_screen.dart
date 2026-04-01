@@ -429,16 +429,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ]),
       // 5. Relationship Goals
       _buildPageContent([
-        _buildMultiChoiceChips(
+        _buildChoiceChips(
           label: 'Looking For',
-          values: _profile.lookingFor,
+          value: _profile.lookingFor.isNotEmpty ? _profile.lookingFor.first : null,
           items: const [
-            'Casual dating',
-            'Serious relationship',
-            'Marriage',
-            'Friendship'
+            'Long Term',
+            'Hookups',
+            'Short Term Fun',
+            'New Friends',
+            'Coffee Date',
+            'Movie Night',
+            'Fitness Duo',
+            'Gaming Duo',
           ],
-          onChanged: (val) => _profile.lookingFor = val,
+          onChanged: (val) => _profile.lookingFor = [val],
         ),
         _buildSwitch(
           label: 'Open to long-distance?',

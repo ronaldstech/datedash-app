@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum MessageType { text, image, voice, gif, sticker }
+enum MessageType { text, image, voice, gif, sticker, call }
 
 class ChatMessage {
   final String id;
@@ -52,6 +52,8 @@ class ChatMessage {
         return MessageType.gif;
       case 'sticker':
         return MessageType.sticker;
+      case 'call':
+        return MessageType.call;
       default:
         return MessageType.text;
     }

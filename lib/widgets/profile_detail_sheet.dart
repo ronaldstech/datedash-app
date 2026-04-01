@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
 import '../models/user_profile_model.dart';
+import '../providers/profile_provider.dart';
+import '../screens/user_profile_screen.dart';
+import '../services/profile_service.dart';
 
-class ProfileDetailSheet extends StatelessWidget {
+class ProfileDetailSheet extends StatefulWidget {
   final UserProfile profile;
   final VoidCallback onLike;
   final VoidCallback onDislike;
@@ -17,8 +21,37 @@ class ProfileDetailSheet extends StatelessWidget {
   });
 
   @override
+  State<ProfileDetailSheet> createState() => _ProfileDetailSheetState();
+}
+
+class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
+  @override
+  void initState() {
+    super.initState();
+    // Record profile view once when the sheet opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final profileProvider = context.read<ProfileProvider>();
+        final currentUserId = profileProvider.currentUser?.uid;
+        if (currentUserId != null && widget.profile.uid != null) {
+          ProfileService().recordProfileView(
+            currentUserId, 
+            widget.profile.uid!,
+            senderName: profileProvider.displayName
+          );
+        }
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFFFF4D85);
+    final profileProvider = context.watch<ProfileProvider>();
+    final profile = widget.profile;
+    final onLike = widget.onLike;
+    final onDislike = widget.onDislike;
+    final onMessage = widget.onMessage;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
@@ -92,7 +125,7 @@ class ProfileDetailSheet extends StatelessWidget {
                                       color: primaryColor, size: 14),
                                   const SizedBox(width: 6),
                                   Text(
-                                    profile.location ?? 'Somewhere',
+                                    profile.getDistanceDisplay(profileProvider.userProfile),
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -109,7 +142,89 @@ class ProfileDetailSheet extends StatelessWidget {
                               color: Colors.blueAccent, size: 32),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
+
+                    // ── View Full Profile Button ────────────────────────
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UserProfileScreen(
+                              profile: profile,
+                              onLike: () {
+                                final profileProvider = context.read<ProfileProvider>();
+                                final myUid = profileProvider.currentUser?.uid;
+                                if (myUid != null && profile.uid != null) {
+                                  ProfileService().swipeUser(myUid, profile.uid!, 'like',
+                                      senderName: profileProvider.displayName);
+                                }
+                                Navigator.pop(context);
+                                onLike.call();
+                              },
+                              onDislike: () {
+                                final profileProvider = context.read<ProfileProvider>();
+                                final myUid = profileProvider.currentUser?.uid;
+                                if (myUid != null && profile.uid != null) {
+                                  ProfileService().swipeUser(myUid, profile.uid!, 'dislike',
+                                      senderName: profileProvider.displayName);
+                                }
+                                Navigator.pop(context);
+                                onDislike.call();
+                              },
+                              onMessage: onMessage,
+                            ),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              primaryColor,
+                              Color(0xFFFF7B9B),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: primaryColor.withOpacity(0.35),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Iconsax.profile_2user,
+                                color: Colors.white, size: 20),
+                            SizedBox(width: 10),
+                            Text(
+                              'View Full Profile',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
 
                     // ── About Me ────────────────────────────────────
                     if (profile.bio != null && profile.bio!.isNotEmpty) ...[
@@ -242,36 +357,36 @@ class ProfileDetailSheet extends StatelessWidget {
 
   Widget _buildQuickFacts(BuildContext context) {
     final facts = <Map<String, dynamic>>[];
-    if (profile.height != null) {
+    if (widget.profile.height != null) {
       facts.add(
-          {'icon': Iconsax.ruler, 'label': 'Height', 'value': profile.height!});
+          {'icon': Iconsax.ruler, 'label': 'Height', 'value': widget.profile.height!});
     }
-    if (profile.educationLevel != null) {
+    if (widget.profile.educationLevel != null) {
       facts.add({
         'icon': Iconsax.teacher,
         'label': 'Education',
-        'value': profile.educationLevel!
+        'value': widget.profile.educationLevel!
       });
     }
-    if (profile.religion != null) {
+    if (widget.profile.religion != null) {
       facts.add({
         'icon': Iconsax.cloud,
         'label': 'Religion',
-        'value': profile.religion!
+        'value': widget.profile.religion!
       });
     }
-    if (profile.wantKids != null) {
+    if (widget.profile.wantKids != null) {
       facts.add({
         'icon': Iconsax.heart_circle,
         'label': 'Wants Kids',
-        'value': profile.wantKids!
+        'value': widget.profile.wantKids!
       });
     }
-    if (profile.openToLongDistance != null) {
+    if (widget.profile.openToLongDistance != null) {
       facts.add({
         'icon': Iconsax.global,
         'label': 'Long Distance',
-        'value': profile.openToLongDistance! ? 'Open to it' : 'No'
+        'value': widget.profile.openToLongDistance! ? 'Open to it' : 'No'
       });
     }
 
@@ -294,29 +409,29 @@ class ProfileDetailSheet extends StatelessWidget {
 
   Widget _buildPersonalDetails(BuildContext context) {
     final items = <Map<String, dynamic>>[];
-    if (profile.bodyType != null) {
+    if (widget.profile.bodyType != null) {
       items.add({
         'icon': Iconsax.user,
         'label': 'Body Type',
-        'value': profile.bodyType!
+        'value': widget.profile.bodyType!
       });
     }
-    if (profile.ethnicity != null) {
+    if (widget.profile.ethnicity != null) {
       items.add({
         'icon': Iconsax.people,
         'label': 'Ethnicity',
-        'value': profile.ethnicity!
+        'value': widget.profile.ethnicity!
       });
     }
-    if (profile.school != null) {
+    if (widget.profile.school != null) {
       items.add(
-          {'icon': Iconsax.book, 'label': 'School', 'value': profile.school!});
+          {'icon': Iconsax.book, 'label': 'School', 'value': widget.profile.school!});
     }
-    if (profile.languages.isNotEmpty) {
+    if (widget.profile.languages.isNotEmpty) {
       items.add({
         'icon': Iconsax.translate,
         'label': 'Languages',
-        'value': profile.languages.join(', ')
+        'value': widget.profile.languages.join(', ')
       });
     }
 
@@ -339,36 +454,36 @@ class ProfileDetailSheet extends StatelessWidget {
 
   Widget _buildLifestyle(BuildContext context) {
     final items = <Map<String, dynamic>>[];
-    if (profile.smoking != null) {
+    if (widget.profile.smoking != null) {
       items.add({
         'icon': Iconsax.status,
         'label': 'Smoking',
-        'value': profile.smoking!
+        'value': widget.profile.smoking!
       });
     }
-    if (profile.drinking != null) {
+    if (widget.profile.drinking != null) {
       items.add({
         'icon': Iconsax.cup,
         'label': 'Drinking',
-        'value': profile.drinking!
+        'value': widget.profile.drinking!
       });
     }
-    if (profile.fitness != null) {
+    if (widget.profile.fitness != null) {
       items.add({
         'icon': Iconsax.activity,
         'label': 'Exercise',
-        'value': profile.fitness!
+        'value': widget.profile.fitness!
       });
     }
-    if (profile.diet != null) {
+    if (widget.profile.diet != null) {
       items.add(
-          {'icon': Iconsax.coffee, 'label': 'Diet', 'value': profile.diet!});
+          {'icon': Iconsax.coffee, 'label': 'Diet', 'value': widget.profile.diet!});
     }
-    if (profile.sleepingHabits != null) {
+    if (widget.profile.sleepingHabits != null) {
       items.add({
         'icon': Iconsax.moon,
         'label': 'Sleep',
-        'value': profile.sleepingHabits!
+        'value': widget.profile.sleepingHabits!
       });
     }
 
@@ -391,32 +506,32 @@ class ProfileDetailSheet extends StatelessWidget {
 
   Widget _buildPersonality(BuildContext context) {
     final items = <Map<String, dynamic>>[];
-    if (profile.mbti != null) {
+    if (widget.profile.mbti != null) {
       items.add({
         'icon': Iconsax.profile_circle,
         'label': 'Personality Type',
-        'value': profile.mbti!
+        'value': widget.profile.mbti!
       });
     }
-    if (profile.introvertExtrovert != null) {
+    if (widget.profile.introvertExtrovert != null) {
       items.add({
         'icon': Iconsax.sun_1,
         'label': 'Social Style',
-        'value': profile.introvertExtrovert!
+        'value': widget.profile.introvertExtrovert!
       });
     }
-    if (profile.loveLanguage != null) {
+    if (widget.profile.loveLanguage != null) {
       items.add({
         'icon': Iconsax.heart,
         'label': 'Love Language',
-        'value': profile.loveLanguage!
+        'value': widget.profile.loveLanguage!
       });
     }
-    if (profile.coreValues != null) {
+    if (widget.profile.coreValues != null) {
       items.add({
         'icon': Iconsax.star,
         'label': 'Core Values',
-        'value': profile.coreValues!
+        'value': widget.profile.coreValues!
       });
     }
 
@@ -439,10 +554,10 @@ class ProfileDetailSheet extends StatelessWidget {
 
   Widget _buildPrompts(BuildContext context) {
     final prompts = <Map<String, String?>>[
-      {'q': 'The perfect date', 'a': profile.promptPerfectDate},
-      {'q': 'You\'ll fall for me if', 'a': profile.promptFallForYou},
-      {'q': 'My green flag', 'a': profile.promptGreenFlag},
-      {'q': 'Two truths & a lie', 'a': profile.promptTwoTruths},
+      {'q': 'The perfect date', 'a': widget.profile.promptPerfectDate},
+      {'q': 'You\'ll fall for me if', 'a': widget.profile.promptFallForYou},
+      {'q': 'My green flag', 'a': widget.profile.promptGreenFlag},
+      {'q': 'Two truths & a lie', 'a': widget.profile.promptTwoTruths},
     ].where((p) => p['a'] != null && p['a']!.isNotEmpty).toList();
 
     if (prompts.isEmpty) return const SizedBox.shrink();

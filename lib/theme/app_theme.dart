@@ -29,14 +29,14 @@ class AppTheme {
         primary: const Color(0xFFFF4D85),
         secondary: const Color(0xFFFF85A1),
         brightness: Brightness.dark,
-        surface: const Color(0xFF1A1A2E), // Deep dark for surfaces
+        surface: const Color(0xFF000000), // Pure black surface
         onSurface: Colors.white,
       ),
       useMaterial3: true,
       fontFamily: 'Roboto',
-      scaffoldBackgroundColor: const Color(0xFF121223),
+      scaffoldBackgroundColor: Colors.black, // Pure black background
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF1A1A2E),
+        backgroundColor: Colors.black,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
         titleTextStyle: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
@@ -47,7 +47,7 @@ class AppTheme {
         ),
       ),
       dividerColor: Colors.white10,
-      cardColor: const Color(0xFF1F1F3D),
+      cardColor: const Color(0xFF121212), // Slightly off-black for cards
       listTileTheme: const ListTileThemeData(
         iconColor: Colors.white70,
         textColor: Colors.white,

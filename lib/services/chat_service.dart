@@ -46,6 +46,7 @@ class ChatService {
     required String senderId,
     required String receiverId,
     required String text,
+    MessageType messageType = MessageType.text,
   }) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
@@ -61,6 +62,7 @@ class ChatService {
       timestamp: DateTime.now(),
       isRead: false,
       isDelivered: true,
+      messageType: messageType,
     );
 
     try {
@@ -73,6 +75,7 @@ class ChatService {
         'timestamp': FieldValue.serverTimestamp(),
         'isRead': false,
         'isDelivered': true,
+        'messageType': messageType.toString().split('.').last,
       });
 
       // Update chat metadata + increment receiver unread count

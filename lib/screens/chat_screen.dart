@@ -7,11 +7,14 @@ import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 import '../models/chat_model.dart';
 import '../services/chat_service.dart';
+import '../services/call_service.dart';
+import '../services/profile_service.dart';
+import '../widgets/profile_detail_sheet.dart';
 import 'image_editor_screen.dart';
+import 'outgoing_call_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   final String otherUserId;
@@ -374,7 +377,7 @@ class _ChatScreenState extends State<ChatScreen> {
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: \$e')),
+                    const SnackBar(content: Text('Error: \$e')),
                   );
                 }
               }
@@ -462,19 +465,26 @@ class _ChatScreenState extends State<ChatScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                onSelected: (value) {
+                onSelected: (value) async {
                   switch (value) {
                     case 'clear':
                       _clearChatConfirm();
                       break;
                     case 'profile':
-                      // Navigate to profile — already available via the swipe card
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${widget.otherUserName}\'s profile'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
+                      final profile = await ProfileService().getUserProfile(widget.otherUserId);
+                      if (profile != null && mounted) {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => ProfileDetailSheet(
+                            profile: profile,
+                            onLike: () {},
+                            onDislike: () {},
+                            onMessage: () => Navigator.pop(context),
+                          ),
+                        );
+                      }
                       break;
                     case 'search':
                       setState(() {
@@ -886,6 +896,56 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
+    if (msg.messageType == MessageType.call) {
+      final isVideo = msg.text.toLowerCase().contains("video");
+      return Container(
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isMe
+              ? const Color(0xFFFF4D85)
+              : Theme.of(context).cardColor,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(16),
+            topRight: const Radius.circular(16),
+            bottomLeft: Radius.circular(isMe ? 16 : 4),
+            bottomRight: Radius.circular(isMe ? 4 : 16),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isVideo ? Iconsax.video5 : Iconsax.call_calling5,
+              size: 16,
+              color: isMe ? Colors.white : const Color(0xFFFF4D85),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                msg.text,
+                style: TextStyle(
+                  color: isMe ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  fontStyle: FontStyle.italic,
+                  letterSpacing: -0.1,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     // Default text message
     return Container(
       constraints:
@@ -1162,8 +1222,6 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-// ─── Call Bottom Sheet ───────────────────────────────────────────────────────
-
 class _CallSheet extends StatelessWidget {
   final String name;
   final String? photo;
@@ -1233,29 +1291,46 @@ class _CallSheet extends StatelessWidget {
                   color: const Color(0xFFFF4D85),
                   label: isVideo ? 'Video' : 'Call',
                   onTap: () async {
-                    Navigator.pop(context);
+                    // Capture navigator before context unmounts
+                    final navigator = Navigator.of(context);
+                    
+                    // Immediately close bottom sheet
+                    navigator.pop();
 
-                    // Build a Jitsi Meet room unique to this chat
-                    // Voice-only: video starts muted; Video: both enabled
+                    final callService = CallService();
                     final roomName = 'datedash-${chatId.replaceAll('_', '-')}';
-                    final fragment = isVideo
-                        ? 'config.startWithVideoMuted=false&config.startWithAudioMuted=false'
-                        : 'config.startWithVideoMuted=true&config.startWithAudioMuted=false';
-                    final url = Uri.parse('https://meet.jit.si/$roomName#$fragment');
 
-                    // Send a join-link system message to the chat
-                    final callType = isVideo ? '🎥 Video' : '📞 Voice';
+                    // Dial user via Firestore
+                    await callService.dialUser(
+                      callerId: senderId,
+                      receiverId: receiverId,
+                      isVideo: isVideo,
+                    );
+                    
+                    // Add chat transcript record
+                    final callType = isVideo ? 'Video call' : 'Voice call';
                     await chatService.sendMessage(
                       chatId: chatId,
                       senderId: senderId,
                       receiverId: receiverId,
-                      text: '$callType call started. Join here: https://meet.jit.si/$roomName',
+                      text: callType,
+                      messageType: MessageType.call,
                     );
 
-                    // Launch Jitsi in browser / Jitsi app
-                    if (await canLaunchUrl(url)) {
-                      await launchUrl(url, mode: LaunchMode.externalApplication);
-                    }
+                    // Push to Outgoing Call Screen natively
+                    navigator.push(
+                      MaterialPageRoute(
+                        fullscreenDialog: true,
+                        builder: (_) => OutgoingCallScreen(
+                          receiverId: receiverId,
+                          receiverName: name,
+                          receiverPhoto: photo ?? '',
+                          chatId: chatId,
+                          isVideo: isVideo,
+                          roomName: roomName,
+                        ),
+                      ),
+                    );
                   },
                 ),
               ],

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
-import '../widgets/bordered_search_bar.dart';
 import '../models/user_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../services/profile_service.dart';
@@ -10,10 +10,31 @@ import '../services/chat_service.dart';
 import '../widgets/profile_detail_sheet.dart';
 import '../screens/chat_screen.dart';
 
-class LikesScreen extends StatelessWidget {
+class ProfileViewersScreen extends StatelessWidget {
   final ProfileService _profileService = ProfileService();
 
-  LikesScreen({super.key});
+  ProfileViewersScreen({super.key});
+
+  String _formatDateTime(Timestamp? timestamp) {
+    if (timestamp == null) return '';
+    final DateTime dateTime = timestamp.toDate();
+    final DateTime now = DateTime.now();
+    final int differenceInMinutes = now.difference(dateTime).inMinutes;
+    final int differenceInHours = now.difference(dateTime).inHours;
+    final int differenceInDays = now.difference(dateTime).inDays;
+
+    if (differenceInMinutes < 1) {
+      return 'Just now';
+    } else if (differenceInMinutes < 60) {
+      return '$differenceInMinutes min ago';
+    } else if (differenceInHours < 24) {
+      return '$differenceInHours hr ago';
+    } else if (differenceInDays < 7) {
+      return '$differenceInDays days ago';
+    } else {
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,13 +42,13 @@ class LikesScreen extends StatelessWidget {
 
     if (currentUser == null) {
       return const Scaffold(
-        body: Center(child: Text('Please sign in to see likes')),
+        body: Center(child: Text('Please sign in to see viewers')),
       );
     }
 
     return Scaffold(
-      body: StreamBuilder<List<UserProfile>>(
-        stream: _profileService.getReceivedLikesStream(currentUser.uid),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: _profileService.getViewersStream(currentUser.uid),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -35,13 +56,13 @@ class LikesScreen extends StatelessWidget {
             );
           }
 
-          final likes = snapshot.data ?? [];
+          final viewers = snapshot.data ?? [];
 
           return CustomScrollView(
             slivers: [
               SliverAppBar(
                 title: const Text(
-                  'Likes',
+                  'Recent Viewers',
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
                 elevation: 0,
@@ -50,25 +71,26 @@ class LikesScreen extends StatelessWidget {
                 centerTitle: false,
                 floating: true,
                 snap: true,
-                actions: const [
-                  BorderedSearchBar(),
-                  SizedBox(width: 8),
-                ],
+                leading: IconButton(
+                  icon: const Icon(Iconsax.arrow_left_2),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
-              if (likes.isNotEmpty) ...[
-                SliverToBoxAdapter(
-                    child: _buildNewLikesSection(context, likes)),
+              if (viewers.isNotEmpty) ...[
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     child: Text(
-                      'All Likes',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      'People who visited your profile',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                 ),
-                _buildLikesGrid(context, likes),
+                _buildViewersGrid(context, viewers),
               ] else
                 SliverFillRemaining(
                   hasScrollBody: false,
@@ -77,7 +99,7 @@ class LikesScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Iconsax.heart_slash,
+                          Iconsax.eye_slash,
                           size: 64,
                           color: Theme.of(context)
                               .iconTheme
@@ -86,7 +108,7 @@ class LikesScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         const Text(
-                          'No likes yet',
+                          'No views yet',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -95,14 +117,14 @@ class LikesScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Keep swiping to find matches!',
+                          'Keep active to get noticed!',
                           style: TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
                   ),
                 ),
-              const SliverToBoxAdapter(child: SizedBox(height: 110)),
+              const SliverToBoxAdapter(child: SizedBox(height: 40)),
             ],
           );
         },
@@ -110,70 +132,8 @@ class LikesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNewLikesSection(BuildContext context, List<UserProfile> likes) {
-    // Show only the most recent in the horizontal "New" section
-    final newLikes = likes.take(5).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          child: Text(
-            'New Likes (${likes.length})',
-            style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFFFF4D85)),
-          ),
-        ),
-        SizedBox(
-          height: 100,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: newLikes.length,
-            itemBuilder: (context, index) {
-              final photo = newLikes[index].photos.isNotEmpty
-                  ? newLikes[index].photos.first
-                  : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
-
-              return GestureDetector(
-                onTap: () => _showProfileDetails(context, newLikes[index]),
-                child: Container(
-                  margin: const EdgeInsets.only(right: 12),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [Color(0xFFFF4D85), Color(0xFFFF9A8B)],
-                          ),
-                        ),
-                        child: CircleAvatar(
-                          radius: 35,
-                          backgroundColor:
-                              Theme.of(context).scaffoldBackgroundColor,
-                          child: CircleAvatar(
-                            radius: 32,
-                            backgroundImage: NetworkImage(photo),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLikesGrid(BuildContext context, List<UserProfile> likes) {
+  Widget _buildViewersGrid(
+      BuildContext context, List<Map<String, dynamic>> viewers) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       sliver: SliverGrid(
@@ -185,7 +145,9 @@ class LikesScreen extends StatelessWidget {
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
-            final profile = likes[index];
+            final viewer = viewers[index];
+            final profile = viewer['profile'] as UserProfile;
+            final timestamp = viewer['timestamp'] as Timestamp?;
             final photo = profile.photos.isNotEmpty
                 ? profile.photos.first
                 : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
@@ -232,6 +194,22 @@ class LikesScreen extends StatelessWidget {
                           fontSize: 16,
                         ),
                       ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Iconsax.clock,
+                              color: Color(0xFFFF4D85), size: 10),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatDateTime(timestamp),
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 4),
                       Consumer<ProfileProvider>(
                         builder: (context, profileProvider, _) {
@@ -258,7 +236,7 @@ class LikesScreen extends StatelessWidget {
               ),
             );
           },
-          childCount: likes.length,
+          childCount: viewers.length,
         ),
       ),
     );
@@ -293,36 +271,23 @@ class LikesScreen extends StatelessWidget {
           final myUid = FirebaseAuth.instance.currentUser?.uid;
           if (myUid == null || profile.uid == null) return;
 
-          try {
-            // 1. Get or create chat first (don't pop yet to keep context stable)
-            await ChatService().getOrCreateChat(myUid, profile.uid!);
+          Navigator.pop(context);
 
-            if (context.mounted) {
-              // 2. Pop the sheet (and the UserProfileScreen if it was pushed from the sheet)
-              // We pop once for the sheet. if UserProfileScreen was open, it was pushed on top of the sheet
-              // and should have its own back button, but here we want to jump to chat.
-              Navigator.of(context).pop();
+          await ChatService().getOrCreateChat(myUid, profile.uid!);
 
-              // 3. Push ChatScreen
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ChatScreen(
-                    otherUserId: profile.uid!,
-                    otherUserName: profile.firstName ?? 'User',
-                    otherUserPhoto:
-                        profile.photos.isNotEmpty ? profile.photos.first : null,
-                  ),
+          if (context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ChatScreen(
+                  otherUserId: profile.uid!,
+                  otherUserName: profile.firstName ?? 'User',
+                  otherUserPhoto: profile.photos.isNotEmpty
+                      ? profile.photos.first
+                      : null,
                 ),
-              );
-            }
-          } catch (e) {
-            debugPrint('Error opening chat: $e');
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Could not open chat: $e')),
-              );
-            }
+              ),
+            );
           }
         },
       ),

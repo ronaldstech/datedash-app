@@ -31,9 +31,9 @@ class LocalDbService {
 
   Future<void> _upgradeDb(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      await db.execute('ALTER TABLE messages ADD COLUMN messageType TEXT DEFAULT "text"');
-      await db.execute('ALTER TABLE messages ADD COLUMN mediaUrl TEXT');
-      await db.execute('ALTER TABLE messages ADD COLUMN voiceDuration INTEGER');
+      try { await db.execute('ALTER TABLE messages ADD COLUMN messageType TEXT DEFAULT "text"'); } catch (_) {}
+      try { await db.execute('ALTER TABLE messages ADD COLUMN mediaUrl TEXT'); } catch (_) {}
+      try { await db.execute('ALTER TABLE messages ADD COLUMN voiceDuration INTEGER'); } catch (_) {}
     }
   }
 
@@ -129,6 +129,8 @@ class LocalDbService {
     if (type == 'image') return MessageType.image;
     if (type == 'voice') return MessageType.voice;
     if (type == 'gif') return MessageType.gif;
+    if (type == 'call') return MessageType.call;
+    if (type == 'sticker') return MessageType.sticker;
     return MessageType.text;
   }
 

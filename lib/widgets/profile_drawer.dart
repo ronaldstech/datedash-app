@@ -5,6 +5,9 @@ import '../services/auth_service.dart';
 import '../screens/auth/sign_in_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/settings_screen.dart';
+import '../screens/likes_screen.dart';
+import '../screens/profile_viewers_screen.dart';
+import '../screens/chat_list_screen.dart';
 import '../theme/theme_provider.dart';
 import '../providers/profile_provider.dart';
 
@@ -23,69 +26,153 @@ class ProfileDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Drawer(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
         child: Column(
           children: [
+            // Premium Header with Glassmorphism
             Consumer<ProfileProvider>(
               builder: (context, profileProvider, _) {
                 final photoUrl = profileProvider.photoURL;
                 final displayName = profileProvider.displayName;
-                final email = profileProvider.currentUser?.email ?? 'View and edit profile';
+                final email =
+                    profileProvider.currentUser?.email ?? 'Join the community';
 
-                return Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
+                return Container(
+                  padding: const EdgeInsets.all(24.0),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFFFF4D85).withOpacity(0.15),
+                        const Color(0xFFFF4D85).withOpacity(0.05),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  child: Column(
                     children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: const Color(0xFFFF4D85),
-                        child: ClipOval(
-                          child: photoUrl != null
-                              ? Image.network(
-                                  photoUrl,
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Icon(Iconsax.user,
-                                        color: Colors.white, size: 30);
-                                  },
-                                )
-                              : const Icon(Iconsax.user,
-                                  color: Colors.white, size: 30),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
+                      Center(
+                        child: Stack(
                           children: [
-                            Text(
-                              displayName,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFFFF4D85),
+                                    Color(0xFFFF8E8E)
+                                  ],
+                                ),
+                              ),
+                              child: CircleAvatar(
+                                radius: 42,
+                                backgroundColor:
+                                    isDark ? Colors.black : Colors.white,
+                                child: ClipOval(
+                                  child: photoUrl != null
+                                      ? Image.network(
+                                          photoUrl,
+                                          width: 84,
+                                          height: 84,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : const Icon(Iconsax.user,
+                                          size: 40, color: Color(0xFFFF4D85)),
+                                ),
                               ),
                             ),
-                            Text(
-                              email,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  color: Theme.of(context).hintColor,
-                                  fontSize: 13),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFF4D85),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.check,
+                                    color: Colors.white, size: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        displayName,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        email,
+                        style: TextStyle(
+                          color: Theme.of(context).hintColor,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      // Stats Row — real numbers, tappable
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.05)
+                              : Colors.black.withOpacity(0.03),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildStatItem(
+                              context,
+                              'Likes',
+                              profileProvider.likesCount.toString(),
+                              Iconsax.heart5,
+                              const Color(0xFFFF4D85),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => LikesScreen()));
+                              },
+                            ),
+                            Container(
+                                width: 1,
+                                height: 24,
+                                color: Theme.of(context).dividerColor.withOpacity(0.2)),
+                            _buildStatItem(
+                              context,
+                              'Visitors',
+                              profileProvider.visitorsCount.toString(),
+                              Iconsax.eye,
+                              Colors.blueAccent,
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileViewersScreen()));
+                              },
+                            ),
+                            Container(
+                                width: 1,
+                                height: 24,
+                                color: Theme.of(context).dividerColor.withOpacity(0.2)),
+                            _buildStatItem(
+                              context,
+                              'Matches',
+                              profileProvider.matchesCount.toString(),
+                              Iconsax.flash5,
+                              const Color(0xFFFFD700),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatListScreen()));
+                              },
                             ),
                           ],
                         ),
@@ -95,71 +182,28 @@ class ProfileDrawer extends StatelessWidget {
                 );
               },
             ),
-            const Divider(),
+
             Expanded(
               child: ListView(
-                padding: EdgeInsets.zero,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 children: [
                   const SizedBox(height: 10),
+
+                  // Account Section
+                  _buildSectionHeader(context, 'Account'),
                   _buildItem(
                     context,
-                    Iconsax.profile_circle,
+                    Iconsax.user,
                     'My Profile',
-                    color: const Color(0xFFFF4D85),
                     onTap: () {
-                      Navigator.pop(context); // Close drawer
+                      Navigator.pop(context);
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ProfileScreen()),
-                      );
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ProfileScreen()));
                     },
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Divider(height: 1),
-                  ),
-                  _buildGroup(
-                    context,
-                    Iconsax.activity,
-                    'My Activity',
-                    [
-                      _buildItem(context, Iconsax.heart_tick, 'Matches',
-                          color: const Color(0xFFFF4D85)),
-                      _buildItem(context, Iconsax.eye, 'Visitors'),
-                      _buildItem(context, Iconsax.heart5, 'Likes',
-                          color: const Color(0xFFFF4D85)),
-                      _buildItem(context, Iconsax.document_text, 'Blog'),
-                      _buildItem(context, Iconsax.video_circle, 'Live Videos'),
-                    ],
-                  ),
-                  _buildGroup(
-                    context,
-                    Iconsax.user_octagon,
-                    'Social',
-                    [
-                      _buildItem(context, Iconsax.discover_1, 'Explore People'),
-                      _buildItem(context, Iconsax.user_add, 'Friend Requests'),
-                      _buildItem(context, Iconsax.people, 'My People'),
-                    ],
-                  ),
-                  _buildGroup(
-                    context,
-                    Iconsax.wallet_2,
-                    'Finance',
-                    [
-                      _buildItem(context, Iconsax.ranking, 'Premium',
-                          color: const Color(0xFFFFD700)),
-                      _buildItem(context, Iconsax.gift, 'Gifts',
-                          color: Colors.purple.shade400),
-                      _buildItem(context, Iconsax.receipt_21, 'Transactions'),
-                      _buildItem(context, Iconsax.money_2, 'Credits'),
-                    ],
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Divider(height: 1),
-                  ),
+                  _buildItem(context, Iconsax.people, 'My People'),
                   _buildItem(
                     context,
                     Iconsax.setting_2,
@@ -167,34 +211,79 @@ class ProfileDrawer extends StatelessWidget {
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                      );
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const SettingsScreen()));
                     },
                   ),
+                  const SizedBox(height: 24),
+
+                  // Discovery Section
+                  _buildSectionHeader(context, 'Discovery'),
+                  _buildItem(context, Iconsax.discover_1, 'Explore People'),
+                  const SizedBox(height: 20),
+
+                  // Activity Section
+                  _buildSectionHeader(context, 'Activity'),
                   _buildItem(
                     context,
-                    context.read<ThemeProvider>().isDarkMode
-                        ? Iconsax.sun_1
-                        : Iconsax.moon,
-                    context.read<ThemeProvider>().isDarkMode
-                        ? 'Light Mode'
-                        : 'Night Mode',
+                    Iconsax.heart_tick,
+                    'Matches',
+                    color: const Color(0xFFFF4D85),
                     onTap: () {
-                      context.read<ThemeProvider>().toggleTheme();
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatListScreen()));
                     },
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Divider(height: 1),
                   ),
                   _buildItem(
                     context,
-                    Iconsax.logout,
-                    'Logout',
-                    color: Colors.red.shade400,
-                    onTap: () => _handleLogout(context),
+                    Iconsax.eye,
+                    'Visitors',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileViewersScreen()));
+                    },
                   ),
+                  _buildItem(context, Iconsax.document_text, 'Blog'),
+                  _buildItem(context, Iconsax.video_circle, 'Live Videos'),
+                  _buildItem(
+                    context,
+                    Iconsax.heart5,
+                    'Likes',
+                    color: const Color(0xFFFF4D85),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => LikesScreen()));
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Finance Section - Subscription & Credits
+                  _buildSectionHeader(context, 'Finance'),
+                  _buildItem(
+                    context,
+                    Iconsax.ranking,
+                    'Go Premium',
+                    color: const Color(0xFFFFD700),
+                    onTap: () {},
+                  ),
+                  _buildItem(context, Iconsax.wallet_2, 'My Credits'),
+                  _buildItem(context, Iconsax.gift, 'Gifts',
+                      color: Colors.purple.shade300),
+                  _buildItem(context, Iconsax.receipt_21, 'Transactions'),
+                  const SizedBox(height: 20),
+
+                  // Appearance Section
+                  _buildSectionHeader(context, 'Appearance'),
+                  _buildThemeToggle(context),
+                  const SizedBox(height: 20),
+
+                  // Support Section
+                  _buildSectionHeader(context, 'Support'),
+                  _buildItem(context, Iconsax.info_circle, 'About Us'),
+                  _buildItem(context, Iconsax.security_safe, 'Safety Tips'),
+                  const SizedBox(height: 32),
+                  _buildLogoutButton(context),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -205,50 +294,164 @@ class ProfileDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildGroup(BuildContext context, IconData icon, String title,
-      List<Widget> children) {
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        leading: Icon(icon,
-            color: Theme.of(context).iconTheme.color?.withOpacity(0.8),
-            size: 22),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.titleMedium?.color,
-            letterSpacing: 0.2,
-          ),
+  Widget _buildStatItem(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color color, {
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: onTap != null ? color.withOpacity(0.06) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
         ),
-        iconColor: const Color(0xFFFF4D85),
-        collapsedIconColor: Theme.of(context).hintColor.withOpacity(0.5),
-        childrenPadding: const EdgeInsets.only(left: 12, bottom: 8),
-        children: children,
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
+                color: color,
+              ),
+            ),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 12, bottom: 8, top: 8),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.5,
+          color: Theme.of(context).hintColor.withOpacity(0.6),
+        ),
       ),
     );
   }
 
   Widget _buildItem(BuildContext context, IconData icon, String title,
       {Color? color, VoidCallback? onTap}) {
-    return ListTile(
-      leading: Icon(icon,
-          color: color ?? Theme.of(context).iconTheme.color?.withOpacity(0.7),
-          size: 22),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: Theme.of(context).textTheme.bodyMedium?.color,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withOpacity(0.03)
+            : Colors.black.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.05)
+              : Colors.black.withOpacity(0.05),
         ),
       ),
-      dense: true,
-      visualDensity: VisualDensity.compact,
-      onTap: onTap ?? () {},
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ListTile(
+        onTap: onTap,
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: (color ?? const Color(0xFFFF4D85)).withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon,
+              color: color ?? Theme.of(context).iconTheme.color, size: 20),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+        trailing: Icon(Icons.arrow_forward_ios,
+            size: 12, color: Theme.of(context).hintColor.withOpacity(0.5)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        visualDensity: VisualDensity.compact,
+      ),
+    );
+  }
+
+  Widget _buildThemeToggle(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final isDark = themeProvider.isDarkMode;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).dividerColor.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(isDark ? Iconsax.moon : Iconsax.sun_1, size: 22),
+              const SizedBox(width: 12),
+              Text(
+                isDark ? 'Dark Mode' : 'Light Mode',
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          Switch.adaptive(
+            value: isDark,
+            activeColor: const Color(0xFFFF4D85),
+            onChanged: (_) => themeProvider.toggleTheme(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      child: ListTile(
+        onTap: () => _handleLogout(context),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.redAccent.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Iconsax.logout, color: Colors.redAccent, size: 20),
+        ),
+        title: const Text(
+          'Logout',
+          style: TextStyle(
+              color: Colors.redAccent,
+              fontSize: 15,
+              fontWeight: FontWeight.w800),
+        ),
+        subtitle: const Text('Sign out of your account',
+            style: TextStyle(fontSize: 12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.redAccent.withOpacity(0.2)),
+        ),
+        tileColor: Colors.redAccent.withOpacity(0.05),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      ),
     );
   }
 }

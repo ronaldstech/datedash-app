@@ -14,10 +14,15 @@ class ProfileProvider with ChangeNotifier {
   StreamSubscription<UserProfile?>? _profileSubscription;
   int _currentTabIndex = 0;
   int _likesCount = 0;
+  int _visitorsCount = 0;
+  int _matchesCount = 0;
   int _unreadMessageCount = 0;
-  int _swipesVersion = 0; // increments on each reset to signal SwipeView
+  int _swipesVersion = 0;
   StreamSubscription<int>? _likesCountSubscription;
+  StreamSubscription<int>? _visitorsCountSubscription;
+  StreamSubscription<int>? _matchesCountSubscription;
   StreamSubscription<int>? _unreadMessageCountSubscription;
+  double _swipeOffset = 0.0;
 
   ProfileProvider() {
     _userSubscription = FirebaseAuth.instance.userChanges().listen((user) {
@@ -40,6 +45,22 @@ class ProfileProvider with ChangeNotifier {
           notifyListeners();
         });
 
+        _visitorsCountSubscription?.cancel();
+        _visitorsCountSubscription = _profileService
+            .getViewCountStream(user.uid)
+            .listen((count) {
+          _visitorsCount = count;
+          notifyListeners();
+        });
+
+        _matchesCountSubscription?.cancel();
+        _matchesCountSubscription = _profileService
+            .getMatchesCountStream(user.uid)
+            .listen((count) {
+          _matchesCount = count;
+          notifyListeners();
+        });
+
         _unreadMessageCountSubscription?.cancel();
         _unreadMessageCountSubscription = _chatService
             .getUnreadMessageCountStream(user.uid)
@@ -50,8 +71,12 @@ class ProfileProvider with ChangeNotifier {
       } else {
         _userProfile = null;
         _likesCount = 0;
+        _visitorsCount = 0;
+        _matchesCount = 0;
         _unreadMessageCount = 0;
         _likesCountSubscription?.cancel();
+        _visitorsCountSubscription?.cancel();
+        _matchesCountSubscription?.cancel();
         _unreadMessageCountSubscription?.cancel();
         notifyListeners();
       }
@@ -62,8 +87,11 @@ class ProfileProvider with ChangeNotifier {
   User? get currentUser => _currentUser;
   int get currentTabIndex => _currentTabIndex;
   int get likesCount => _likesCount;
+  int get visitorsCount => _visitorsCount;
+  int get matchesCount => _matchesCount;
   int get unreadMessageCount => _unreadMessageCount;
   int get swipesVersion => _swipesVersion;
+  double get swipeOffset => _swipeOffset;
 
   void setTabIndex(int index) {
     _currentTabIndex = index;
@@ -76,6 +104,16 @@ class ProfileProvider with ChangeNotifier {
     if (uid == null) return;
     await _profileService.resetSwipes(uid);
     _swipesVersion++;
+    notifyListeners();
+  }
+
+  void updateSwipeOffset(double offset) {
+    _swipeOffset = offset;
+    notifyListeners();
+  }
+
+  void resetSwipeOffset() {
+    _swipeOffset = 0.0;
     notifyListeners();
   }
 
@@ -105,6 +143,8 @@ class ProfileProvider with ChangeNotifier {
     _userSubscription?.cancel();
     _profileSubscription?.cancel();
     _likesCountSubscription?.cancel();
+    _visitorsCountSubscription?.cancel();
+    _matchesCountSubscription?.cancel();
     _unreadMessageCountSubscription?.cancel();
     super.dispose();
   }

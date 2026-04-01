@@ -9,6 +9,7 @@ import 'theme/app_theme.dart';
 import 'theme/theme_provider.dart';
 import 'providers/profile_provider.dart';
 import 'services/chat_service.dart';
+import 'widgets/call_listener_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +36,7 @@ class DateDashApp extends StatefulWidget {
 
 class _DateDashAppState extends State<DateDashApp> with WidgetsBindingObserver {
   final ChatService _chatService = ChatService();
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
@@ -72,10 +74,15 @@ class _DateDashAppState extends State<DateDashApp> with WidgetsBindingObserver {
     final themeProvider = context.watch<ThemeProvider>();
 
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'DateDash',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeProvider.themeMode,
+      builder: (context, child) => CallListenerWrapper(
+        navigatorKey: _navigatorKey,
+        child: child!,
+      ),
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {

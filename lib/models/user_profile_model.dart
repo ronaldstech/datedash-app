@@ -128,8 +128,10 @@ class UserProfile {
 
   /// Returns a human-readable distance between this profile and the current user.
   String getDistanceDisplay(UserProfile? currentUserProfile) {
-    // If the swiped user has hidden their distance, don't show it
-    if (!showDistance) return location ?? 'Somewhere';
+    // If the swiped user has hidden their distance, OR if the viewer has hidden theirs, don't show it
+    if (!showDistance || (currentUserProfile != null && !currentUserProfile.showDistance)) {
+      return location ?? 'Somewhere';
+    }
 
     if (currentUserProfile == null ||
         latitude == null ||
@@ -157,6 +159,33 @@ class UserProfile {
     } catch (e) {
       return location ?? 'Somewhere';
     }
+  }
+
+  /// Returns a list of shared interests between this profile and another.
+  List<String> getCommonInterests(UserProfile other) {
+    List<String> common = [];
+    
+    // Check Hobbies
+    for (var h in hobbies) {
+      if (other.hobbies.contains(h)) common.add(h);
+    }
+    
+    // Check Music
+    for (var m in musicGenres) {
+      if (other.musicGenres.contains(m)) common.add(m);
+    }
+    
+    // Check Movies
+    for (var ms in moviesShows) {
+      if (other.moviesShows.contains(ms)) common.add(ms);
+    }
+    
+    // Check Weekend Activities
+    for (var wa in weekendActivities) {
+      if (other.weekendActivities.contains(wa)) common.add(wa);
+    }
+    
+    return common;
   }
 
   factory UserProfile.empty() {

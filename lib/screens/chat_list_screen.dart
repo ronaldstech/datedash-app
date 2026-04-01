@@ -6,6 +6,7 @@ import '../models/user_profile_model.dart';
 import '../services/chat_service.dart';
 import '../services/profile_service.dart';
 import 'chat_screen.dart';
+import '../widgets/bordered_search_bar.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -78,14 +79,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       size: 24,
                     ),
                   ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      Iconsax.notification,
-                      color: Theme.of(context).iconTheme.color?.withOpacity(0.7),
-                      size: 24,
-                    ),
-                  ),
+                  const BorderedSearchBar(),
                   const SizedBox(width: 8),
                 ],
               ),
@@ -171,7 +165,91 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   ),
                 ),
 
-              // Section header
+              // Section header: New Matches
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  child: Text(
+                    'New Matches',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ),
+
+              // New Matches Horizontal List
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 110,
+                  child: StreamBuilder<List<UserProfile>>(
+                    stream: _profileService.getMatchesStream(myUid),
+                    builder: (context, snapshot) {
+                      final matches = snapshot.data ?? [];
+                      if (matches.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Center(
+                            child: Text(
+                              'No matches yet. Keep swiping!',
+                              style: TextStyle(color: Theme.of(context).hintColor, fontSize: 13),
+                            ),
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: matches.length,
+                        itemBuilder: (context, index) {
+                          final match = matches[index];
+                          final photo = match.photos.isNotEmpty ? match.photos.first : null;
+                          return GestureDetector(
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ChatScreen(
+                                    otherUserId: match.uid!,
+                                    otherUserName: match.firstName ?? 'User',
+                                    otherUserPhoto: photo,
+                                  ),
+                                ),
+                              );
+                              setState(() {});
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: Column(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 34,
+                                    backgroundColor: const Color(0xFFFF4D85).withOpacity(0.15),
+                                    backgroundImage: photo != null ? NetworkImage(photo) : null,
+                                    child: photo == null
+                                        ? const Icon(Iconsax.user, color: Color(0xFFFF4D85), size: 28)
+                                        : null,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    match.firstName ?? 'User',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              // Section header: Messages
               if (chats.isNotEmpty)
                 const SliverToBoxAdapter(
                   child: Padding(
