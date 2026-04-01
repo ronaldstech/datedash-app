@@ -1,6 +1,4 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +9,6 @@ import '../services/chat_service.dart';
 import '../widgets/profile_detail_sheet.dart';
 import '../widgets/action_button.dart';
 import 'chat_screen.dart';
-import 'edit_profile_screen.dart';
 
 class CategoryProfilesScreen extends StatefulWidget {
   final String category;
@@ -42,7 +39,8 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
       duration: const Duration(milliseconds: 400),
     );
     _swipeAnimation = Tween<Offset>(begin: Offset.zero, end: Offset.zero)
-        .animate(CurvedAnimation(parent: _swipeController, curve: Curves.easeOutBack));
+        .animate(CurvedAnimation(
+            parent: _swipeController, curve: Curves.easeOutBack));
     _loadProfiles();
   }
 
@@ -57,8 +55,14 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
     if (uid == null) return;
     setState(() => _isLoading = true);
     try {
-      final profiles = await _profileService.getSwipeProfilesByCategory(uid, widget.category);
-      if (mounted) setState(() { _profiles = profiles; _isLoading = false; });
+      final profiles = await _profileService.getSwipeProfilesByCategory(
+          uid, widget.category);
+      if (mounted) {
+        setState(() {
+          _profiles = profiles;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -94,8 +98,8 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
     final endOffset = direction == 'right'
         ? Offset(screenWidth * 1.5, _dragOffset.dy)
         : Offset(-screenWidth * 1.5, _dragOffset.dy);
-    _swipeAnimation = Tween<Offset>(begin: _dragOffset, end: endOffset)
-        .animate(CurvedAnimation(parent: _swipeController, curve: Curves.easeOut));
+    _swipeAnimation = Tween<Offset>(begin: _dragOffset, end: endOffset).animate(
+        CurvedAnimation(parent: _swipeController, curve: Curves.easeOut));
     _swipeController.forward(from: 0).then((_) {
       _onSwipeComplete(direction);
       _swipeController.reset();
@@ -104,9 +108,13 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
 
   void _resetPosition() {
     _swipeAnimation = Tween<Offset>(begin: _dragOffset, end: Offset.zero)
-        .animate(CurvedAnimation(parent: _swipeController, curve: Curves.easeOutBack));
+        .animate(CurvedAnimation(
+            parent: _swipeController, curve: Curves.easeOutBack));
     _swipeController.forward(from: 0).then((_) {
-      setState(() { _dragOffset = Offset.zero; _swipeController.reset(); });
+      setState(() {
+        _dragOffset = Offset.zero;
+        _swipeController.reset();
+      });
     });
   }
 
@@ -126,7 +134,8 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(widget.category,
-            style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white)),
+            style: const TextStyle(
+                fontWeight: FontWeight.w900, color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
         leading: IconButton(
           icon: const Icon(Iconsax.arrow_left_2),
@@ -135,7 +144,8 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
       ),
       extendBodyBehindAppBar: true,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFFF4D85)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFFF4D85)))
           : _profiles.isEmpty
               ? _buildEmpty()
               : _buildSwipeLayout(),
@@ -149,25 +159,33 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Iconsax.user_search, size: 64, color: Colors.white.withOpacity(0.4)),
+            Icon(Iconsax.user_search,
+                size: 64, color: Colors.white.withOpacity(0.4)),
             const SizedBox(height: 20),
             Text('No one in ${widget.category} yet',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800)),
             const SizedBox(height: 12),
             Text('Try another category or come back later.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14)),
+                style: TextStyle(
+                    color: Colors.white.withOpacity(0.6), fontSize: 14)),
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: _loadProfiles,
               style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF4D85),
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20))),
               icon: const Icon(Iconsax.refresh, color: Colors.white),
-              label: const Text('Refresh', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+              label: const Text('Refresh',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w700)),
             ),
           ],
         ),
@@ -181,8 +199,12 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
     final nextProfile = hasNext ? _profiles[_currentIndex + 1] : null;
     final photos = profile.photos.isNotEmpty
         ? profile.photos
-        : ['https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800'];
-    final photoUrl = _currentPhotoIndex < photos.length ? photos[_currentPhotoIndex] : photos.first;
+        : [
+            'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800'
+          ];
+    final photoUrl = _currentPhotoIndex < photos.length
+        ? photos[_currentPhotoIndex]
+        : photos.first;
 
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 0),
@@ -192,10 +214,13 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
             child: AnimatedBuilder(
               animation: _swipeController,
               builder: (context, _) {
-                final offset = _swipeController.isAnimating ? _swipeAnimation.value : _dragOffset;
+                final offset = _swipeController.isAnimating
+                    ? _swipeAnimation.value
+                    : _dragOffset;
                 final screenWidth = MediaQuery.of(context).size.width;
                 final angle = (offset.dx / screenWidth) * 0.45;
-                final dragFraction = (_dragOffset.dx.abs() / screenWidth).clamp(0.0, 1.0);
+                final dragFraction =
+                    (_dragOffset.dx.abs() / screenWidth).clamp(0.0, 1.0);
                 final backScale = 0.95 + 0.05 * dragFraction;
                 final backOpacity = 0.7 + 0.3 * dragFraction;
                 final backOffset = Offset(0, 12 - 12 * dragFraction);
@@ -213,7 +238,9 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                               opacity: backOpacity.clamp(0.0, 1.0),
                               child: _buildCard(
                                 nextProfile!,
-                                nextProfile.photos.isNotEmpty ? nextProfile.photos.first : photos.first,
+                                nextProfile.photos.isNotEmpty
+                                    ? nextProfile.photos.first
+                                    : photos.first,
                                 nextProfile.photos.length,
                                 isBackCard: true,
                               ),
@@ -229,9 +256,13 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                         },
                         onPanEnd: (details) {
                           if (_isAnimating) return;
-                          if (_dragOffset.dx > 120) _runSwipeAnimation('right');
-                          else if (_dragOffset.dx < -120) _runSwipeAnimation('left');
-                          else _resetPosition();
+                          if (_dragOffset.dx > 120) {
+                            _runSwipeAnimation('right');
+                          } else if (_dragOffset.dx < -120) {
+                            _runSwipeAnimation('left');
+                          } else {
+                            _resetPosition();
+                          }
                         },
                         child: Transform.translate(
                           offset: offset,
@@ -240,26 +271,35 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                             child: Stack(
                               children: [
                                 _buildCard(profile, photoUrl, photos.length,
-                                    onNextPhoto: () => _nextPhoto(photos.length),
+                                    onNextPhoto: () =>
+                                        _nextPhoto(photos.length),
                                     onPrevPhoto: _prevPhoto),
                                 // LIKE/NOPE stamps
                                 IgnorePointer(
                                   child: Stack(children: [
                                     Positioned(
-                                      top: 80, left: 24,
-                                      child: Transform.rotate(angle: -0.35,
+                                      top: 80,
+                                      left: 24,
+                                      child: Transform.rotate(
+                                        angle: -0.35,
                                         child: Opacity(
-                                          opacity: (offset.dx / 100).clamp(0.0, 1.0),
-                                          child: _buildStamp('LIKE', const Color(0xFF00D68F)),
+                                          opacity:
+                                              (offset.dx / 100).clamp(0.0, 1.0),
+                                          child: _buildStamp(
+                                              'LIKE', const Color(0xFF00D68F)),
                                         ),
                                       ),
                                     ),
                                     Positioned(
-                                      top: 80, right: 24,
-                                      child: Transform.rotate(angle: 0.35,
+                                      top: 80,
+                                      right: 24,
+                                      child: Transform.rotate(
+                                        angle: 0.35,
                                         child: Opacity(
-                                          opacity: (-offset.dx / 100).clamp(0.0, 1.0),
-                                          child: _buildStamp('NOPE', const Color(0xFFFF5E5E)),
+                                          opacity: (-offset.dx / 100)
+                                              .clamp(0.0, 1.0),
+                                          child: _buildStamp(
+                                              'NOPE', const Color(0xFFFF5E5E)),
                                         ),
                                       ),
                                     ),
@@ -285,13 +325,18 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
   }
 
   Widget _buildCard(UserProfile profile, String photoUrl, int totalPhotos,
-      {bool isBackCard = false, VoidCallback? onNextPhoto, VoidCallback? onPrevPhoto}) {
+      {bool isBackCard = false,
+      VoidCallback? onNextPhoto,
+      VoidCallback? onPrevPhoto}) {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 32, offset: const Offset(0, 16)),
+          BoxShadow(
+              color: Colors.black.withOpacity(0.4),
+              blurRadius: 32,
+              offset: const Offset(0, 16)),
         ],
       ),
       child: Stack(
@@ -305,45 +350,77 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
-                errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFF1A1A2E)),
-                loadingBuilder: (_, child, progress) =>
-                    progress == null ? child : const ColoredBox(color: Color(0xFF1A1A2E))),
+                errorBuilder: (_, __, ___) =>
+                    const ColoredBox(color: Color(0xFF1A1A2E)),
+                loadingBuilder: (_, child, progress) => progress == null
+                    ? child
+                    : const ColoredBox(color: Color(0xFF1A1A2E))),
           ),
           // Gradients
-          IgnorePointer(child: Container(decoration: const BoxDecoration(
-            gradient: LinearGradient(colors: [Color(0xCC000000), Colors.transparent],
-                begin: Alignment.topCenter, end: Alignment.center)))),
-          IgnorePointer(child: Container(decoration: const BoxDecoration(
-            gradient: LinearGradient(colors: [Colors.transparent, Color(0xDD000000), Color(0xF5000000)],
-                begin: Alignment.center, end: Alignment.bottomCenter, stops: [0, 0.65, 1])))),
+          IgnorePointer(
+              child: Container(
+                  decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                          colors: [Color(0xCC000000), Colors.transparent],
+                          begin: Alignment.topCenter,
+                          end: Alignment.center)))),
+          IgnorePointer(
+              child: Container(
+                  decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                          colors: [
+                            Colors.transparent,
+                            Color(0xDD000000),
+                            Color(0xF5000000)
+                          ],
+                          begin: Alignment.center,
+                          end: Alignment.bottomCenter,
+                          stops: [0, 0.65, 1])))),
           // Photo tap areas
           if (!isBackCard && onNextPhoto != null && onPrevPhoto != null)
             Positioned.fill(
               child: Row(children: [
-                Expanded(child: GestureDetector(onTap: onPrevPhoto, behavior: HitTestBehavior.opaque, child: const SizedBox.expand())),
-                Expanded(child: GestureDetector(onTap: onNextPhoto, behavior: HitTestBehavior.opaque, child: const SizedBox.expand())),
+                Expanded(
+                    child: GestureDetector(
+                        onTap: onPrevPhoto,
+                        behavior: HitTestBehavior.opaque,
+                        child: const SizedBox.expand())),
+                Expanded(
+                    child: GestureDetector(
+                        onTap: onNextPhoto,
+                        behavior: HitTestBehavior.opaque,
+                        child: const SizedBox.expand())),
               ]),
             ),
           // Photo indicators
           Positioned(
-            top: 14, left: 14, right: 14,
-            child: IgnorePointer(child: Row(
-              children: List.generate(totalPhotos, (i) => Expanded(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  height: i == _currentPhotoIndex ? 4 : 3,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  decoration: BoxDecoration(
-                    color: i == _currentPhotoIndex ? Colors.white : Colors.white.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              )),
+            top: 14,
+            left: 14,
+            right: 14,
+            child: IgnorePointer(
+                child: Row(
+              children: List.generate(
+                  totalPhotos,
+                  (i) => Expanded(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          height: i == _currentPhotoIndex ? 4 : 3,
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                          decoration: BoxDecoration(
+                            color: i == _currentPhotoIndex
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      )),
             )),
           ),
           // Bottom info
           Positioned(
-            bottom: 0, left: 0, right: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(22, 0, 22, 16),
               child: Column(
@@ -351,35 +428,52 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Flexible(child: Text(
+                    Flexible(
+                        child: Text(
                       '${profile.firstName ?? 'Someone'},',
-                      style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.w900, letterSpacing: -1, height: 1.1),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 34,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -1,
+                          height: 1.1),
                       overflow: TextOverflow.ellipsis,
                     )),
                     const SizedBox(width: 8),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text('${profile.age ?? '??'}',
-                          style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 26, fontWeight: FontWeight.w500)),
+                          style: TextStyle(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: 26,
+                              fontWeight: FontWeight.w500)),
                     ),
                     if (profile.isVerified) ...[
                       const SizedBox(width: 6),
-                      const Icon(Icons.verified_rounded, color: Color(0xFF4FC3F7), size: 22),
+                      const Icon(Icons.verified_rounded,
+                          color: Color(0xFF4FC3F7), size: 22),
                     ],
                   ]),
                   if (profile.location != null) ...[
                     const SizedBox(height: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withOpacity(0.2)),
+                        border:
+                            Border.all(color: Colors.white.withOpacity(0.2)),
                       ),
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        const Icon(Iconsax.location, color: Colors.white70, size: 12),
+                        const Icon(Iconsax.location,
+                            color: Colors.white70, size: 12),
                         const SizedBox(width: 4),
-                        Text(profile.location!, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                        Text(profile.location!,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600)),
                       ]),
                     ),
                   ],
@@ -388,18 +482,26 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                     GestureDetector(
                       onTap: () => _showProfileDetails(profile),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 7),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.10),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                          border:
+                              Border.all(color: Colors.white.withOpacity(0.2)),
                         ),
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          const Icon(Iconsax.user, color: Colors.white70, size: 13),
+                          const Icon(Iconsax.user,
+                              color: Colors.white70, size: 13),
                           const SizedBox(width: 6),
-                          Text('View Profile', style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 12, fontWeight: FontWeight.w700)),
+                          Text('View Profile',
+                              style: TextStyle(
+                                  color: Colors.white.withOpacity(0.85),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700)),
                           const SizedBox(width: 4),
-                          Icon(Icons.arrow_forward_ios_rounded, color: Colors.white.withOpacity(0.6), size: 10),
+                          Icon(Icons.arrow_forward_ios_rounded,
+                              color: Colors.white.withOpacity(0.6), size: 10),
                         ]),
                       ),
                     ),
@@ -445,21 +547,36 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
         boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 16)],
       ),
       child: Text(text,
-          style: TextStyle(color: color, fontSize: 36, fontWeight: FontWeight.w900, letterSpacing: 3,
-              shadows: [Shadow(color: color.withOpacity(0.5), blurRadius: 12)])),
+          style: TextStyle(
+              color: color,
+              fontSize: 36,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 3,
+              shadows: [
+                Shadow(color: color.withOpacity(0.5), blurRadius: 12)
+              ])),
     );
   }
 
   void _showProfileDetails(UserProfile profile) {
     showModalBottomSheet(
-      context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => ProfileDetailSheet(
         profile: profile,
-        onLike: () { Navigator.pop(context); _runSwipeAnimation('right'); },
-        onDislike: () { Navigator.pop(context); _runSwipeAnimation('left'); },
+        onLike: () {
+          Navigator.pop(context);
+          _runSwipeAnimation('right');
+        },
+        onDislike: () {
+          Navigator.pop(context);
+          _runSwipeAnimation('left');
+        },
         onMessage: () async {
           if (!profile.allowMessages) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('This user has disabled direct messaging.')));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('This user has disabled direct messaging.')));
             return;
           }
           Navigator.pop(context);
@@ -467,13 +584,16 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
           if (myUid == null || profile.uid == null) return;
           await ChatService().getOrCreateChat(myUid, profile.uid!);
           if (mounted) {
-            Navigator.push(this.context, MaterialPageRoute(
-              builder: (_) => ChatScreen(
-                otherUserId: profile.uid!,
-                otherUserName: profile.firstName ?? 'User',
-                otherUserPhoto: profile.photos.isNotEmpty ? profile.photos.first : null,
-              ),
-            ));
+            Navigator.push(
+                this.context,
+                MaterialPageRoute(
+                  builder: (_) => ChatScreen(
+                    otherUserId: profile.uid!,
+                    otherUserName: profile.firstName ?? 'User',
+                    otherUserPhoto:
+                        profile.photos.isNotEmpty ? profile.photos.first : null,
+                  ),
+                ));
           }
         },
       ),
