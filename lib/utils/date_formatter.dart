@@ -1,18 +1,20 @@
+import '../providers/language_provider.dart';
+
 class DateFormatter {
-  static String format(DateTime dateTime) {
+  static String format(DateTime dateTime, LanguageProvider lp) {
     final DateTime now = DateTime.now();
     final Duration diff = now.difference(dateTime);
 
     if (diff.inSeconds < 60) {
-      return 'Just now';
+      return lp.getString('just_now');
     } else if (diff.inMinutes < 60) {
-      return '${diff.inMinutes} min ago';
+      return lp.getString('min_ago').replaceAll('{n}', diff.inMinutes.toString());
     } else if (diff.inHours < 24) {
-      return '${diff.inHours} hr ago';
+      return lp.getString('hr_ago').replaceAll('{n}', diff.inHours.toString());
     } else if (diff.inDays == 1 || (now.day != dateTime.day && diff.inHours < 48)) {
-      return 'Yesterday';
+      return lp.getString('yesterday');
     } else if (diff.inDays < 7) {
-      return '${diff.inDays} days ago';
+      return lp.getString('days_ago').replaceAll('{n}', diff.inDays.toString());
     } else {
       final months = [
         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -23,16 +25,16 @@ class DateFormatter {
     }
   }
 
-  static String formatDateDivider(DateTime dateTime) {
+  static String formatDateDivider(DateTime dateTime, LanguageProvider lp) {
     final DateTime now = DateTime.now();
     final DateTime today = DateTime(now.year, now.month, now.day);
     final DateTime yesterday = today.subtract(const Duration(days: 1));
     final DateTime msgDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
 
     if (msgDate == today) {
-      return 'Today';
+      return lp.getString('today');
     } else if (msgDate == yesterday) {
-      return 'Yesterday';
+      return lp.getString('yesterday');
     } else {
       final months = [
         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

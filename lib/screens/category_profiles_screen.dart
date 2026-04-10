@@ -6,6 +6,7 @@ import '../models/user_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../services/profile_service.dart';
 import '../services/chat_service.dart';
+import '../providers/language_provider.dart';
 import '../widgets/profile_detail_sheet.dart';
 import '../widgets/action_button.dart';
 import 'chat_screen.dart';
@@ -35,9 +36,7 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
   void initState() {
     super.initState();
     _swipeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
+        vsync: this, duration: const Duration(milliseconds: 400));
     _swipeAnimation = Tween<Offset>(begin: Offset.zero, end: Offset.zero)
         .animate(CurvedAnimation(
             parent: _swipeController, curve: Curves.easeOutBack));
@@ -65,6 +64,29 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
       }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String _getLocalizedCategoryName(String key, LanguageProvider lp) {
+    switch (key) {
+      case 'Long Term':
+        return lp.getString('cat_long_term');
+      case 'Hookups':
+        return lp.getString('cat_hookups');
+      case 'Short Term Fun':
+        return lp.getString('cat_short_term');
+      case 'New Friends':
+        return lp.getString('cat_new_friends');
+      case 'Coffee Date':
+        return lp.getString('cat_coffee_date');
+      case 'Movie Night':
+        return lp.getString('cat_movie_night');
+      case 'Fitness Duo':
+        return lp.getString('cat_fitness_duo');
+      case 'Gaming Duo':
+        return lp.getString('cat_gaming_duo');
+      default:
+        return key;
     }
   }
 
@@ -128,12 +150,13 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(widget.category,
+        title: Text(_getLocalizedCategoryName(widget.category, languageProvider),
             style: const TextStyle(
                 fontWeight: FontWeight.w900, color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -147,12 +170,12 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
           ? const Center(
               child: CircularProgressIndicator(color: Color(0xFFFF4D85)))
           : _profiles.isEmpty
-              ? _buildEmpty()
-              : _buildSwipeLayout(),
+              ? _buildEmpty(languageProvider)
+              : _buildSwipeLayout(languageProvider),
     );
   }
 
-  Widget _buildEmpty() {
+  Widget _buildEmpty(LanguageProvider lp) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -162,14 +185,15 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
             Icon(Iconsax.user_search,
                 size: 64, color: Colors.white.withOpacity(0.4)),
             const SizedBox(height: 20),
-            Text('No one in ${widget.category} yet',
+            Text(
+                'No one in ${_getLocalizedCategoryName(widget.category, lp)} yet',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.w800)),
             const SizedBox(height: 12),
-            Text('Try another category or come back later.',
+            Text(lp.getString('try_different_search'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: Colors.white.withOpacity(0.6), fontSize: 14)),
@@ -183,8 +207,8 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20))),
               icon: const Icon(Iconsax.refresh, color: Colors.white),
-              label: const Text('Refresh',
-                  style: TextStyle(
+              label: Text(lp.getString('retry_button'),
+                  style: const TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w700)),
             ),
           ],
@@ -193,7 +217,7 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
     );
   }
 
-  Widget _buildSwipeLayout() {
+  Widget _buildSwipeLayout(LanguageProvider lp) {
     final hasNext = _currentIndex < _profiles.length - 1;
     final profile = _profiles[_currentIndex];
     final nextProfile = hasNext ? _profiles[_currentIndex + 1] : null;
@@ -242,6 +266,7 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                                     ? nextProfile.photos.first
                                     : photos.first,
                                 nextProfile.photos.length,
+                                lp,
                                 isBackCard: true,
                               ),
                             ),
@@ -270,11 +295,10 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                             angle: angle,
                             child: Stack(
                               children: [
-                                _buildCard(profile, photoUrl, photos.length,
+                                _buildCard(profile, photoUrl, photos.length, lp,
                                     onNextPhoto: () =>
                                         _nextPhoto(photos.length),
                                     onPrevPhoto: _prevPhoto),
-                                // LIKE/NOPE stamps
                                 IgnorePointer(
                                   child: Stack(children: [
                                     Positioned(
@@ -286,7 +310,8 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                                           opacity:
                                               (offset.dx / 100).clamp(0.0, 1.0),
                                           child: _buildStamp(
-                                              'LIKE', const Color(0xFF00D68F)),
+                                              lp.getString('like_stamp'),
+                                              const Color(0xFF00D68F)),
                                         ),
                                       ),
                                     ),
@@ -299,7 +324,8 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                                           opacity: (-offset.dx / 100)
                                               .clamp(0.0, 1.0),
                                           child: _buildStamp(
-                                              'NOPE', const Color(0xFFFF5E5E)),
+                                              lp.getString('nope_stamp'),
+                                              const Color(0xFFFF5E5E)),
                                         ),
                                       ),
                                     ),
@@ -317,7 +343,7 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
             ),
           ),
           const SizedBox(height: 16),
-          _buildActionRow(),
+          _buildActionRow(lp),
           SizedBox(height: 16 + MediaQuery.of(context).padding.bottom),
         ],
       ),
@@ -325,6 +351,7 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
   }
 
   Widget _buildCard(UserProfile profile, String photoUrl, int totalPhotos,
+      LanguageProvider lp,
       {bool isBackCard = false,
       VoidCallback? onNextPhoto,
       VoidCallback? onPrevPhoto}) {
@@ -356,7 +383,6 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                     ? child
                     : const ColoredBox(color: Color(0xFF1A1A2E))),
           ),
-          // Gradients
           IgnorePointer(
               child: Container(
                   decoration: const BoxDecoration(
@@ -376,7 +402,6 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                           begin: Alignment.center,
                           end: Alignment.bottomCenter,
                           stops: [0, 0.65, 1])))),
-          // Photo tap areas
           if (!isBackCard && onNextPhoto != null && onPrevPhoto != null)
             Positioned.fill(
               child: Row(children: [
@@ -392,7 +417,6 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                         child: const SizedBox.expand())),
               ]),
             ),
-          // Photo indicators
           Positioned(
             top: 14,
             left: 14,
@@ -416,7 +440,6 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                       )),
             )),
           ),
-          // Bottom info
           Positioned(
             bottom: 0,
             left: 0,
@@ -430,7 +453,7 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                   Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
                     Flexible(
                         child: Text(
-                      '${profile.firstName ?? 'Someone'},',
+                      '${profile.firstName ?? lp.getString('someone_fallback')},',
                       style: const TextStyle(
                           color: Colors.white,
                           fontSize: 34,
@@ -480,7 +503,7 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                   if (!isBackCard) ...[
                     const SizedBox(height: 10),
                     GestureDetector(
-                      onTap: () => _showProfileDetails(profile),
+                      onTap: () => _showProfileDetails(profile, lp),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 7),
@@ -494,7 +517,7 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                           const Icon(Iconsax.user,
                               color: Colors.white70, size: 13),
                           const SizedBox(width: 6),
-                          Text('View Profile',
+                          Text(lp.getString('view_profile'),
                               style: TextStyle(
                                   color: Colors.white.withOpacity(0.85),
                                   fontSize: 12,
@@ -515,7 +538,7 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
     );
   }
 
-  Widget _buildActionRow() {
+  Widget _buildActionRow(LanguageProvider lp) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -524,14 +547,14 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
           color: const Color(0xFFFF5E5E),
           onTap: () => _runSwipeAnimation('left'),
           size: 64,
-          label: 'Pass',
+          label: lp.getString('pass'),
         ),
         ActionButton(
           svgAsset: 'assets/images/like.svg',
           color: const Color(0xFF00C853),
           onTap: () => _runSwipeAnimation('right'),
           size: 64,
-          label: 'Like',
+          label: lp.getString('like'),
         ),
       ],
     );
@@ -558,7 +581,7 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
     );
   }
 
-  void _showProfileDetails(UserProfile profile) {
+  void _showProfileDetails(UserProfile profile, LanguageProvider lp) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -575,8 +598,8 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
         },
         onMessage: () async {
           if (!profile.allowMessages) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('This user has disabled direct messaging.')));
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(lp.getString('messages_disabled_snack'))));
             return;
           }
           Navigator.pop(context);
@@ -589,7 +612,7 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                 MaterialPageRoute(
                   builder: (_) => ChatScreen(
                     otherUserId: profile.uid!,
-                    otherUserName: profile.firstName ?? 'User',
+                    otherUserName: profile.firstName ?? lp.getString('user_fallback'),
                     otherUserPhoto:
                         profile.photos.isNotEmpty ? profile.photos.first : null,
                   ),

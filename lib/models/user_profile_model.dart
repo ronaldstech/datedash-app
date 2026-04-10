@@ -18,7 +18,7 @@ class UserProfile {
   // ❤️ Personal Details
   String? height;
   String? bodyType;
-  String? ethnicity;
+  String? relationshipStatus;
   String? religion;
   List<String> languages;
 
@@ -78,7 +78,7 @@ class UserProfile {
     this.bio,
     this.height,
     this.bodyType,
-    this.ethnicity,
+    this.relationshipStatus,
     this.religion,
     this.languages = const [],
     this.smoking,
@@ -204,7 +204,7 @@ class UserProfile {
         bio: map['bio']?.toString(),
         height: map['height']?.toString(),
         bodyType: map['bodyType']?.toString(),
-        ethnicity: map['ethnicity']?.toString(),
+        relationshipStatus: map['relationshipStatus']?.toString(),
         religion: map['religion']?.toString(),
         languages: _parseList(map['languages']),
         smoking: map['smoking']?.toString(),
@@ -283,7 +283,7 @@ class UserProfile {
       'bio': bio,
       'height': height,
       'bodyType': bodyType,
-      'ethnicity': ethnicity,
+      'relationshipStatus': relationshipStatus,
       'religion': religion,
       'languages': languages,
       'smoking': smoking,
@@ -337,7 +337,7 @@ class UserProfile {
 
     if (height != null && height!.isNotEmpty) filledFields++;
     if (bodyType != null && bodyType!.isNotEmpty) filledFields++;
-    if (ethnicity != null && ethnicity!.isNotEmpty) filledFields++;
+    if (relationshipStatus != null && relationshipStatus!.isNotEmpty) filledFields++;
     if (religion != null && religion!.isNotEmpty) filledFields++;
     if (languages.isNotEmpty) filledFields++;
 
@@ -389,7 +389,7 @@ class UserProfile {
         // Page 2: Personal Details
         return (height?.isNotEmpty ?? false) ||
             (bodyType?.isNotEmpty ?? false) ||
-            (ethnicity?.isNotEmpty ?? false) ||
+            (relationshipStatus?.isNotEmpty ?? false) ||
             (religion?.isNotEmpty ?? false) ||
             languages.isNotEmpty;
       case 'lifestyle':
@@ -440,8 +440,8 @@ class UserProfile {
         if (promptGreenFlag?.isNotEmpty ?? false) filled++;
         if (promptTwoTruths?.isNotEmpty ?? false) filled++;
         return filled >= 2;
-      case 'privacy':
-        return true; 
+      case 'verification':
+        return isVerified; 
       default:
         return true;
     }

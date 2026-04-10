@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
+import '../providers/language_provider.dart';
 
 class BorderedSearchBar extends StatelessWidget {
   final VoidCallback? onTap;
@@ -9,6 +11,7 @@ class BorderedSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final languageProvider = context.watch<LanguageProvider>();
     
     return GestureDetector(
       onTap: onTap,
@@ -34,7 +37,7 @@ class BorderedSearchBar extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Text(
-              'Search',
+              languageProvider.getString('search_messages_hint'),
               style: TextStyle(
                 color: Theme.of(context).hintColor,
                 fontSize: 14,

@@ -4,6 +4,8 @@ import '../../screens/landing_screen.dart';
 import '../../widgets/social_login_button.dart';
 import '../../services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../../providers/language_provider.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -20,9 +22,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _isLoading = false;
 
   Future<void> _handleSignUp() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty || _nameController.text.isEmpty) {
+    if (_emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _nameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
+        SnackBar(content: Text(context.read<LanguageProvider>().getString('fill_all_fields'))),
       );
       return;
     }
@@ -82,34 +86,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left_2, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Create Account',
-              style: TextStyle(
+            Center(
+              child: Image.asset(
+                'assets/images/signlogo.png',
+                height: 200,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              languageProvider.getString('signup_title'),
+              style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
                 letterSpacing: -1,
-                color: Colors.black87,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Join DateDash and find your perfect match',
-              style: TextStyle(
+            Text(
+              languageProvider.getString('signup_sub'),
+              style: const TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
               ),
@@ -117,19 +123,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
             const SizedBox(height: 24),
             _buildTextField(
               controller: _nameController,
-              hintText: 'Full Name',
+              hintText: languageProvider.getString('full_name'),
               icon: Iconsax.user,
             ),
             const SizedBox(height: 16),
             _buildTextField(
               controller: _emailController,
-              hintText: 'Email Address',
+              hintText: languageProvider.getString('email'),
               icon: Iconsax.sms,
             ),
             const SizedBox(height: 16),
             _buildTextField(
               controller: _passwordController,
-              hintText: 'Password',
+              hintText: languageProvider.getString('password'),
               icon: Iconsax.lock,
               isPassword: true,
             ),
@@ -145,23 +151,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 elevation: 5,
                 shadowColor: const Color(0xFFFF4D85).withOpacity(0.5),
               ),
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      languageProvider.getString('signup_button'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                  )
-                : const Text(
-                    'Sign Up',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
             ),
             const SizedBox(height: 20),
             Row(
@@ -170,7 +176,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    'Or register with',
+                    languageProvider.getString('register_with'),
                     style: TextStyle(color: Colors.grey.shade500),
                   ),
                 ),
@@ -179,7 +185,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
             const SizedBox(height: 12),
             SocialLoginButton(
-              text: 'Continue with Google',
+              text: languageProvider.getString('google_signin'),
               assetPath: 'assets/images/google_logo.png',
               onPressed: _isLoading ? () {} : _handleGoogleSignIn,
             ),
@@ -188,22 +194,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "Already have an account?",
+                  languageProvider.getString('already_have_account'),
                   style: TextStyle(color: Colors.grey.shade700),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Sign In',
-                    style: TextStyle(
+                  child: Text(
+                    languageProvider.getString('signin_button'),
+                    style: const TextStyle(
                       color: Color(0xFFFF4D85),
                       fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -217,29 +224,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: TextField(
         controller: controller,
         obscureText: isPassword,
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: hintText,
-          prefixIcon: Icon(icon, color: Colors.grey.shade400),
+          hintStyle:
+              TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,
           ),
           filled: true,
           fillColor: Colors.transparent,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
       ),
     );

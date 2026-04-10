@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 import '../services/call_service.dart';
+import '../providers/language_provider.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 
 class IncomingCallScreen extends StatefulWidget {
@@ -42,11 +44,9 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
   }
 
   void _acceptCall() async {
-    // 1. Update status to answered in Firestore
     await _callService.answerCall(widget.chatId);
     _ringtonePlayer.stop();
 
-    // 2. Launch Jitsi in browser
     const serverBase = "https://meet.ffmuc.net";
     final roomUrl = "$serverBase/${widget.roomName}";
     final uri = Uri.parse(roomUrl);
@@ -70,6 +70,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lp = context.watch<LanguageProvider>();
     return StreamBuilder<DocumentSnapshot>(
       stream: _callService.listenToCallState(widget.chatId),
       builder: (context, snapshot) {
@@ -82,12 +83,12 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
                 Navigator.pop(context);
               }
             });
-            return const Scaffold(
-              backgroundColor: Color(0xFF1E1E1E),
+            return Scaffold(
+              backgroundColor: const Color(0xFF1E1E1E),
               body: Center(
                 child: Text(
-                  'Call Cancelled',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  lp.getString('call_cancelled'),
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
             );
@@ -153,8 +154,8 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
                             const SizedBox(width: 8),
                             Text(
                               widget.isVideo
-                                  ? 'INCOMING VIDEO CALL'
-                                  : 'INCOMING VOICE CALL',
+                                  ? lp.getString('incoming_video_call')
+                                  : lp.getString('incoming_voice_call'),
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w900,
@@ -177,13 +178,13 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
                     _buildActionButton(
                       icon: Iconsax.call_remove,
                       color: Colors.redAccent,
-                      label: 'Decline',
+                      label: lp.getString('decline'),
                       onTap: _declineCall,
                     ),
                     _buildActionButton(
                       icon: widget.isVideo ? Iconsax.video : Iconsax.call,
                       color: Colors.green,
-                      label: 'Accept',
+                      label: lp.getString('accept'),
                       onTap: _acceptCall,
                     ),
                   ],

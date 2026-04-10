@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import '../models/user_profile_model.dart';
 import '../providers/profile_provider.dart';
+import '../providers/language_provider.dart';
 import '../services/profile_service.dart';
 import '../services/chat_service.dart';
 import '../widgets/profile_detail_sheet.dart';
@@ -16,18 +17,19 @@ class ProfileViewersScreen extends StatelessWidget {
 
   ProfileViewersScreen({super.key});
 
-  String _formatDateTime(Timestamp? timestamp) {
+  String _formatDateTime(Timestamp? timestamp, LanguageProvider lp) {
     if (timestamp == null) return '';
-    return DateFormatter.format(timestamp.toDate());
+    return DateFormatter.format(timestamp.toDate(), lp);
   }
 
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
+    final languageProvider = context.watch<LanguageProvider>();
 
     if (currentUser == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please sign in to see viewers')),
+      return Scaffold(
+        body: Center(child: Text(languageProvider.getString('signin_to_see_viewers'))),
       );
     }
 
@@ -46,9 +48,9 @@ class ProfileViewersScreen extends StatelessWidget {
           return CustomScrollView(
             slivers: [
               SliverAppBar(
-                title: const Text(
-                  'Recent Viewers',
-                  style: TextStyle(fontWeight: FontWeight.w800),
+                title: Text(
+                  languageProvider.getString('visitors_header'),
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
                 elevation: 0,
                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -62,12 +64,12 @@ class ProfileViewersScreen extends StatelessWidget {
                 ),
               ),
               if (viewers.isNotEmpty) ...[
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     child: Text(
-                      'People who visited your profile',
-                      style: TextStyle(
+                      languageProvider.getString('no_visitors_sub'),
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Colors.grey,
@@ -75,7 +77,7 @@ class ProfileViewersScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                _buildViewersGrid(context, viewers),
+                _buildViewersGrid(context, viewers, languageProvider),
               ] else
                 SliverFillRemaining(
                   hasScrollBody: false,
@@ -92,18 +94,18 @@ class ProfileViewersScreen extends StatelessWidget {
                               ?.withOpacity(0.3),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'No views yet',
-                          style: TextStyle(
+                        Text(
+                          languageProvider.getString('no_visitors_yet'),
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: Colors.grey,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Keep active to get noticed!',
-                          style: TextStyle(color: Colors.grey),
+                        Text(
+                          languageProvider.getString('keep_active_noticed'),
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
@@ -118,7 +120,7 @@ class ProfileViewersScreen extends StatelessWidget {
   }
 
   Widget _buildViewersGrid(
-      BuildContext context, List<Map<String, dynamic>> viewers) {
+      BuildContext context, List<Map<String, dynamic>> viewers, LanguageProvider languageProvider) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       sliver: SliverGrid(
@@ -172,7 +174,7 @@ class ProfileViewersScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${profile.firstName ?? 'Someone'}, ${profile.age ?? '??'}',
+                        '${profile.firstName ?? languageProvider.getString('someone_fallback')}, ${profile.age ?? '??'}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
@@ -186,7 +188,7 @@ class ProfileViewersScreen extends StatelessWidget {
                               color: Color(0xFFFF4D85), size: 10),
                           const SizedBox(width: 4),
                           Text(
-                            _formatDateTime(timestamp),
+                            _formatDateTime(timestamp, languageProvider),
                             style: TextStyle(
                               color: Colors.white.withOpacity(0.9),
                               fontSize: 10,

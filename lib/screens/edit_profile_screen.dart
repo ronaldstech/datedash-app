@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../models/user_profile_model.dart';
 import '../services/profile_service.dart';
+import '../providers/language_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -28,20 +30,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   late PageController _pageController;
   int _currentPage = 0;
-
-  final List<Map<String, dynamic>> _categories = [
-    {'title': 'Basic', 'icon': Iconsax.user},
-    {'title': 'Personal', 'icon': Iconsax.heart},
-    {'title': 'Lifestyle', 'icon': Iconsax.activity},
-    {'title': 'Work', 'icon': Iconsax.briefcase},
-    {'title': 'Goals', 'icon': Iconsax.cup},
-    {'title': 'Interests', 'icon': Iconsax.music},
-    {'title': 'Personality', 'icon': Iconsax.lamp},
-    {'title': 'Media', 'icon': Iconsax.camera},
-    {'title': 'Location', 'icon': Iconsax.location},
-    {'title': 'Prompts', 'icon': Iconsax.messages_2},
-    {'title': 'Privacy', 'icon': Iconsax.shield_tick},
-  ];
 
   @override
   void initState() {
@@ -83,16 +71,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
+    final languageProvider = context.read<LanguageProvider>();
     setState(() => _isSaving = true);
     try {
       await _profileService.saveUserProfile(user.uid, _profile);
       if (mounted) {
-        _showPremiumSnack('Profile saved successfully!', isSuccess: true);
+        _showPremiumSnack(languageProvider.getString('profile_saved_snack'), isSuccess: true);
         Navigator.pop(context); // Return to summary screen after save
       }
     } catch (e) {
       if (mounted) {
-        _showPremiumSnack('Failed to save profile: $e', isError: true);
+        _showPremiumSnack('${languageProvider.getString('failed_save_profile_snack')}: $e', isError: true);
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -105,6 +94,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
+    
+    final List<Map<String, dynamic>> categories = [
+      {'title': languageProvider.getString('category_basic'), 'icon': Iconsax.user, 'key': 'Basic'},
+      {'title': languageProvider.getString('category_personal'), 'icon': Iconsax.heart, 'key': 'Personal'},
+      {'title': languageProvider.getString('category_goals'), 'icon': Iconsax.cup, 'key': 'Goals'},
+      {'title': languageProvider.getString('category_work'), 'icon': Iconsax.briefcase, 'key': 'Work'},
+      {'title': languageProvider.getString('category_lifestyle'), 'icon': Iconsax.activity, 'key': 'Lifestyle'},
+      {'title': languageProvider.getString('category_interests'), 'icon': Iconsax.music, 'key': 'Interests'},
+      {'title': languageProvider.getString('category_personality'), 'icon': Iconsax.lamp, 'key': 'Personality'},
+      {'title': languageProvider.getString('category_media'), 'icon': Iconsax.camera, 'key': 'Media'},
+      {'title': languageProvider.getString('category_location'), 'icon': Iconsax.location, 'key': 'Location'},
+      {'title': languageProvider.getString('category_prompts'), 'icon': Iconsax.messages_2, 'key': 'Prompts'},
+      {'title': languageProvider.getString('category_verification'), 'icon': Iconsax.verify, 'key': 'Verification'},
+    ];
+
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
@@ -114,9 +119,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Edit Profile',
-          style: TextStyle(fontWeight: FontWeight.w800),
+        title: Text(
+          languageProvider.getString('edit_profile_label'),
+          style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         elevation: 0,
         leading: IconButton(
@@ -147,7 +152,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(64),
-          child: _buildCategorySelector(),
+          child: _buildCategorySelector(categories),
         ),
       ),
       body: PageView(
@@ -157,7 +162,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             _currentPage = index;
           });
         },
-        children: _buildPages(),
+        children: _buildPages(languageProvider),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isSaving ? null : _saveProfile,
@@ -171,7 +176,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               )
             : const Icon(Iconsax.save_2, color: Colors.white),
         label: Text(
-          _isSaving ? 'Saving...' : 'Save Profile',
+          _isSaving ? languageProvider.getString('saving_label') : languageProvider.getString('save_profile_button'),
           style:
               const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
@@ -180,16 +185,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildCategorySelector() {
+  Widget _buildCategorySelector(List<Map<String, dynamic>> categories) {
     return Container(
       height: 48,
       margin: const EdgeInsets.only(bottom: 12, top: 4),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: _categories.length,
+        itemCount: categories.length,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemBuilder: (context, index) {
-          final category = _categories[index];
+          final category = categories[index];
           final isSelected = _currentPage == index;
           return GestureDetector(
             onTap: () {
@@ -259,7 +264,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ],
                   ),
                 ),
-                if (!_profile.isCategoryComplete(category['title']))
+                if (!_profile.isCategoryComplete(category['key']))
                   Positioned(
                     right: 6,
                     top: -2,
@@ -283,34 +288,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  List<Widget> _buildPages() {
+  List<Widget> _buildPages(LanguageProvider languageProvider) {
     return [
       // 1. Basic Profile
       _buildPageContent([
         _buildTextField(
-          label: 'User Name',
+          label: languageProvider.getString('username_label'),
           initialValue: _profile.firstName,
           onChanged: (val) => _profile.firstName = val,
         ),
         _buildDatePicker(
-          label: 'Date of Birth',
+          label: languageProvider.getString('dob_label'),
           value: _profile.dob,
           onChanged: (val) => _profile.dob = val,
         ),
         _buildChoiceChips(
-          label: 'Gender',
+          label: languageProvider.getString('gender_label'),
           value: _profile.gender,
           items: const ['Male', 'Female', 'Other'],
           onChanged: (val) => _profile.gender = val,
         ),
         _buildChoiceChips(
-          label: 'Interested In',
+          label: languageProvider.getString('interested_in_label'),
           value: _profile.interestedIn,
           items: const ['Men', 'Women', 'Everyone'],
           onChanged: (val) => _profile.interestedIn = val,
         ),
         _buildTextField(
-          label: 'Bio / About Me',
+          label: languageProvider.getString('bio_about_label'),
           maxLines: 4,
           initialValue: _profile.bio,
           onChanged: (val) => _profile.bio = val,
@@ -319,12 +324,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       // 2. Personal Details
       _buildPageContent([
         _buildTextField(
-          label: 'Height (e.g., 5\'10" or 178cm)',
+          label: languageProvider.getString('height_label'),
+          hint: languageProvider.getString('height_hint'),
           initialValue: _profile.height,
           onChanged: (val) => _profile.height = val,
         ),
         _buildChoiceChips(
-          label: 'Body Type',
+          label: languageProvider.getString('body_type_label'),
           value: _profile.bodyType,
           items: const [
             'Slim',
@@ -336,18 +342,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ],
           onChanged: (val) => _profile.bodyType = val,
         ),
-        _buildTextField(
-          label: 'Ethnicity',
-          initialValue: _profile.ethnicity,
-          onChanged: (val) => _profile.ethnicity = val,
+        _buildChoiceChips(
+          label: languageProvider.getString('relationship_status_label'),
+          value: _profile.relationshipStatus,
+          items: const [
+            'Single',
+            'Married',
+            'Divorced',
+            'Widowed',
+            'Separated'
+          ],
+          onChanged: (val) => _profile.relationshipStatus = val,
         ),
         _buildTextField(
-          label: 'Religion',
+          label: languageProvider.getString('religion_label'),
           initialValue: _profile.religion,
           onChanged: (val) => _profile.religion = val,
         ),
         _buildTextField(
-          label: 'Languages Spoken (comma separated)',
+          label: languageProvider.getString('languages_spoken_label'),
           initialValue: _profile.languages.join(', '),
           onChanged: (val) => _profile.languages = val
               .split(',')
@@ -356,61 +369,52 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               .toList(),
         ),
       ]),
-      // 3. Lifestyle & Habits
+      // 3. Relationship Goals
       _buildPageContent([
         _buildChoiceChips(
-          label: 'Smoking',
-          value: _profile.smoking,
-          items: const ['Yes', 'No', 'Occasionally'],
-          onChanged: (val) => _profile.smoking = val,
-        ),
-        _buildChoiceChips(
-          label: 'Drinking',
-          value: _profile.drinking,
-          items: const ['Yes', 'No', 'Socially'],
-          onChanged: (val) => _profile.drinking = val,
-        ),
-        _buildChoiceChips(
-          label: 'Fitness Level',
-          value: _profile.fitness,
-          items: const ['Active', 'Moderate', 'Occasional', 'Couch Potato'],
-          onChanged: (val) => _profile.fitness = val,
-        ),
-        _buildChoiceChips(
-          label: 'Diet',
-          value: _profile.diet,
+          label: languageProvider.getString('looking_for_label'),
+          value:
+              _profile.lookingFor.isNotEmpty ? _profile.lookingFor.first : null,
           items: const [
-            'Omnivore',
-            'Vegetarian',
-            'Vegan',
-            'Pescatarian',
-            'Halal',
-            'Kosher',
-            'Other'
+            'Long Term Relationship',
+            'Short Term Relationship',
+            'Hookups',
+            'Short Term Fun',
+            'New Friends',
+            'Coffee Date',
+            'Movie Night',
+            'Sponsor',
+            'Figuring Out'
           ],
-          onChanged: (val) => _profile.diet = val,
+          onChanged: (val) => _profile.lookingFor = [val],
+        ),
+        _buildSwitch(
+          label: languageProvider.getString('open_to_long_distance_label'),
+          value: _profile.openToLongDistance ?? false,
+          onChanged: (val) => _profile.openToLongDistance = val,
         ),
         _buildChoiceChips(
-          label: 'Sleeping Habits',
-          value: _profile.sleepingHabits,
-          items: const ['Early Bird', 'Night Owl', 'Flexible'],
-          onChanged: (val) => _profile.sleepingHabits = val,
+          label: languageProvider.getString('want_kids_label'),
+          value: _profile.wantKids,
+          items: const ['Yes', 'No', 'Maybe', 'Already have'],
+          onChanged: (val) => _profile.wantKids = val,
         ),
       ]),
+
       // 4. Work & Education
       _buildPageContent([
         _buildTextField(
-          label: 'Occupation',
+          label: languageProvider.getString('occupation_label'),
           initialValue: _profile.occupation,
           onChanged: (val) => _profile.occupation = val,
         ),
         _buildTextField(
-          label: 'Industry',
+          label: languageProvider.getString('industry_label'),
           initialValue: _profile.industry,
           onChanged: (val) => _profile.industry = val,
         ),
         _buildChoiceChips(
-          label: 'Education Level',
+          label: languageProvider.getString('education_level_label'),
           value: _profile.educationLevel,
           items: const [
             'High School',
@@ -422,44 +426,55 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           onChanged: (val) => _profile.educationLevel = val,
         ),
         _buildTextField(
-          label: 'School / University',
+          label: languageProvider.getString('school_label'),
           initialValue: _profile.school,
           onChanged: (val) => _profile.school = val,
         ),
       ]),
-      // 5. Relationship Goals
+      // 5. Lifestyle and Habits
       _buildPageContent([
         _buildChoiceChips(
-          label: 'Looking For',
-          value: _profile.lookingFor.isNotEmpty ? _profile.lookingFor.first : null,
-          items: const [
-            'Long Term',
-            'Hookups',
-            'Short Term Fun',
-            'New Friends',
-            'Coffee Date',
-            'Movie Night',
-            'Fitness Duo',
-            'Gaming Duo',
-          ],
-          onChanged: (val) => _profile.lookingFor = [val],
-        ),
-        _buildSwitch(
-          label: 'Open to long-distance?',
-          value: _profile.openToLongDistance ?? false,
-          onChanged: (val) => _profile.openToLongDistance = val,
+          label: languageProvider.getString('smoking_label'),
+          value: _profile.smoking,
+          items: const ['Yes', 'No', 'Occasionally'],
+          onChanged: (val) => _profile.smoking = val,
         ),
         _buildChoiceChips(
-          label: 'Want Kids?',
-          value: _profile.wantKids,
-          items: const ['Yes', 'No', 'Maybe', 'Already have'],
-          onChanged: (val) => _profile.wantKids = val,
+          label: languageProvider.getString('drinking_label'),
+          value: _profile.drinking,
+          items: const ['Yes', 'No', 'Socially'],
+          onChanged: (val) => _profile.drinking = val,
+        ),
+        _buildChoiceChips(
+          label: languageProvider.getString('fitness_label'),
+          value: _profile.fitness,
+          items: const ['Active', 'Moderate', 'Occasional', 'Couch Potato'],
+          onChanged: (val) => _profile.fitness = val,
+        ),
+        _buildChoiceChips(
+          label: languageProvider.getString('diet_label'),
+          value: _profile.diet,
+          items: const [
+            'Eat anything',
+            'Vegetarian',
+            'Vegan',
+            'Halal',
+            'Kosher',
+            'Other'
+          ],
+          onChanged: (val) => _profile.diet = val,
+        ),
+        _buildChoiceChips(
+          label: languageProvider.getString('sleeping_habits_label'),
+          value: _profile.sleepingHabits,
+          items: const ['Early Bird', 'Night Owl', 'Flexible'],
+          onChanged: (val) => _profile.sleepingHabits = val,
         ),
       ]),
       // 6. Interests & Hobbies
       _buildPageContent([
         _buildMultiChoiceChips(
-          label: 'Hobbies',
+          label: languageProvider.getString('hobbies_label'),
           values: _profile.hobbies,
           items: const [
             'Sports',
@@ -474,7 +489,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           onChanged: (val) => _profile.hobbies = val,
         ),
         _buildTextField(
-          label: 'Favorite Music Genres',
+          label: languageProvider.getString('music_genres_label'),
           initialValue: _profile.musicGenres.join(', '),
           hint: 'Pop, Rock, R&B...',
           onChanged: (val) => _profile.musicGenres = val
@@ -484,7 +499,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               .toList(),
         ),
         _buildTextField(
-          label: 'Favorite Movies/Shows',
+          label: languageProvider.getString('movies_shows_label'),
           initialValue: _profile.moviesShows.join(', '),
           onChanged: (val) => _profile.moviesShows = val
               .split(',')
@@ -493,7 +508,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               .toList(),
         ),
         _buildTextField(
-          label: 'Weekend Activities',
+          label: languageProvider.getString('weekend_activities_label'),
           initialValue: _profile.weekendActivities.join(', '),
           onChanged: (val) => _profile.weekendActivities = val
               .split(',')
@@ -505,13 +520,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       // 7. Personality & Values
       _buildPageContent([
         _buildChoiceChips(
-          label: 'Introvert / Extrovert',
+          label: languageProvider.getString('introvert_extrovert_label'),
           value: _profile.introvertExtrovert,
           items: const ['Introvert', 'Extrovert', 'Ambivert'],
           onChanged: (val) => _profile.introvertExtrovert = val,
         ),
         _buildChoiceChips(
-          label: 'Love Language',
+          label: languageProvider.getString('love_language_label'),
           value: _profile.loveLanguage,
           items: const [
             'Words of Affirmation',
@@ -523,17 +538,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           onChanged: (val) => _profile.loveLanguage = val,
         ),
         _buildTextField(
-          label: 'Personality Type (e.g., INFJ)',
+          label: languageProvider.getString('personality_type_label'),
           initialValue: _profile.mbti,
           onChanged: (val) => _profile.mbti = val,
         ),
         _buildTextField(
-          label: 'Political Views',
+          label: languageProvider.getString('political_views_label'),
           initialValue: _profile.politicalViews,
           onChanged: (val) => _profile.politicalViews = val,
         ),
         _buildTextField(
-          label: 'Core Values',
+          label: languageProvider.getString('core_values_label'),
           initialValue: _profile.coreValues,
           hint: 'Family, Ambition, Honesty...',
           onChanged: (val) => _profile.coreValues = val,
@@ -541,20 +556,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ]),
       // 8. Media & Verification
       _buildPageContent([
-        const Padding(
-          padding: EdgeInsets.only(bottom: 24),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Add Your Photos',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                languageProvider.getString('add_photos_title'),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
-                'Upload at least 4 photos to stand out. Max 8.',
+                languageProvider.getString('upload_photos_sub'),
                 style:
-                    TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+                    const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -569,7 +584,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Uploading photos...',
+                      languageProvider.getString('uploading_photos'),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -600,85 +615,165 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
         _buildPhotoGrid(),
-        const SizedBox(height: 32),
-        _buildSwitch(
-          label: 'Verified Badged',
-          value: _profile.isVerified,
-          onChanged: (val) => _profile.isVerified = val,
-        ),
       ]),
       // 9. Location
-      _buildLocationCategory(),
+      _buildLocationCategory(languageProvider),
       // 10. Prompts
       _buildPageContent([
         _buildTextField(
-          label: 'A perfect date for me is...',
+          label: languageProvider.getString('perfect_date_prompt'),
           initialValue: _profile.promptPerfectDate,
           onChanged: (val) => _profile.promptPerfectDate = val,
           maxLines: 2,
         ),
         _buildTextField(
-          label: 'I\'ll fall for you if...',
+          label: languageProvider.getString('fall_for_you_prompt'),
           initialValue: _profile.promptFallForYou,
           onChanged: (val) => _profile.promptFallForYou = val,
           maxLines: 2,
         ),
         _buildTextField(
-          label: 'My biggest green flag is...',
+          label: languageProvider.getString('green_flag_prompt'),
           initialValue: _profile.promptGreenFlag,
           onChanged: (val) => _profile.promptGreenFlag = val,
           maxLines: 2,
         ),
         _buildTextField(
-          label: 'Two truths and a lie...',
+          label: languageProvider.getString('two_truths_prompt'),
           initialValue: _profile.promptTwoTruths,
           onChanged: (val) => _profile.promptTwoTruths = val,
           maxLines: 2,
         ),
       ]),
-      // 11. Privacy & Safety
+      // 11. Verification
       _buildPageContent([
-        _buildSwitch(
-          label: 'Show Age on Profile',
-          value: _profile.showAge,
-          onChanged: (val) => _profile.showAge = val,
+        Padding(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                languageProvider.getString('verification_title'),
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                languageProvider.getString('verification_sub'),
+                style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
         ),
-        _buildSwitch(
-          label: 'Show Distance',
-          value: _profile.showDistance,
-          onChanged: (val) => _profile.showDistance = val,
-        ),
-        _buildSwitch(
-          label: 'Allow Messages',
-          value: _profile.allowMessages,
-          onChanged: (val) => _profile.allowMessages = val,
+        const SizedBox(height: 20),
+        Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: _profile.isVerified
+                  ? Colors.green.withOpacity(0.3)
+                  : Theme.of(context).dividerColor,
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: (_profile.isVerified ? Colors.green : _primaryColor)
+                      .withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  _profile.isVerified ? Iconsax.verify : Iconsax.security_safe,
+                  color: _profile.isVerified ? Colors.green : _primaryColor,
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                _profile.isVerified ? languageProvider.getString('profile_verified') : languageProvider.getString('facial_verification'),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                _profile.isVerified
+                    ? languageProvider.getString('verification_confirmed_sub')
+                    : languageProvider.getString('quick_scan_sub'),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 32),
+              if (!_profile.isVerified)
+                ElevatedButton(
+                  onPressed: () {
+                    // Start facial verification flow
+                    setState(() {
+                      _profile.isVerified = true;
+                    });
+                    _onFieldUpdated();
+                    _showPremiumSnack('Verification started!', isSuccess: true);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _primaryColor,
+                    foregroundColor: Colors.white,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Iconsax.camera, size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        languageProvider.getString('start_verification_button'),
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       ]),
     ];
   }
 
-  Widget _buildLocationCategory() {
+  Widget _buildLocationCategory(LanguageProvider languageProvider) {
     bool hasLocation = _profile.latitude != null && _profile.longitude != null;
     return _buildPageContent([
-      const Padding(
-        padding: EdgeInsets.only(bottom: 24),
+      Padding(
+        padding: const EdgeInsets.only(bottom: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Your Location',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+              languageProvider.getString('location_title'),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
-              'Sync your GPS to see potential matches nearby and calculate distances.',
-              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+              languageProvider.getString('location_sub'),
+              style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
             ),
           ],
         ),
       ),
       _buildTextField(
-        label: 'City / Neighborhood',
+        label: languageProvider.getString('city_neighborhood_label'),
         initialValue: _profile.location,
         onChanged: (val) => _profile.location = val,
       ),
@@ -719,7 +814,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              hasLocation ? 'Location Synchronized' : 'Location Not Set',
+              hasLocation ? languageProvider.getString('location_synced') : languageProvider.getString('location_not_set'),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
@@ -736,17 +831,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               )
             else
-              const Text(
-                'We use your GPS to match you with people in your area.',
+              Text(
+                languageProvider.getString('location_sub'),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.grey,
                   fontSize: 13,
                 ),
               ),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: _getCurrentLocation,
+              onPressed: () => _getCurrentLocation(languageProvider),
               style: ElevatedButton.styleFrom(
                 backgroundColor: hasLocation ? Colors.green : _primaryColor,
                 foregroundColor: Colors.white,
@@ -763,7 +858,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   const Icon(Iconsax.radar, size: 20),
                   const SizedBox(width: 10),
                   Text(
-                    hasLocation ? 'Update Location' : 'Sync Location Now',
+                    hasLocation ? languageProvider.getString('update_location_button') : languageProvider.getString('sync_location_now_button'),
                     style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ],
@@ -776,13 +871,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     ]);
   }
 
-  Future<void> _getCurrentLocation() async {
+  Future<void> _getCurrentLocation(LanguageProvider languageProvider) async {
     bool serviceEnabled;
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      _showPremiumSnack('Location services are disabled. Please enable them.',
+      _showPremiumSnack(languageProvider.getString('location_services_disabled'),
           isError: true);
       return;
     }
@@ -791,18 +886,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        _showPremiumSnack('Location permissions are denied.', isError: true);
+        _showPremiumSnack(languageProvider.getString('location_permission_denied'), isError: true);
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      _showPremiumSnack('Location permissions are permanently denied.',
+      _showPremiumSnack(languageProvider.getString('location_permission_denied_forever'),
           isError: true);
       return;
     }
 
-    _showPremiumSnack('Fetching high-accuracy coordinates...');
+    _showPremiumSnack(languageProvider.getString('fetching_coordinates'));
 
     try {
       Position position = await Geolocator.getCurrentPosition(
@@ -819,9 +914,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         await _profileService.saveUserProfile(user.uid, _profile);
       }
 
-      _showPremiumSnack('Location updated and saved!', isSuccess: true);
+      _showPremiumSnack(languageProvider.getString('location_updated_snack'), isSuccess: true);
     } catch (e) {
-      _showPremiumSnack('Error fetching location: $e', isError: true);
+      _showPremiumSnack('${languageProvider.getString('error_fetching_location')}: $e', isError: true);
     }
   }
 
@@ -1353,6 +1448,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required DateTime? value,
     required Function(DateTime) onChanged,
   }) {
+    final languageProvider = context.read<LanguageProvider>();
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -1408,7 +1504,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   Text(
                     value != null
                         ? '${value.year}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}'
-                        : 'Select Date',
+                        : languageProvider.getString('select_date'),
                     style: TextStyle(
                       color: value != null
                           ? Theme.of(context).textTheme.bodyLarge?.color

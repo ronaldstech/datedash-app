@@ -18,9 +18,12 @@ class SocialLoginButton extends StatelessWidget {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        backgroundColor: Colors.white,
-        side: BorderSide(color: Colors.grey.shade200, width: 1.5),
-        surfaceTintColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
+        side: BorderSide(
+          color: Theme.of(context).dividerColor,
+          width: 1.5,
+        ),
+        surfaceTintColor: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -45,7 +48,6 @@ class SocialLoginButton extends StatelessWidget {
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
             ),
           ),
         ],

@@ -10,6 +10,7 @@ import '../screens/profile_viewers_screen.dart';
 import '../screens/chat_list_screen.dart';
 import '../theme/theme_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/language_provider.dart';
 
 class ProfileDrawer extends StatelessWidget {
   const ProfileDrawer({super.key});
@@ -27,6 +28,7 @@ class ProfileDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final languageProvider = context.watch<LanguageProvider>();
 
     return Drawer(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -39,7 +41,7 @@ class ProfileDrawer extends StatelessWidget {
                 final photoUrl = profileProvider.photoURL;
                 final displayName = profileProvider.displayName;
                 final email =
-                    profileProvider.currentUser?.email ?? 'Join the community';
+                    profileProvider.currentUser?.email ?? languageProvider.getString('join_community');
 
                 return Container(
                   padding: const EdgeInsets.all(24.0),
@@ -135,7 +137,7 @@ class ProfileDrawer extends StatelessWidget {
                           children: [
                             _buildStatItem(
                               context,
-                              'Likes',
+                              languageProvider.getString('likes_label'),
                               profileProvider.likesCount.toString(),
                               Iconsax.heart5,
                               const Color(0xFFFF4D85),
@@ -155,7 +157,7 @@ class ProfileDrawer extends StatelessWidget {
                                     .withOpacity(0.2)),
                             _buildStatItem(
                               context,
-                              'Visitors',
+                              languageProvider.getString('visitors_label'),
                               profileProvider.visitorsCount.toString(),
                               Iconsax.eye,
                               Colors.blueAccent,
@@ -176,7 +178,7 @@ class ProfileDrawer extends StatelessWidget {
                                     .withOpacity(0.2)),
                             _buildStatItem(
                               context,
-                              'Matches',
+                              languageProvider.getString('matches_label'),
                               profileProvider.matchesCount.toString(),
                               Iconsax.flash5,
                               const Color(0xFFFFD700),
@@ -205,11 +207,11 @@ class ProfileDrawer extends StatelessWidget {
                   const SizedBox(height: 4),
 
                   // Account Section
-                  _buildSectionHeader(context, 'Account'),
+                  _buildSectionHeader(context, languageProvider.getString('account_section')),
                   _buildItem(
                     context,
                     Iconsax.user,
-                    'My Profile',
+                    languageProvider.getString('my_profile'),
                     backgroundColor: const Color(0xFFFF4D85),
                     onTap: () {
                       Navigator.pop(context);
@@ -222,7 +224,7 @@ class ProfileDrawer extends StatelessWidget {
                   _buildItem(
                     context,
                     Iconsax.setting_2,
-                    'Settings',
+                    languageProvider.getString('settings_label'),
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.push(
@@ -234,16 +236,16 @@ class ProfileDrawer extends StatelessWidget {
                   const SizedBox(height: 4),
 
                   // Discovery Section
-                  _buildSectionHeader(context, 'Discovery'),
-                  _buildItem(context, Iconsax.discover_1, 'Explore People'),
+                  _buildSectionHeader(context, languageProvider.getString('discovery_section')),
+                  _buildItem(context, Iconsax.discover_1, languageProvider.getString('explore_people')),
                   const SizedBox(height: 4),
 
                   // Activity Section
-                  _buildSectionHeader(context, 'Activity'),
+                  _buildSectionHeader(context, languageProvider.getString('activity_section')),
                   _buildItem(
                     context,
                     Iconsax.heart_tick,
-                    'Matches',
+                    languageProvider.getString('matches_label'),
                     color: const Color(0xFFFF4D85),
                     onTap: () {
                       Navigator.pop(context);
@@ -256,7 +258,7 @@ class ProfileDrawer extends StatelessWidget {
                   _buildItem(
                     context,
                     Iconsax.eye,
-                    'Visitors',
+                    languageProvider.getString('visitors_label'),
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.push(
@@ -265,12 +267,12 @@ class ProfileDrawer extends StatelessWidget {
                               builder: (_) => ProfileViewersScreen()));
                     },
                   ),
-                  _buildItem(context, Iconsax.document_text, 'Blog'),
-                  _buildItem(context, Iconsax.video_circle, 'Live Videos'),
+                  _buildItem(context, Iconsax.document_text, languageProvider.getString('blog')),
+                  _buildItem(context, Iconsax.video_circle, languageProvider.getString('live_videos')),
                   _buildItem(
                     context,
                     Iconsax.heart5,
-                    'Likes',
+                    languageProvider.getString('likes_label'),
                     color: const Color(0xFFFF4D85),
                     onTap: () {
                       Navigator.pop(context);
@@ -281,31 +283,31 @@ class ProfileDrawer extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   // Finance Section - Subscription & Credits
-                  _buildSectionHeader(context, 'Finance'),
+                  _buildSectionHeader(context, languageProvider.getString('finance_section')),
                   _buildItem(
                     context,
                     Iconsax.ranking,
-                    'Go Premium',
+                    languageProvider.getString('go_premium'),
                     color: const Color(0xFFFFD700),
                     onTap: () {},
                   ),
-                  _buildItem(context, Iconsax.wallet_2, 'My Credits'),
-                  _buildItem(context, Iconsax.gift, 'Gifts',
+                  _buildItem(context, Iconsax.wallet_2, languageProvider.getString('my_credits')),
+                  _buildItem(context, Iconsax.gift, languageProvider.getString('gifts'),
                       color: Colors.purple.shade300),
-                  _buildItem(context, Iconsax.receipt_21, 'Transactions'),
+                  _buildItem(context, Iconsax.receipt_21, languageProvider.getString('transactions')),
                   const SizedBox(height: 20),
 
                   // Appearance Section
-                  _buildSectionHeader(context, 'Appearance'),
-                  _buildThemeToggle(context),
+                  _buildSectionHeader(context, languageProvider.getString('appearance_section')),
+                  _buildThemeToggle(context, languageProvider),
                   const SizedBox(height: 20),
 
                   // Support Section
-                  _buildSectionHeader(context, 'Support'),
-                  _buildItem(context, Iconsax.info_circle, 'About Us'),
-                  _buildItem(context, Iconsax.security_safe, 'Safety Tips'),
+                  _buildSectionHeader(context, languageProvider.getString('support_section')),
+                  _buildItem(context, Iconsax.info_circle, languageProvider.getString('about_us')),
+                  _buildItem(context, Iconsax.security_safe, languageProvider.getString('safety_tips')),
                   const SizedBox(height: 32),
-                  _buildLogoutButton(context),
+                  _buildLogoutButton(context, languageProvider),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -425,7 +427,7 @@ class ProfileDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildThemeToggle(BuildContext context) {
+  Widget _buildThemeToggle(BuildContext context, LanguageProvider languageProvider) {
     final themeProvider = context.watch<ThemeProvider>();
     final isDark = themeProvider.isDarkMode;
 
@@ -443,7 +445,7 @@ class ProfileDrawer extends StatelessWidget {
               Icon(isDark ? Iconsax.moon : Iconsax.sun_1, size: 22),
               const SizedBox(width: 12),
               Text(
-                isDark ? 'Dark Mode' : 'Light Mode',
+                isDark ? languageProvider.getString('dark_mode') : languageProvider.getString('light_mode'),
                 style:
                     const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
@@ -459,7 +461,7 @@ class ProfileDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context) {
+  Widget _buildLogoutButton(BuildContext context, LanguageProvider languageProvider) {
     return Container(
       margin: const EdgeInsets.only(top: 12),
       child: ListTile(
@@ -472,15 +474,15 @@ class ProfileDrawer extends StatelessWidget {
           ),
           child: const Icon(Iconsax.logout, color: Colors.redAccent, size: 20),
         ),
-        title: const Text(
-          'Logout',
-          style: TextStyle(
+        title: Text(
+          languageProvider.getString('logout'),
+          style: const TextStyle(
               color: Colors.redAccent,
               fontSize: 15,
               fontWeight: FontWeight.w800),
         ),
-        subtitle: const Text('Sign out of your account',
-            style: TextStyle(fontSize: 12)),
+        subtitle: Text(languageProvider.getString('logout_sub'),
+            style: const TextStyle(fontSize: 12)),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(color: Colors.redAccent.withOpacity(0.2)),

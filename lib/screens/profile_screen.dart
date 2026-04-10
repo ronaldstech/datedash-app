@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../models/user_profile_model.dart';
 import '../services/profile_service.dart';
+import '../providers/language_provider.dart';
 import 'edit_profile_screen.dart';
 import 'settings_screen.dart';
 import 'likes_screen.dart';
@@ -51,9 +53,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.w800)),
+        title: Text(languageProvider.getString('my_profile'), style: const TextStyle(fontWeight: FontWeight.w800)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
@@ -81,18 +84,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                 children: [
-                  _buildProfileHeader(),
+                  _buildProfileHeader(languageProvider),
                   const SizedBox(height: 36),
-                  _buildCompletionCard(),
+                  _buildCompletionCard(languageProvider),
                   const SizedBox(height: 32),
-                  _buildStatsGrid(),
+                  _buildStatsGrid(languageProvider),
                 ],
               ),
             ),
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(LanguageProvider languageProvider) {
     return Column(
       children: [
         Stack(
@@ -156,7 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(height: 24),
         Text(
-          _profile.firstName ?? _user?.displayName ?? 'Welcome back!',
+          _profile.firstName ?? _user?.displayName ?? languageProvider.getString('welcome_back'),
           style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 4),
@@ -168,7 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildCompletionCard() {
+  Widget _buildCompletionCard(LanguageProvider languageProvider) {
     final bool isComplete = _profile.completionPercentage == 100;
     
     return GestureDetector(
@@ -219,14 +222,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isComplete ? 'Profile Complete!' : 'Complete Your Profile',
+                    isComplete ? languageProvider.getString('profile_complete_title') : languageProvider.getString('complete_your_profile'),
                     style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     isComplete 
-                        ? 'Tap here to update your details'
-                        : 'Matches are 3x more likely with a full profile.',
+                        ? languageProvider.getString('tap_update_details')
+                        : languageProvider.getString('matches_3x_likely'),
                     style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14, height: 1.3),
                   ),
                 ],
@@ -246,7 +249,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatsGrid() {
+  Widget _buildStatsGrid(LanguageProvider languageProvider) {
     if (_user == null) return const SizedBox.shrink();
 
     return Row(
@@ -258,7 +261,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             builder: (context, snapshot) {
               return _buildStatCard(
                 Iconsax.heart5,
-                'Likes',
+                languageProvider.getString('likes_label'),
                 snapshot.data?.toString() ?? '0',
                 onTap: () => Navigator.push(
                   context,
@@ -276,7 +279,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             builder: (context, snapshot) {
               return _buildStatCard(
                 Iconsax.eye,
-                'Views',
+                languageProvider.getString('views_label'),
                 snapshot.data?.toString() ?? '0',
                 onTap: () => Navigator.push(
                   context,

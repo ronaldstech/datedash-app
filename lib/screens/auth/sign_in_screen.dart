@@ -5,6 +5,8 @@ import 'sign_up_screen.dart';
 import '../../widgets/social_login_button.dart';
 import '../../services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../../providers/language_provider.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -78,6 +80,8 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
@@ -89,38 +93,37 @@ class _SignInScreenState extends State<SignInScreen> {
               const SizedBox(height: 20),
               Center(
                 child: Image.asset(
-                  'assets/images/logo.png',
-                  height: 100,
-                  fit: BoxFit.contain,
+                  'assets/images/signlogo.png',
+                  height: 200,
+                  fit: BoxFit.cover,
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Welcome Back',
+              Text(
+                languageProvider.getString('signin_title'),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   letterSpacing: -0.5,
-                  color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Sign in to continue finding your match',
+              Text(
+                languageProvider.getString('signin_sub'),
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _emailController,
-                hintText: 'Email Address',
+                hintText: languageProvider.getString('email'),
                 icon: Iconsax.sms,
               ),
               const SizedBox(height: 16),
               _buildTextField(
                 controller: _passwordController,
-                hintText: 'Password',
+                hintText: languageProvider.getString('password'),
                 icon: Iconsax.lock,
                 isPassword: true,
               ),
@@ -129,9 +132,9 @@ class _SignInScreenState extends State<SignInScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {},
-                  child: const Text(
-                    'Forgot Password?',
-                    style: TextStyle(
+                  child: Text(
+                    languageProvider.getString('forgot_password'),
+                    style: const TextStyle(
                       color: Color(0xFFFF4D85),
                       fontWeight: FontWeight.w600,
                     ),
@@ -159,9 +162,9 @@ class _SignInScreenState extends State<SignInScreen> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
-                        'Sign In',
-                        style: TextStyle(
+                    : Text(
+                        languageProvider.getString('signin_button'),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -175,7 +178,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      'Or continue with',
+                      languageProvider.getString('or_continue_with'),
                       style: TextStyle(color: Colors.grey.shade500),
                     ),
                   ),
@@ -184,7 +187,7 @@ class _SignInScreenState extends State<SignInScreen> {
               ),
               const SizedBox(height: 12),
               SocialLoginButton(
-                text: 'Continue with Google',
+                text: languageProvider.getString('google_signin'),
                 assetPath: 'assets/images/google_logo.png',
                 onPressed: _isLoading ? () {} : _handleGoogleSignIn,
               ),
@@ -193,7 +196,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Don't have an account?",
+                    languageProvider.getString('no_account'),
                     style: TextStyle(color: Colors.grey.shade700),
                   ),
                   TextButton(
@@ -205,9 +208,9 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                       );
                     },
-                    child: const Text(
-                      'Sign Up',
-                      style: TextStyle(
+                    child: Text(
+                      languageProvider.getString('signup_link'),
+                      style: const TextStyle(
                         color: Color(0xFFFF4D85),
                         fontWeight: FontWeight.bold,
                       ),
@@ -230,22 +233,18 @@ class _SignInScreenState extends State<SignInScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: TextField(
         controller: controller,
         obscureText: isPassword,
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: hintText,
-          prefixIcon: Icon(icon, color: Colors.grey.shade400),
+          hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,

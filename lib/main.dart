@@ -10,6 +10,7 @@ import 'theme/theme_provider.dart';
 import 'providers/profile_provider.dart';
 import 'services/chat_service.dart';
 import 'widgets/call_listener_wrapper.dart';
+import 'providers/language_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +22,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
       ],
       child: const DateDashApp(),
     ),

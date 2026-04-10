@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../widgets/bordered_search_bar.dart';
 import '../models/user_profile_model.dart';
 import '../providers/profile_provider.dart';
+import '../providers/language_provider.dart';
 import '../services/profile_service.dart';
 import '../services/chat_service.dart';
 import '../widgets/profile_detail_sheet.dart';
@@ -18,10 +19,11 @@ class LikesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
+    final languageProvider = context.watch<LanguageProvider>();
 
     if (currentUser == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please sign in to see likes')),
+      return Scaffold(
+        body: Center(child: Text(languageProvider.getString('signin_to_see_likes'))),
       );
     }
 
@@ -40,9 +42,9 @@ class LikesScreen extends StatelessWidget {
           return CustomScrollView(
             slivers: [
               SliverAppBar(
-                title: const Text(
-                  'Likes',
-                  style: TextStyle(fontWeight: FontWeight.w800),
+                title: Text(
+                  languageProvider.getString('nav_likes'),
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
                 elevation: 0,
                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -57,18 +59,18 @@ class LikesScreen extends StatelessWidget {
               ),
               if (likes.isNotEmpty) ...[
                 SliverToBoxAdapter(
-                    child: _buildNewLikesSection(context, likes)),
-                const SliverToBoxAdapter(
+                    child: _buildNewLikesSection(context, likes, languageProvider)),
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     child: Text(
-                      'All Likes',
+                      languageProvider.getString('all_likes'),
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                          const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                     ),
                   ),
                 ),
-                _buildLikesGrid(context, likes),
+                _buildLikesGrid(context, likes, languageProvider),
               ] else
                 SliverFillRemaining(
                   hasScrollBody: false,
@@ -85,18 +87,18 @@ class LikesScreen extends StatelessWidget {
                               ?.withOpacity(0.3),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'No likes yet',
-                          style: TextStyle(
+                        Text(
+                          languageProvider.getString('no_likes_yet'),
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: Colors.grey,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Keep swiping to find matches!',
-                          style: TextStyle(color: Colors.grey),
+                        Text(
+                          languageProvider.getString('keep_swiping_matches'),
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
@@ -110,8 +112,7 @@ class LikesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNewLikesSection(BuildContext context, List<UserProfile> likes) {
-    // Show only the most recent in the horizontal "New" section
+  Widget _buildNewLikesSection(BuildContext context, List<UserProfile> likes, LanguageProvider lp) {
     final newLikes = likes.take(5).toList();
 
     return Column(
@@ -120,7 +121,7 @@ class LikesScreen extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Text(
-            'New Likes (${likes.length})',
+            '${lp.getString('new_likes')} (${likes.length})',
             style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
@@ -139,7 +140,7 @@ class LikesScreen extends StatelessWidget {
                   : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
 
               return GestureDetector(
-                onTap: () => _showProfileDetails(context, newLikes[index]),
+                onTap: () => _showProfileDetails(context, newLikes[index], lp),
                 child: Container(
                   margin: const EdgeInsets.only(right: 12),
                   child: Column(
@@ -173,7 +174,7 @@ class LikesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLikesGrid(BuildContext context, List<UserProfile> likes) {
+  Widget _buildLikesGrid(BuildContext context, List<UserProfile> likes, LanguageProvider lp) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       sliver: SliverGrid(
@@ -191,7 +192,7 @@ class LikesScreen extends StatelessWidget {
                 : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
 
             return GestureDetector(
-              onTap: () => _showProfileDetails(context, profile),
+              onTap: () => _showProfileDetails(context, profile, lp),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
@@ -225,7 +226,7 @@ class LikesScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${profile.firstName ?? 'Someone'}, ${profile.age ?? '??'}',
+                        '${profile.firstName ?? lp.getString('someone_fallback')}, ${profile.age ?? '??'}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
@@ -264,7 +265,7 @@ class LikesScreen extends StatelessWidget {
     );
   }
 
-  void _showProfileDetails(BuildContext context, UserProfile profile) {
+  void _showProfileDetails(BuildContext context, UserProfile profile, LanguageProvider lp) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -294,22 +295,16 @@ class LikesScreen extends StatelessWidget {
           if (myUid == null || profile.uid == null) return;
 
           try {
-            // 1. Get or create chat first (don't pop yet to keep context stable)
             await ChatService().getOrCreateChat(myUid, profile.uid!);
 
             if (context.mounted) {
-              // 2. Pop the sheet (and the UserProfileScreen if it was pushed from the sheet)
-              // We pop once for the sheet. if UserProfileScreen was open, it was pushed on top of the sheet
-              // and should have its own back button, but here we want to jump to chat.
               Navigator.of(context).pop();
-
-              // 3. Push ChatScreen
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => ChatScreen(
                     otherUserId: profile.uid!,
-                    otherUserName: profile.firstName ?? 'User',
+                    otherUserName: profile.firstName ?? lp.getString('user_fallback'),
                     otherUserPhoto:
                         profile.photos.isNotEmpty ? profile.photos.first : null,
                   ),

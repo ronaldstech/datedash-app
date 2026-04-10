@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:flutter/services.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,6 +12,7 @@ import '../services/profile_service.dart';
 import 'action_button.dart';
 import 'profile_detail_sheet.dart';
 import '../screens/edit_profile_screen.dart';
+import '../providers/language_provider.dart';
 
 class SwipeView extends StatefulWidget {
   const SwipeView({super.key});
@@ -131,10 +133,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     final profileProvider = context.read<ProfileProvider>();
     final currentUserId = profileProvider.currentUser?.uid;
     final swipeType = direction == 'right' ? 'like' : 'dislike';
-
     if (currentUserId != null && targetProfile.uid != null) {
       _profileService.swipeUser(currentUserId, targetProfile.uid!, swipeType,
           senderName: profileProvider.displayName);
+      profileProvider.setLastSwipedUserId(targetProfile.uid);
     }
 
     setState(() {
@@ -228,6 +230,8 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
+
     if (_isLoading) {
       return Center(
         child: Column(
@@ -243,8 +247,8 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
               ),
             ),
             const SizedBox(height: 24),
-            const Text('Finding your matches…',
-                style: TextStyle(
+            Text(languageProvider.getString('finding_matches'),
+                style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFFFF4D85))),
@@ -276,15 +280,15 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                     size: 56, color: const Color(0xFFFF4D85).withOpacity(0.5)),
               ),
               const SizedBox(height: 28),
-              const Text('You\'ve seen everyone!',
+              Text(languageProvider.getString('no_profiles_title'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -0.5)),
               const SizedBox(height: 12),
               Text(
-                  'Come back later or refresh to revisit profiles you haven\'t connected with yet.',
+                  languageProvider.getString('no_profiles_sub'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 14,
@@ -311,13 +315,13 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                       ),
                     ],
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Iconsax.refresh, color: Colors.white, size: 20),
-                      SizedBox(width: 10),
-                      Text('Refresh Profiles',
-                          style: TextStyle(
+                      const Icon(Iconsax.refresh, color: Colors.white, size: 20),
+                      const SizedBox(width: 10),
+                      Text(languageProvider.getString('refresh_profiles'),
+                          style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
                               fontSize: 16)),
@@ -391,6 +395,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                                         : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800',
                                     nextProfile.photos.length,
                                     isBackCard: true,
+                                    languageProvider: languageProvider,
                                   ),
                                 ),
                               ),
@@ -428,6 +433,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                                       onNextPhoto: hasMinPhotos ? () => _nextPhoto(photos.length) : _showPhotoLockSnack,
                                       onPrevPhoto: hasMinPhotos ? _prevPhoto : _showPhotoLockSnack,
                                       hasMinPhotos: hasMinPhotos,
+                                      languageProvider: languageProvider,
                                     ),
                                     IgnorePointer(
                                       child: Stack(
@@ -440,7 +446,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                                               child: Opacity(
                                                 opacity: (offset.dx / 100)
                                                     .clamp(0.0, 1.0),
-                                                child: _buildStamp('LIKE',
+                                                child: _buildStamp(languageProvider.getString('like_stamp'),
                                                     const Color(0xFF00D68F)),
                                               ),
                                             ),
@@ -453,7 +459,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                                               child: Opacity(
                                                 opacity: (-offset.dx / 100)
                                                     .clamp(0.0, 1.0),
-                                                child: _buildStamp('NOPE',
+                                                child: _buildStamp(languageProvider.getString('nope_stamp'),
                                                     const Color(0xFFFF5E5E)),
                                               ),
                                             ),
@@ -470,7 +476,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                         // Locked overlay after 1 free swipe
                         if (isLockedOut)
                           Positioned.fill(
-                            child: _buildLockedOverlay(),
+                            child: _buildLockedOverlay(languageProvider),
                           ),
                       ],
                     );
@@ -485,7 +491,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildCard(BuildContext context, UserProfile profile, String photoUrl, int totalPhotos, {bool isBackCard = false, VoidCallback? onNextPhoto, VoidCallback? onPrevPhoto, bool hasMinPhotos = true}) {
+  Widget _buildCard(BuildContext context, UserProfile profile, String photoUrl, int totalPhotos, {bool isBackCard = false, VoidCallback? onNextPhoto, VoidCallback? onPrevPhoto, bool hasMinPhotos = true, required LanguageProvider languageProvider}) {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -610,62 +616,48 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
             ),
           ),
 
-          // Common interests chips — Positioned MUST be direct child of Stack
-          Positioned(
-            top: 30,
-            left: 14,
-            right: 14,
-            child: IgnorePointer(
-              child: Consumer<ProfileProvider>(
-                builder: (context, profileProvider, _) {
-                  final myProfile = profileProvider.userProfile;
-                  if (myProfile == null) return const SizedBox.shrink();
-                  final common = profile.getCommonInterests(myProfile);
-                  if (common.isEmpty) return const SizedBox.shrink();
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: common
-                          .take(4)
-                          .map((interest) => Container(
-                                margin: const EdgeInsets.only(right: 8),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.55),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                      color: const Color(0xFFFF4D85)
-                                          .withOpacity(0.5),
-                                      width: 1),
-                                  boxShadow: [
-                                    BoxShadow(
-                                        color: const Color(0xFFFF4D85)
-                                            .withOpacity(0.15),
-                                        blurRadius: 8)
-                                  ],
-                                ),
-                                child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(Iconsax.heart5,
-                                          color: Color(0xFFFF4D85), size: 11),
-                                      const SizedBox(width: 5),
-                                      Text(interest,
-                                          style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w700,
-                                              letterSpacing: 0.1)),
-                                    ]),
-                              ))
-                          .toList(),
+          // "Looking For" goal tag — replaces common interests for clarity
+          if (profile.lookingFor.isNotEmpty)
+            Positioned(
+              top: 32,
+              left: 14,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.55),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFFF4D85).withOpacity(0.6),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF4D85).withOpacity(0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                  );
-                },
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Iconsax.cup,
+                        color: Color(0xFFFF4D85), size: 14),
+                    const SizedBox(width: 8),
+                    Text(
+                      profile.lookingFor.first,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
 
           // Bottom info panel + action buttons
           Positioned(
@@ -675,8 +667,8 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildProfileInfo(context, profile, hasMinPhotos: hasMinPhotos && !isBackCard),
-                if (!isBackCard) _buildActionRow(),
+                _buildProfileInfo(context, profile, hasMinPhotos: hasMinPhotos && !isBackCard, languageProvider: languageProvider),
+                if (!isBackCard) _buildActionRow(languageProvider),
                 if (isBackCard) const SizedBox(height: 16),
               ],
             ),
@@ -686,7 +678,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildActionRow() {
+  Widget _buildActionRow(LanguageProvider languageProvider) {
+    final profileProvider = context.watch<ProfileProvider>();
+    final canRewind = profileProvider.lastSwipedUserId != null && _currentIndex > 0;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20, top: 4, left: 24, right: 24),
       child: Row(
@@ -697,21 +692,46 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
             color: const Color(0xFFFF5E5E),
             onTap: () => _runSwipeAnimation('left'),
             size: 64,
-            label: 'Pass',
+            label: languageProvider.getString('pass'),
+          ),
+          ActionButton(
+            icon: Iconsax.refresh,
+            color: canRewind ? const Color(0xFF2196F3) : Colors.grey.withOpacity(0.5),
+            onTap: canRewind ? _handleRewind : () {},
+            size: 48,
+            label: languageProvider.getString('rewind'),
           ),
           ActionButton(
             svgAsset: 'assets/images/like.svg',
             color: const Color(0xFF00C853),
             onTap: () => _runSwipeAnimation('right'),
             size: 64,
-            label: 'Like',
+            label: languageProvider.getString('like'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildProfileInfo(BuildContext context, UserProfile profile, {bool hasMinPhotos = true}) {
+  Future<void> _handleRewind() async {
+    final profileProvider = context.read<ProfileProvider>();
+    final lastId = profileProvider.lastSwipedUserId;
+    
+    if (lastId == null || _currentIndex <= 0) return;
+
+    try {
+      await profileProvider.rewindSwipe();
+      setState(() {
+        _currentIndex--;
+        if (_freeSwipesUsed > 0) _freeSwipesUsed--;
+      });
+      HapticFeedback.mediumImpact();
+    } catch (e) {
+      debugPrint('SwipeView: Rewind error: $e');
+    }
+  }
+
+  Widget _buildProfileInfo(BuildContext context, UserProfile profile, {bool hasMinPhotos = true, required LanguageProvider languageProvider}) {
     final occupation = profile.occupation;
     return Padding(
       padding: const EdgeInsets.only(left: 22, right: 22, bottom: 4),
@@ -835,7 +855,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   children: [
                     const Icon(Iconsax.user, color: Colors.white70, size: 13),
                     const SizedBox(width: 6),
-                    Text('View Profile',
+                    Text(languageProvider.getString('view_profile'),
                         style: TextStyle(
                             color: Colors.white.withOpacity(0.85),
                             fontSize: 12,
@@ -853,7 +873,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildLockedOverlay() {
+  Widget _buildLockedOverlay(LanguageProvider languageProvider) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(32),
       child: BackdropFilter(
@@ -886,9 +906,9 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Upload More Photos',
-                    style: TextStyle(
+                  Text(
+                    languageProvider.getString('upload_more_photos_title'),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
@@ -898,7 +918,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Add at least 4 photos to your profile to keep swiping, view profiles, and browse photos.',
+                    languageProvider.getString('upload_more_photos_sub'),
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.75),
                       fontSize: 14,
@@ -932,9 +952,9 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                           ),
                         ],
                       ),
-                      child: const Text(
-                        'Add Photos Now',
-                        style: TextStyle(
+                      child: Text(
+                        languageProvider.getString('add_photos_now'),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
                           fontSize: 15,
@@ -990,7 +1010,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
         },
         onMessage: () async {
           if (!profile.allowMessages) {
-            _showPremiumSnack('This user has disabled direct messaging.');
+            _showPremiumSnack(context.read<LanguageProvider>().getString('messages_disabled_snack'));
             return;
           }
           Navigator.pop(context);
@@ -1016,11 +1036,11 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
 
   void _showPhotoLockSnack() {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: const Row(
+      content: Row(
         children: [
-          Icon(Icons.lock_rounded, color: Colors.white, size: 18),
-          SizedBox(width: 10),
-          Expanded(child: Text('Upload at least 4 photos to browse more pictures!', style: TextStyle(fontWeight: FontWeight.w600))),
+          const Icon(Icons.lock_rounded, color: Colors.white, size: 18),
+          const SizedBox(width: 10),
+          Expanded(child: Text(context.read<LanguageProvider>().getString('photo_lock_snack'), style: const TextStyle(fontWeight: FontWeight.w600))),
         ],
       ),
       backgroundColor: const Color(0xFFFF4D85),
@@ -1029,7 +1049,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
       margin: const EdgeInsets.all(20),
       duration: const Duration(seconds: 3),
       action: SnackBarAction(
-        label: 'Upload',
+        label: context.read<LanguageProvider>().getString('upload_label'),
         textColor: Colors.white,
         onPressed: () {
           Navigator.push(

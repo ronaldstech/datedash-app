@@ -10,6 +10,7 @@ import '../services/profile_service.dart';
 import '../widgets/profile_detail_sheet.dart';
 import '../services/chat_service.dart';
 import '../utils/date_formatter.dart';
+import '../providers/language_provider.dart';
 import 'chat_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
@@ -23,12 +24,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
   final NotificationService _notificationService = NotificationService();
   final ProfileService _profileService = ProfileService();
 
-  String _formatDateTime(DateTime dateTime) {
-    return DateFormatter.format(dateTime);
+  String _formatDateTime(DateTime dateTime, LanguageProvider lp) {
+    return DateFormatter.format(dateTime, lp);
   }
 
   Map<String, List<DatedashNotification>> _groupNotifications(
-      List<DatedashNotification> notifications) {
+      List<DatedashNotification> notifications, LanguageProvider lp) {
     final Map<String, List<DatedashNotification>> groups = {
       'Today': [],
       'Yesterday': [],
@@ -57,10 +58,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final lp = context.watch<LanguageProvider>();
 
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please sign in to see notifications')),
+      return Scaffold(
+        body: Center(child: Text(lp.getString('signin_to_view_messages'))),
       );
     }
 
@@ -74,9 +76,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
           }
 
           final notifications = snapshot.data ?? [];
-          if (notifications.isEmpty) return _buildEmptyState(context);
+          if (notifications.isEmpty) return _buildEmptyState(context, lp);
 
-          final grouped = _groupNotifications(notifications);
+          final grouped = _groupNotifications(notifications, lp);
 
           return CustomScrollView(
             physics: const BouncingScrollPhysics(),
@@ -87,12 +89,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 pinned: true,
                 elevation: 0,
                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                flexibleSpace: const FlexibleSpaceBar(
+                flexibleSpace: FlexibleSpaceBar(
                   centerTitle: false,
-                  titlePadding: EdgeInsets.only(left: 20, bottom: 16),
+                  titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
                   title: Text(
-                    'Notifications',
-                    style: TextStyle(
+                    lp.getString('nav_likes'), // Reuse nav_likes or add specific key
+                    style: const TextStyle(
                       fontWeight: FontWeight.w900,
                       fontSize: 22,
                       letterSpacing: -0.5,
@@ -103,8 +105,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   TextButton(
                     onPressed: () =>
                         _notificationService.markAllAsRead(user.uid),
-                    child: const Text('Mark all as read',
-                        style: TextStyle(
+                    child: Text(lp.getString('mark_all_read'),
+                        style: const TextStyle(
                             color: Color(0xFFFF4D85),
                             fontWeight: FontWeight.w700)),
                   ),
@@ -112,14 +114,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ],
               ),
               if (grouped['Today']!.isNotEmpty)
-                _buildSectionHeader('New for you'),
+                _buildSectionHeader(lp.getString('today')),
               if (grouped['Today']!.isNotEmpty)
                 _buildNotificationSliver(grouped['Today']!),
               if (grouped['Yesterday']!.isNotEmpty)
-                _buildSectionHeader('Yesterday'),
+                _buildSectionHeader(lp.getString('yesterday')),
               if (grouped['Yesterday']!.isNotEmpty)
                 _buildNotificationSliver(grouped['Yesterday']!),
-              if (grouped['Earlier']!.isNotEmpty) _buildSectionHeader('Earlier'),
+              if (grouped['Earlier']!.isNotEmpty) _buildSectionHeader(lp.getString('earlier')),
               if (grouped['Earlier']!.isNotEmpty)
                 _buildNotificationSliver(grouped['Earlier']!),
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -160,7 +162,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, LanguageProvider lp) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -175,13 +177,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 size: 80, color: Color(0xFFFF4D85)),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Keep it quiet?',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+          Text(
+            lp.getString('no_notifications_title'),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 8),
           Text(
-            'New likes and views will appear here',
+            lp.getString('no_notifications_sub'),
             style: TextStyle(
                 color: Theme.of(context).hintColor,
                 fontSize: 16,
@@ -210,11 +212,12 @@ class _NotificationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isLike = notification.type == 'like';
     final bool isMissedCall = notification.type == 'missed_call';
+    final lp = context.watch<LanguageProvider>();
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () => _handleTap(context),
+        onTap: () => _handleTap(context, lp),
         borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.all(12),
@@ -250,16 +253,16 @@ class _NotificationCard extends StatelessWidget {
                                   const TextStyle(fontWeight: FontWeight.w800)),
                           TextSpan(
                               text: isLike
-                                  ? ' liked your profile'
+                                  ? ' ${lp.getString('liked_profile_suffix')}'
                                   : isMissedCall
-                                      ? ' missed your call'
-                                      : ' viewed your profile'),
+                                      ? ' ${lp.getString('missed_call_suffix')}'
+                                      : ' ${lp.getString('viewed_profile_suffix')}'),
                         ],
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      _formatDateTime(notification.timestamp),
+                      _formatDateTime(notification.timestamp, lp),
                       style: TextStyle(
                         color: Theme.of(context).hintColor.withOpacity(0.6),
                         fontSize: 12,
@@ -351,11 +354,11 @@ class _NotificationCard extends StatelessWidget {
     );
   }
 
-  String _formatDateTime(DateTime dateTime) {
-    return DateFormatter.format(dateTime);
+  String _formatDateTime(DateTime dateTime, LanguageProvider lp) {
+    return DateFormatter.format(dateTime, lp);
   }
 
-  void _handleTap(BuildContext context) async {
+  void _handleTap(BuildContext context, LanguageProvider lp) async {
     service.markAsRead(notification.id);
     onPop();
 
@@ -371,14 +374,14 @@ class _NotificationCard extends StatelessWidget {
       if (context.mounted) Navigator.pop(context);
 
       if (senderProfile != null && context.mounted) {
-        _showProfileDetails(context, senderProfile);
+        _showProfileDetails(context, senderProfile, lp);
       }
     } catch (_) {
       if (context.mounted) Navigator.pop(context);
     }
   }
 
-  void _showProfileDetails(BuildContext context, UserProfile profile) {
+  void _showProfileDetails(BuildContext context, UserProfile profile, LanguageProvider lp) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -411,7 +414,7 @@ class _NotificationCard extends StatelessWidget {
           if (context.mounted) {
             Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(
               otherUserId: profile.uid!,
-              otherUserName: profile.firstName ?? 'User',
+              otherUserName: profile.firstName ?? lp.getString('user_fallback'),
               otherUserPhoto: profile.photos.isNotEmpty ? profile.photos.first : null,
             )));
           }

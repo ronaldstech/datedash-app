@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../models/chat_model.dart';
 import '../models/user_profile_model.dart';
 import '../services/chat_service.dart';
 import '../services/profile_service.dart';
+import '../providers/language_provider.dart';
 import 'chat_screen.dart';
 import '../widgets/bordered_search_bar.dart';
 import '../utils/date_formatter.dart';
@@ -30,10 +32,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   Widget build(BuildContext context) {
     final myUid = FirebaseAuth.instance.currentUser?.uid;
+    final languageProvider = context.watch<LanguageProvider>();
 
     if (myUid == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please sign in to view messages')),
+      return Scaffold(
+        body: Center(child: Text(languageProvider.getString('signin_to_view_messages'))),
       );
     }
 
@@ -47,9 +50,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
           return CustomScrollView(
             slivers: [
               SliverAppBar(
-                title: const Text(
-                  'Messages',
-                  style: TextStyle(fontWeight: FontWeight.w800),
+                title: Text(
+                  languageProvider.getString('messages_title'),
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
                 elevation: 0,
                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -77,9 +80,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                           color: Colors.red.withOpacity(0.6),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'Failed to load messages',
-                          style: TextStyle(
+                        Text(
+                          languageProvider.getString('failed_load_messages'),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -87,7 +90,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () => setState(() {}),
-                          child: const Text('Retry'),
+                          child: Text(languageProvider.getString('retry_button')),
                         ),
                       ],
                     ),
@@ -117,16 +120,16 @@ class _ChatListScreenState extends State<ChatListScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        const Text(
-                          'No conversations yet',
-                          style: TextStyle(
+                        Text(
+                          languageProvider.getString('no_conversations_yet'),
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Like someone to start a conversation',
+                          languageProvider.getString('no_conversations_sub'),
                           style: TextStyle(color: Theme.of(context).hintColor),
                         ),
                       ],
@@ -145,12 +148,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 ),
 
               // Section header: New Matches
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                   child: Text(
-                    'New Matches',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    languageProvider.getString('new_matches_header'),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                   ),
                 ),
               ),
@@ -168,7 +171,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Center(
                             child: Text(
-                              'No matches yet. Keep swiping!',
+                              languageProvider.getString('no_matches_yet_sub'),
                               style: TextStyle(
                                   color: Theme.of(context).hintColor,
                                   fontSize: 13),
@@ -192,7 +195,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                 MaterialPageRoute(
                                   builder: (_) => ChatScreen(
                                     otherUserId: match.uid!,
-                                    otherUserName: match.firstName ?? 'User',
+                                    otherUserName: match.firstName ?? languageProvider.getString('user_fallback'),
                                     otherUserPhoto: photo,
                                   ),
                                 ),
@@ -218,7 +221,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    match.firstName ?? 'User',
+                                    match.firstName ?? languageProvider.getString('user_fallback'),
                                     style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
@@ -239,13 +242,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
               // Section header: Messages
               if (chats.isNotEmpty)
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                     child: Text(
-                      'Recent Messages',
+                      languageProvider.getString('recent_messages_header'),
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                          const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                     ),
                   ),
                 ),
@@ -263,7 +266,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         future: _profileService.getUserProfile(otherUid),
                         builder: (context, profileSnap) {
                           final profile = profileSnap.data;
-                          final name = profile?.firstName ?? 'User';
+                          final name = profile?.firstName ?? languageProvider.getString('user_fallback');
                           final photo = profile?.photos.isNotEmpty == true
                               ? profile!.photos.first
                               : null;
@@ -313,7 +316,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                 Text(
                                   chat.lastMessageTime != null
                                       ? DateFormatter.format(
-                                          chat.lastMessageTime!)
+                                          chat.lastMessageTime!, languageProvider)
                                       : '',
                                   style: TextStyle(
                                     color: unread > 0
@@ -332,9 +335,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                 Expanded(
                                   child: Text(
                                     chat.lastMessage.isEmpty
-                                        ? 'Say hello!'
+                                        ? languageProvider.getString('say_hello')
                                         : (chat.lastMessageSenderId == myUid
-                                            ? 'You: ${chat.lastMessage}'
+                                            ? '${languageProvider.getString('you_prefix')} ${chat.lastMessage}'
                                             : chat.lastMessage),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,

@@ -5,6 +5,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/language_provider.dart';
 import '../services/call_service.dart';
 import '../services/notification_service.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
@@ -41,7 +42,6 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen> {
   @override
   void initState() {
     super.initState();
-    // Auto-timeout after 30 seconds
     _timeoutTimer = Timer(const Duration(seconds: 30), _handleTimeout);
   }
 
@@ -102,6 +102,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lp = context.watch<LanguageProvider>();
     return StreamBuilder<DocumentSnapshot>(
       stream: _callService.listenToCallState(widget.chatId),
       builder: (context, snapshot) {
@@ -115,10 +116,10 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen> {
                 if (mounted) Navigator.pop(context);
               });
             }
-            return const Scaffold(
-              backgroundColor: Color(0xFF1E1E1E),
+            return Scaffold(
+              backgroundColor: const Color(0xFF1E1E1E),
               body: Center(
-                child: Text("Call Ended", style: TextStyle(color: Colors.white)),
+                child: Text(lp.getString('call_ended'), style: const TextStyle(color: Colors.white)),
               ),
             );
           }
@@ -163,7 +164,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        widget.isVideo ? 'Dialing Video Call...' : 'Dialing Voice Call...',
+                        widget.isVideo ? lp.getString('dialing_video_call') : lp.getString('dialing_voice_call'),
                         style: const TextStyle(
                           fontSize: 16,
                           color: Colors.white70,
@@ -176,7 +177,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen> {
                 _buildActionButton(
                   icon: Iconsax.call_remove,
                   color: Colors.redAccent,
-                  label: 'Cancel',
+                  label: lp.getString('cancel'),
                   onTap: _endCall,
                 ),
                 const SizedBox(height: 80),

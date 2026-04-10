@@ -5,6 +5,7 @@ import '../models/user_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../screens/user_profile_screen.dart';
 import '../services/profile_service.dart';
+import '../providers/language_provider.dart';
 
 class ProfileDetailSheet extends StatefulWidget {
   final UserProfile profile;
@@ -52,6 +53,7 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
     final onLike = widget.onLike;
     final onDislike = widget.onDislike;
     final onMessage = widget.onMessage;
+    final languageProvider = context.watch<LanguageProvider>();
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
@@ -199,23 +201,23 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
                             ),
                           ],
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Iconsax.profile_2user,
+                            const Icon(Iconsax.profile_2user,
                                 color: Colors.white, size: 20),
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10),
                             Text(
-                              'View Full Profile',
-                              style: TextStyle(
+                              languageProvider.getString('view_full_profile'),
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w800,
                                 fontSize: 15,
                                 letterSpacing: 0.5,
                               ),
                             ),
-                            SizedBox(width: 6),
-                            Icon(
+                            const SizedBox(width: 6),
+                            const Icon(
                               Icons.arrow_forward_ios,
                               size: 14,
                               color: Colors.white,
@@ -228,8 +230,8 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
 
                     // ── About Me ────────────────────────────────────
                     if (profile.bio != null && profile.bio!.isNotEmpty) ...[
-                      const _SectionHeader(
-                          title: 'About Me', icon: Iconsax.user),
+                      _SectionHeader(
+                          title: languageProvider.getString('about_me'), icon: Iconsax.user),
                       Text(
                         profile.bio!,
                         style: TextStyle(
@@ -257,8 +259,8 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
 
                     // ── Relationship Goals ──────────────────────────
                     if (profile.lookingFor.isNotEmpty) ...[
-                      const _SectionHeader(
-                          title: 'Relationship Goals', icon: Iconsax.heart),
+                      _SectionHeader(
+                          title: languageProvider.getString('relationship_goals'), icon: Iconsax.heart),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -271,8 +273,8 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
 
                     // ── Interests & Hobbies ─────────────────────────
                     if (profile.hobbies.isNotEmpty) ...[
-                      const _SectionHeader(
-                          title: 'Interests & Hobbies', icon: Iconsax.activity),
+                      _SectionHeader(
+                          title: languageProvider.getString('interests_hobbies'), icon: Iconsax.activity),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -285,8 +287,8 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
 
                     // ── Music ───────────────────────────────────────
                     if (profile.musicGenres.isNotEmpty) ...[
-                      const _SectionHeader(
-                          title: 'Music Taste', icon: Iconsax.music),
+                      _SectionHeader(
+                          title: languageProvider.getString('music_taste'), icon: Iconsax.music),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -330,20 +332,20 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
                   _ActionButton(
                     icon: Iconsax.close_circle,
                     color: const Color(0xFFFF5E5E),
-                    label: 'Pass',
+                    label: languageProvider.getString('pass'),
                     onTap: onDislike,
                   ),
                   _ActionButton(
                     icon: Iconsax.message_text5,
                     color: Colors.blueAccent,
-                    label: 'Message',
+                    label: languageProvider.getString('message'),
                     onTap: onMessage,
                     isSmall: true,
                   ),
                   _ActionButton(
                     icon: Iconsax.heart5,
                     color: primaryColor,
-                    label: 'Like',
+                    label: languageProvider.getString('like'),
                     onTap: onLike,
                   ),
                 ],
@@ -359,33 +361,33 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
     final facts = <Map<String, dynamic>>[];
     if (widget.profile.height != null) {
       facts.add(
-          {'icon': Iconsax.ruler, 'label': 'Height', 'value': widget.profile.height!});
+          {'icon': Iconsax.ruler, 'label': context.read<LanguageProvider>().getString('height_label'), 'value': widget.profile.height!});
     }
     if (widget.profile.educationLevel != null) {
       facts.add({
         'icon': Iconsax.teacher,
-        'label': 'Education',
+        'label': context.read<LanguageProvider>().getString('education_label'),
         'value': widget.profile.educationLevel!
       });
     }
     if (widget.profile.religion != null) {
       facts.add({
         'icon': Iconsax.cloud,
-        'label': 'Religion',
+        'label': context.read<LanguageProvider>().getString('religion_label'),
         'value': widget.profile.religion!
       });
     }
     if (widget.profile.wantKids != null) {
       facts.add({
         'icon': Iconsax.heart_circle,
-        'label': 'Wants Kids',
+        'label': context.read<LanguageProvider>().getString('wants_kids_label'),
         'value': widget.profile.wantKids!
       });
     }
     if (widget.profile.openToLongDistance != null) {
       facts.add({
         'icon': Iconsax.global,
-        'label': 'Long Distance',
+        'label': context.read<LanguageProvider>().getString('long_distance_label'),
         'value': widget.profile.openToLongDistance! ? 'Open to it' : 'No'
       });
     }
@@ -394,7 +396,7 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
 
     return Column(
       children: [
-        const _SectionHeader(title: 'Quick Facts', icon: Iconsax.info_circle),
+        _SectionHeader(title: context.read<LanguageProvider>().getString('quick_facts'), icon: Iconsax.info_circle),
         ...facts.map(
           (f) => _LabeledRow(
             icon: f['icon'] as IconData,
@@ -412,25 +414,25 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
     if (widget.profile.bodyType != null) {
       items.add({
         'icon': Iconsax.user,
-        'label': 'Body Type',
+        'label': context.read<LanguageProvider>().getString('body_type_label'),
         'value': widget.profile.bodyType!
       });
     }
-    if (widget.profile.ethnicity != null) {
+    if (widget.profile.relationshipStatus != null) {
       items.add({
-        'icon': Iconsax.people,
-        'label': 'Ethnicity',
-        'value': widget.profile.ethnicity!
+        'icon': Iconsax.heart,
+        'label': context.read<LanguageProvider>().getString('status_label'),
+        'value': widget.profile.relationshipStatus!
       });
     }
     if (widget.profile.school != null) {
       items.add(
-          {'icon': Iconsax.book, 'label': 'School', 'value': widget.profile.school!});
+          {'icon': Iconsax.book, 'label': context.read<LanguageProvider>().getString('school_label'), 'value': widget.profile.school!});
     }
     if (widget.profile.languages.isNotEmpty) {
       items.add({
         'icon': Iconsax.translate,
-        'label': 'Languages',
+        'label': context.read<LanguageProvider>().getString('languages_spoken_label'),
         'value': widget.profile.languages.join(', ')
       });
     }
@@ -439,7 +441,7 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
 
     return Column(
       children: [
-        const _SectionHeader(title: 'Background', icon: Iconsax.profile_2user),
+        _SectionHeader(title: context.read<LanguageProvider>().getString('background'), icon: Iconsax.profile_2user),
         ...items.map(
           (f) => _LabeledRow(
             icon: f['icon'] as IconData,
@@ -457,32 +459,32 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
     if (widget.profile.smoking != null) {
       items.add({
         'icon': Iconsax.status,
-        'label': 'Smoking',
+        'label': context.read<LanguageProvider>().getString('smoking_label'),
         'value': widget.profile.smoking!
       });
     }
     if (widget.profile.drinking != null) {
       items.add({
         'icon': Iconsax.cup,
-        'label': 'Drinking',
+        'label': context.read<LanguageProvider>().getString('drinking_label'),
         'value': widget.profile.drinking!
       });
     }
     if (widget.profile.fitness != null) {
       items.add({
         'icon': Iconsax.activity,
-        'label': 'Exercise',
+        'label': context.read<LanguageProvider>().getString('exercise_label'),
         'value': widget.profile.fitness!
       });
     }
     if (widget.profile.diet != null) {
       items.add(
-          {'icon': Iconsax.coffee, 'label': 'Diet', 'value': widget.profile.diet!});
+          {'icon': Iconsax.coffee, 'label': context.read<LanguageProvider>().getString('diet_label'), 'value': widget.profile.diet!});
     }
     if (widget.profile.sleepingHabits != null) {
       items.add({
         'icon': Iconsax.moon,
-        'label': 'Sleep',
+        'label': context.read<LanguageProvider>().getString('sleep_label'),
         'value': widget.profile.sleepingHabits!
       });
     }
@@ -491,7 +493,7 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
 
     return Column(
       children: [
-        const _SectionHeader(title: 'Lifestyle', icon: Iconsax.chart_2),
+        _SectionHeader(title: context.read<LanguageProvider>().getString('lifestyle'), icon: Iconsax.chart_2),
         ...items.map(
           (f) => _LabeledRow(
             icon: f['icon'] as IconData,
@@ -509,28 +511,28 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
     if (widget.profile.mbti != null) {
       items.add({
         'icon': Iconsax.profile_circle,
-        'label': 'Personality Type',
+        'label': context.read<LanguageProvider>().getString('personality_type_label'),
         'value': widget.profile.mbti!
       });
     }
     if (widget.profile.introvertExtrovert != null) {
       items.add({
         'icon': Iconsax.sun_1,
-        'label': 'Social Style',
+        'label': context.read<LanguageProvider>().getString('social_style_label'),
         'value': widget.profile.introvertExtrovert!
       });
     }
     if (widget.profile.loveLanguage != null) {
       items.add({
         'icon': Iconsax.heart,
-        'label': 'Love Language',
+        'label': context.read<LanguageProvider>().getString('love_language_label'),
         'value': widget.profile.loveLanguage!
       });
     }
     if (widget.profile.coreValues != null) {
       items.add({
         'icon': Iconsax.star,
-        'label': 'Core Values',
+        'label': context.read<LanguageProvider>().getString('core_values_label'),
         'value': widget.profile.coreValues!
       });
     }
@@ -539,7 +541,7 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
 
     return Column(
       children: [
-        const _SectionHeader(title: 'Personality', icon: Iconsax.emoji_happy),
+        _SectionHeader(title: context.read<LanguageProvider>().getString('personality'), icon: Iconsax.emoji_happy),
         ...items.map(
           (f) => _LabeledRow(
             icon: f['icon'] as IconData,
@@ -565,7 +567,7 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeader(title: 'Prompts', icon: Iconsax.message_question),
+        _SectionHeader(title: context.read<LanguageProvider>().getString('prompts'), icon: Iconsax.message_question),
         ...prompts.map(
           (p) => Container(
             width: double.infinity,

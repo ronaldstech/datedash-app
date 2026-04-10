@@ -166,6 +166,28 @@ class ProfileService {
     }
   }
 
+  /// Removes a swipe record and associated match if it exists
+  Future<void> undoLastSwipe(String fromId, String toId) async {
+    try {
+      final swipeId = '${fromId}_$toId';
+      final matchId = fromId.compareTo(toId) < 0 ? '${fromId}_$toId' : '${toId}_$fromId';
+
+      final batch = _firestore.batch();
+      
+      // Delete swipe doc
+      batch.delete(_firestore.collection('swipes').doc(swipeId));
+      
+      // Attempt to delete match doc (it might not exist, but batch.delete is safe if we have the ref)
+      batch.delete(_firestore.collection('matches').doc(matchId));
+
+      await batch.commit();
+      debugPrint('ProfileService: Undo swipe and match for $swipeId');
+    } catch (e) {
+      debugPrint('Error undoing swipe: $e');
+      rethrow;
+    }
+  }
+
   /// Returns a stream of mutual matches for a user
   Stream<List<UserProfile>> getMatchesStream(String userId) {
     return _firestore

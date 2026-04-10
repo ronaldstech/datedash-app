@@ -8,6 +8,7 @@ import '../services/chat_service.dart';
 class ProfileProvider with ChangeNotifier {
   final ProfileService _profileService = ProfileService();
   final ChatService _chatService = ChatService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   UserProfile? _userProfile;
   User? _currentUser;
   StreamSubscription<User?>? _userSubscription;
@@ -23,6 +24,7 @@ class ProfileProvider with ChangeNotifier {
   StreamSubscription<int>? _matchesCountSubscription;
   StreamSubscription<int>? _unreadMessageCountSubscription;
   double _swipeOffset = 0.0;
+  String? _lastSwipedUserId;
 
   ProfileProvider() {
     _userSubscription = FirebaseAuth.instance.userChanges().listen((user) {
@@ -116,6 +118,40 @@ class ProfileProvider with ChangeNotifier {
     _swipeOffset = 0.0;
     notifyListeners();
   }
+
+  /// Saves or updates a UserProfile in Firestore
+  Future<void> saveUserProfile(String uid, UserProfile profile) async {
+    try {
+      await _profileService.saveUserProfile(uid, profile);
+      // Local profile is updated via the stream listener in constructor
+    } catch (e) {
+      debugPrint('ProfileProvider: Error saving profile: $e');
+      rethrow;
+    }
+  }
+
+  /// Sets the last swiped user ID for potential rewind
+  void setLastSwipedUserId(String? uid) {
+    _lastSwipedUserId = uid;
+    notifyListeners();
+  }
+
+  /// Performs the rewind action on the backend
+  Future<void> rewindSwipe() async {
+    final myUid = _auth.currentUser?.uid;
+    if (myUid == null || _lastSwipedUserId == null) return;
+
+    try {
+      await _profileService.undoLastSwipe(myUid, _lastSwipedUserId!);
+      _lastSwipedUserId = null;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('ProfileProvider: Error rewinding swipe: $e');
+      rethrow;
+    }
+  }
+
+  String? get lastSwipedUserId => _lastSwipedUserId;
 
   /// Returns the display name with fallback logic:
   /// Firestore firstName -> Google displayName -> 'Guest User'

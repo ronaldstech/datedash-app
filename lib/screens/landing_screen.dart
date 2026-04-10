@@ -13,6 +13,7 @@ import '../services/notification_service.dart';
 import '../screens/notification_screen.dart';
 import 'edit_profile_screen.dart';
 import '../services/auth_service.dart';
+import '../providers/language_provider.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -24,6 +25,7 @@ class LandingScreen extends StatefulWidget {
 class _LandingScreenState extends State<LandingScreen> {
   @override
   Widget build(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
     return Consumer<ProfileProvider>(
       builder: (context, profileProvider, _) {
         if (profileProvider.userProfile == null) {
@@ -194,15 +196,15 @@ class _LandingScreenState extends State<LandingScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildNavItem(0, Iconsax.flash, Iconsax.flash5, 'Swipe',
+                        _buildNavItem(0, Iconsax.flash, Iconsax.flash5, languageProvider.getString('nav_swipe'),
                             currentIndex, profileProvider),
                         _buildNavItem(1, Iconsax.discover, Iconsax.discover5,
-                            'Explore', currentIndex, profileProvider),
-                        _buildNavItem(2, Iconsax.heart, Iconsax.heart5, 'Likes',
+                            languageProvider.getString('nav_explore'), currentIndex, profileProvider),
+                        _buildNavItem(2, Iconsax.heart, Iconsax.heart5, languageProvider.getString('nav_likes'),
                             currentIndex, profileProvider,
                             hasBadge: true),
                         _buildNavItem(3, Iconsax.message, Iconsax.message5,
-                            'Chat', currentIndex, profileProvider,
+                            languageProvider.getString('nav_chat'), currentIndex, profileProvider,
                             hasBadge: true),
                       ],
                     ),
@@ -284,7 +286,7 @@ class _LandingScreenState extends State<LandingScreen> {
                   child: Container(
                     color:
                         Theme.of(context).colorScheme.surface.withOpacity(0.3),
-                    child: _buildIncompleteProfileScreen(context, completion),
+                    child: _buildIncompleteProfileScreen(context, completion, languageProvider),
                   ),
                 ),
               ),
@@ -349,7 +351,7 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
-  Widget _buildIncompleteProfileScreen(BuildContext context, int completion) {
+  Widget _buildIncompleteProfileScreen(BuildContext context, int completion, LanguageProvider languageProvider) {
     return Material(
       color: Colors.transparent,
       child: SafeArea(
@@ -372,9 +374,9 @@ class _LandingScreenState extends State<LandingScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Profile Needs Attention',
-                style: TextStyle(
+              Text(
+                languageProvider.getString('profile_needs_attention'),
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                 ),
@@ -382,7 +384,7 @@ class _LandingScreenState extends State<LandingScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Your profile is currently $completion% complete. You need to complete your profile past 40% before you can start matching, chatting, and exploring!',
+                languageProvider.getString('profile_completion_sub').replaceAll('{completion}', completion.toString()),
                 style: TextStyle(
                   fontSize: 16,
                   color: Theme.of(context)
@@ -432,9 +434,9 @@ class _LandingScreenState extends State<LandingScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Complete Profile',
-                    style: TextStyle(
+                  child: Text(
+                    languageProvider.getString('complete_profile_button'),
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -452,7 +454,7 @@ class _LandingScreenState extends State<LandingScreen> {
                       ?.color
                       ?.withOpacity(0.6),
                 ),
-                child: const Text('Sign Out'),
+                child: Text(languageProvider.getString('signout_label')),
               ),
             ],
           ),
