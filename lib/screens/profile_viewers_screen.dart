@@ -9,6 +9,7 @@ import '../services/profile_service.dart';
 import '../services/chat_service.dart';
 import '../widgets/profile_detail_sheet.dart';
 import '../screens/chat_screen.dart';
+import '../utils/date_formatter.dart';
 
 class ProfileViewersScreen extends StatelessWidget {
   final ProfileService _profileService = ProfileService();
@@ -17,23 +18,7 @@ class ProfileViewersScreen extends StatelessWidget {
 
   String _formatDateTime(Timestamp? timestamp) {
     if (timestamp == null) return '';
-    final DateTime dateTime = timestamp.toDate();
-    final DateTime now = DateTime.now();
-    final int differenceInMinutes = now.difference(dateTime).inMinutes;
-    final int differenceInHours = now.difference(dateTime).inHours;
-    final int differenceInDays = now.difference(dateTime).inDays;
-
-    if (differenceInMinutes < 1) {
-      return 'Just now';
-    } else if (differenceInMinutes < 60) {
-      return '$differenceInMinutes min ago';
-    } else if (differenceInHours < 24) {
-      return '$differenceInHours hr ago';
-    } else if (differenceInDays < 7) {
-      return '$differenceInDays days ago';
-    } else {
-      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
-    }
+    return DateFormatter.format(timestamp.toDate());
   }
 
   @override

@@ -9,6 +9,7 @@ import '../services/notification_service.dart';
 import '../services/profile_service.dart';
 import '../widgets/profile_detail_sheet.dart';
 import '../services/chat_service.dart';
+import '../utils/date_formatter.dart';
 import 'chat_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
@@ -23,17 +24,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   final ProfileService _profileService = ProfileService();
 
   String _formatDateTime(DateTime dateTime) {
-    final DateTime now = DateTime.now();
-    final int minutes = now.difference(dateTime).inMinutes;
-    final int hours = now.difference(dateTime).inHours;
-    final int days = now.difference(dateTime).inDays;
-
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return '$minutes min ago';
-    if (hours < 24) return '$hours hr ago';
-    if (days == 1) return 'Yesterday';
-    if (days < 7) return '$days days ago';
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    return DateFormatter.format(dateTime);
   }
 
   Map<String, List<DatedashNotification>> _groupNotifications(
@@ -361,14 +352,7 @@ class _NotificationCard extends StatelessWidget {
   }
 
   String _formatDateTime(DateTime dateTime) {
-    final DateTime now = DateTime.now();
-    final int minutes = now.difference(dateTime).inMinutes;
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return '$minutes min ago';
-    if (now.difference(dateTime).inHours < 24) {
-      return '${now.difference(dateTime).inHours} hr ago';
-    }
-    return '${dateTime.day}/${dateTime.month}';
+    return DateFormatter.format(dateTime);
   }
 
   void _handleTap(BuildContext context) async {

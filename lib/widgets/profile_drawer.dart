@@ -141,13 +141,18 @@ class ProfileDrawer extends StatelessWidget {
                               const Color(0xFFFF4D85),
                               onTap: () {
                                 Navigator.pop(context);
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => LikesScreen()));
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => LikesScreen()));
                               },
                             ),
                             Container(
                                 width: 1,
                                 height: 24,
-                                color: Theme.of(context).dividerColor.withOpacity(0.2)),
+                                color: Theme.of(context)
+                                    .dividerColor
+                                    .withOpacity(0.2)),
                             _buildStatItem(
                               context,
                               'Visitors',
@@ -156,13 +161,19 @@ class ProfileDrawer extends StatelessWidget {
                               Colors.blueAccent,
                               onTap: () {
                                 Navigator.pop(context);
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileViewersScreen()));
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            ProfileViewersScreen()));
                               },
                             ),
                             Container(
                                 width: 1,
                                 height: 24,
-                                color: Theme.of(context).dividerColor.withOpacity(0.2)),
+                                color: Theme.of(context)
+                                    .dividerColor
+                                    .withOpacity(0.2)),
                             _buildStatItem(
                               context,
                               'Matches',
@@ -171,7 +182,11 @@ class ProfileDrawer extends StatelessWidget {
                               const Color(0xFFFFD700),
                               onTap: () {
                                 Navigator.pop(context);
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatListScreen()));
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const ChatListScreen()));
                               },
                             ),
                           ],
@@ -187,7 +202,7 @@ class ProfileDrawer extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 children: [
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 4),
 
                   // Account Section
                   _buildSectionHeader(context, 'Account'),
@@ -195,6 +210,7 @@ class ProfileDrawer extends StatelessWidget {
                     context,
                     Iconsax.user,
                     'My Profile',
+                    backgroundColor: const Color(0xFFFF4D85),
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.push(
@@ -203,7 +219,6 @@ class ProfileDrawer extends StatelessWidget {
                               builder: (_) => const ProfileScreen()));
                     },
                   ),
-                  _buildItem(context, Iconsax.people, 'My People'),
                   _buildItem(
                     context,
                     Iconsax.setting_2,
@@ -216,12 +231,12 @@ class ProfileDrawer extends StatelessWidget {
                               builder: (_) => const SettingsScreen()));
                     },
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 4),
 
                   // Discovery Section
                   _buildSectionHeader(context, 'Discovery'),
                   _buildItem(context, Iconsax.discover_1, 'Explore People'),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 4),
 
                   // Activity Section
                   _buildSectionHeader(context, 'Activity'),
@@ -232,7 +247,10 @@ class ProfileDrawer extends StatelessWidget {
                     color: const Color(0xFFFF4D85),
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatListScreen()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ChatListScreen()));
                     },
                   ),
                   _buildItem(
@@ -241,7 +259,10 @@ class ProfileDrawer extends StatelessWidget {
                     'Visitors',
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileViewersScreen()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => ProfileViewersScreen()));
                     },
                   ),
                   _buildItem(context, Iconsax.document_text, 'Blog'),
@@ -253,7 +274,8 @@ class ProfileDrawer extends StatelessWidget {
                     color: const Color(0xFFFF4D85),
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => LikesScreen()));
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => LikesScreen()));
                     },
                   ),
                   const SizedBox(height: 20),
@@ -349,20 +371,23 @@ class ProfileDrawer extends StatelessWidget {
   }
 
   Widget _buildItem(BuildContext context, IconData icon, String title,
-      {Color? color, VoidCallback? onTap}) {
+      {Color? color, Color? backgroundColor, VoidCallback? onTap}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withOpacity(0.03)
-            : Colors.black.withOpacity(0.02),
+        color: backgroundColor ??
+            (isDark
+                ? Colors.white.withOpacity(0.03)
+                : Colors.black.withOpacity(0.02)),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.black.withOpacity(0.05),
+          color: backgroundColor != null
+              ? backgroundColor.withOpacity(0.3)
+              : (isDark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.05)),
         ),
       ),
       child: ListTile(
@@ -370,18 +395,29 @@ class ProfileDrawer extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: (color ?? const Color(0xFFFF4D85)).withOpacity(0.1),
+            color: backgroundColor != null
+                ? Colors.white.withOpacity(0.2)
+                : (color ?? const Color(0xFFFF4D85)).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon,
-              color: color ?? Theme.of(context).iconTheme.color, size: 20),
+              color: backgroundColor != null
+                  ? Colors.white
+                  : (color ?? Theme.of(context).iconTheme.color),
+              size: 20),
         ),
         title: Text(
           title,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: backgroundColor != null ? Colors.white : null),
         ),
         trailing: Icon(Icons.arrow_forward_ios,
-            size: 12, color: Theme.of(context).hintColor.withOpacity(0.5)),
+            size: 12,
+            color: backgroundColor != null
+                ? Colors.white.withOpacity(0.7)
+                : Theme.of(context).hintColor.withOpacity(0.5)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
         visualDensity: VisualDensity.compact,

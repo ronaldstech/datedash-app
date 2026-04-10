@@ -15,6 +15,7 @@ import '../services/profile_service.dart';
 import '../widgets/profile_detail_sheet.dart';
 import 'image_editor_screen.dart';
 import 'outgoing_call_screen.dart';
+import '../utils/date_formatter.dart';
 
 class ChatScreen extends StatefulWidget {
   final String otherUserId;
@@ -114,7 +115,8 @@ class _ChatScreenState extends State<ChatScreen> {
     final path =
         '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
-    await _recorder.start(const RecordConfig(encoder: AudioEncoder.aacLc), path: path);
+    await _recorder.start(const RecordConfig(encoder: AudioEncoder.aacLc),
+        path: path);
     setState(() {
       _isRecording = true;
       _recordStart = DateTime.now();
@@ -417,35 +419,43 @@ class _ChatScreenState extends State<ChatScreen> {
             title: Row(
               children: [
                 CircleAvatar(
-                  radius: 18,
+                  radius: 16,
                   backgroundColor: const Color(0xFFFF4D85).withOpacity(0.2),
                   backgroundImage: widget.otherUserPhoto != null
                       ? NetworkImage(widget.otherUserPhoto!)
                       : null,
                   child: widget.otherUserPhoto == null
-                      ? const Icon(Iconsax.user, size: 18, color: Color(0xFFFF4D85))
+                      ? const Icon(Iconsax.user,
+                          size: 16, color: Color(0xFFFF4D85))
                       : null,
                 ),
                 const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.otherUserName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.otherUserName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
-                    ),
-                    Text(
-                      isRecipientOnline ? 'Active now' : 'Offline',
-                      style: TextStyle(
-                        color: isRecipientOnline ? Colors.green : Colors.grey,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
+                      Text(
+                        isRecipientOnline ? 'Active now' : 'Offline',
+                        style: TextStyle(
+                          color: isRecipientOnline ? Colors.green : Colors.grey,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -454,11 +464,13 @@ class _ChatScreenState extends State<ChatScreen> {
                 icon: const Icon(Iconsax.call),
                 tooltip: 'Voice Call',
                 onPressed: _showVoiceCall,
+                iconSize: 17,
               ),
               IconButton(
                 icon: const Icon(Iconsax.video),
                 tooltip: 'Video Call',
                 onPressed: _showVideoCall,
+                iconSize: 17,
               ),
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert),
@@ -471,7 +483,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       _clearChatConfirm();
                       break;
                     case 'profile':
-                      final profile = await ProfileService().getUserProfile(widget.otherUserId);
+                      final profile = await ProfileService()
+                          .getUserProfile(widget.otherUserId);
                       if (profile != null && mounted) {
                         showModalBottomSheet(
                           context: context,
@@ -504,7 +517,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       children: [
                         Icon(Icons.search, size: 20),
                         SizedBox(width: 12),
-                        Text('Search', style: TextStyle(fontWeight: FontWeight.w600)),
+                        Text('Search',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
@@ -514,7 +528,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       children: [
                         Icon(Iconsax.user, size: 20),
                         SizedBox(width: 12),
-                        Text('View Profile', style: TextStyle(fontWeight: FontWeight.w600)),
+                        Text('View Profile',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
@@ -523,7 +538,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     value: 'clear',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_outline, size: 20, color: Colors.red.shade400),
+                        Icon(Icons.delete_outline,
+                            size: 20, color: Colors.red.shade400),
                         const SizedBox(width: 12),
                         Text('Clear Chat',
                             style: TextStyle(
@@ -546,12 +562,14 @@ class _ChatScreenState extends State<ChatScreen> {
               // Search bar
               if (_showSearch)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   color: Theme.of(context).scaffoldBackgroundColor,
                   child: TextField(
                     controller: _searchController,
                     autofocus: true,
-                    onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
+                    onChanged: (v) =>
+                        setState(() => _searchQuery = v.toLowerCase()),
                     decoration: InputDecoration(
                       hintText: 'Search messages...',
                       prefixIcon: const Icon(Icons.search, size: 20),
@@ -565,7 +583,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                       filled: true,
                       fillColor: Theme.of(context).cardColor,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 0, horizontal: 16),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
@@ -583,7 +602,9 @@ class _ChatScreenState extends State<ChatScreen> {
                           final filtered = _searchQuery.isEmpty
                               ? messages
                               : messages
-                                  .where((m) => m.text.toLowerCase().contains(_searchQuery))
+                                  .where((m) => m.text
+                                      .toLowerCase()
+                                      .contains(_searchQuery))
                                   .toList();
 
                           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -605,11 +626,14 @@ class _ChatScreenState extends State<ChatScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(20),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFFF4D85).withOpacity(0.1),
+                                      color: const Color(0xFFFF4D85)
+                                          .withOpacity(0.1),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
-                                      _searchQuery.isNotEmpty ? Icons.search_off : Iconsax.message,
+                                      _searchQuery.isNotEmpty
+                                          ? Icons.search_off
+                                          : Iconsax.message,
                                       size: 40,
                                       color: const Color(0xFFFF4D85),
                                     ),
@@ -629,7 +653,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                     _searchQuery.isNotEmpty
                                         ? 'Try a different search term'
                                         : 'Start the conversation',
-                                    style: TextStyle(color: Theme.of(context).hintColor),
+                                    style: TextStyle(
+                                        color: Theme.of(context).hintColor),
                                   ),
                                 ],
                               ),
@@ -638,7 +663,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             if (_scrollController.hasClients &&
-                                _scrollController.position.maxScrollExtent > 0) {
+                                _scrollController.position.maxScrollExtent >
+                                    0) {
                               _scrollController.animateTo(
                                 _scrollController.position.maxScrollExtent,
                                 duration: const Duration(milliseconds: 200),
@@ -655,26 +681,40 @@ class _ChatScreenState extends State<ChatScreen> {
                             itemBuilder: (context, index) {
                               final msg = filtered[index];
                               final isMe = msg.senderId == _myUid;
-                              final showTime = index == 0 ||
-                                  filtered[index]
-                                          .timestamp
-                                          .difference(
-                                              filtered[index - 1].timestamp)
-                                          .inMinutes >
-                                      10;
+                              final prevMsg =
+                                  index > 0 ? filtered[index - 1] : null;
+                              final showDateDivider = prevMsg == null ||
+                                  msg.timestamp.day != prevMsg.timestamp.day ||
+                                  msg.timestamp.month !=
+                                      prevMsg.timestamp.month ||
+                                  msg.timestamp.year != prevMsg.timestamp.year;
 
                               return Column(
                                 children: [
-                                  if (showTime)
+                                  if (showDateDivider)
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 12),
-                                      child: Text(
-                                        _formatTime(msg.timestamp),
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Theme.of(context).hintColor,
-                                          fontWeight: FontWeight.w500,
+                                          vertical: 20),
+                                      child: Center(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context)
+                                                .dividerColor
+                                                .withOpacity(0.05),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            _formatDateDivider(msg.timestamp),
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color:
+                                                  Theme.of(context).hintColor,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -766,13 +806,6 @@ class _ChatScreenState extends State<ChatScreen> {
           Flexible(
             child: _buildMessageContent(msg, isMe, isRecipientOnline),
           ),
-          if (isMe) ...[
-            const SizedBox(width: 6),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 2),
-              child: _buildTickMarks(msg, isRecipientOnline),
-            ),
-          ],
         ],
       ),
     );
@@ -782,13 +815,11 @@ class _ChatScreenState extends State<ChatScreen> {
       ChatMessage msg, bool isMe, bool isRecipientOnline) {
     if (msg.messageType == MessageType.image && msg.mediaUrl != null) {
       return Container(
-        constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.75),
-        padding: const EdgeInsets.all(4),
+        constraints:
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        padding: const EdgeInsets.all(1),
         decoration: BoxDecoration(
-          color: isMe
-              ? const Color(0xFFFF4D85)
-              : Theme.of(context).cardColor,
+          color: isMe ? const Color(0xFFFF4D85) : Theme.of(context).cardColor,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
@@ -804,58 +835,84 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                msg.mediaUrl!.replaceFirst('unimarket-mw.com/uploads/',
-                    'unimarket-mw.com/datedash/api/uploads/'),
-                fit: BoxFit.cover,
-                width: MediaQuery.of(context).size.width * 0.75,
-                height: 250,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.network(
+                    msg.mediaUrl!.replaceFirst('unimarket-mw.com/uploads/',
+                        'unimarket-mw.com/datedash/api/uploads/'),
+                    fit: BoxFit.cover,
                     width: MediaQuery.of(context).size.width * 0.75,
                     height: 250,
-                    color: Theme.of(context)
-                        .scaffoldBackgroundColor
-                        .withOpacity(0.5),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Color(0xFFFF4D85),
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        width: MediaQuery.of(context).size.width * 0.75,
+                        height: 250,
+                        color: Theme.of(context)
+                            .scaffoldBackgroundColor
+                            .withOpacity(0.5),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFFFF4D85),
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (_, __, ___) => Container(
+                      width: MediaQuery.of(context).size.width * 0.75,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child:
+                            Icon(Icons.image_not_supported_outlined, size: 32),
                       ),
                     ),
-                  );
-                },
-                errorBuilder: (_, __, ___) => Container(
-                  width: MediaQuery.of(context).size.width * 0.75,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.image_not_supported_outlined, size: 32),
                   ),
                 ),
-              ),
+                if (msg.text.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black26,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: _buildTimeAndTicks(msg, isMe, isRecipientOnline,
+                          overlaid: true),
+                    ),
+                  ),
+              ],
             ),
             if (msg.text.isNotEmpty)
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                child: Text(
-                  msg.text,
-                  style: TextStyle(
-                    color: isMe
-                        ? Colors.white
-                        : Theme.of(context).textTheme.bodyLarge?.color,
-                    fontSize: 15,
-                  ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      msg.text,
+                      style: TextStyle(
+                        color: isMe
+                            ? Colors.white
+                            : Theme.of(context).textTheme.bodyLarge?.color,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    _buildTimeAndTicks(msg, isMe, isRecipientOnline),
+                  ],
                 ),
               ),
           ],
@@ -867,32 +924,52 @@ class _ChatScreenState extends State<ChatScreen> {
       return _VoiceNoteBubble(
         url: msg.mediaUrl!,
         isMe: isMe,
+        timestamp: msg.timestamp,
+        isRead: msg.isRead,
+        isRecipientOnline: isRecipientOnline,
       );
     }
 
     if (msg.messageType == MessageType.gif && msg.mediaUrl != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(20),
-          topRight: const Radius.circular(20),
-          bottomLeft: Radius.circular(isMe ? 20 : 4),
-          bottomRight: Radius.circular(isMe ? 4 : 20),
-        ),
-        child: Image.network(
-          msg.mediaUrl!,
-          width: 200,
-          height: 200,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(12),
+      return Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(20),
+              topRight: const Radius.circular(20),
+              bottomLeft: Radius.circular(isMe ? 20 : 4),
+              bottomRight: Radius.circular(isMe ? 4 : 20),
             ),
-            child: const Icon(Icons.gif_box_outlined, size: 32),
+            child: Image.network(
+              msg.mediaUrl!,
+              width: 200,
+              height: 200,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.gif_box_outlined, size: 32),
+              ),
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: _buildTimeAndTicks(msg, isMe, isRecipientOnline,
+                  overlaid: true),
+            ),
+          ),
+        ],
       );
     }
 
@@ -901,11 +978,9 @@ class _ChatScreenState extends State<ChatScreen> {
       return Container(
         constraints:
             BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.6),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: isMe
-              ? const Color(0xFFFF4D85)
-              : Theme.of(context).cardColor,
+          color: isMe ? const Color(0xFFFF4D85) : Theme.of(context).cardColor,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -920,27 +995,37 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isVideo ? Iconsax.video5 : Iconsax.call_calling5,
-              size: 16,
-              color: isMe ? Colors.white : const Color(0xFFFF4D85),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                msg.text,
-                style: TextStyle(
-                  color: isMe ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  fontStyle: FontStyle.italic,
-                  letterSpacing: -0.1,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isVideo ? Iconsax.video5 : Iconsax.call_calling5,
+                  size: 16,
+                  color: isMe ? Colors.white : const Color(0xFFFF4D85),
                 ),
-              ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    msg.text,
+                    style: TextStyle(
+                      color: isMe
+                          ? Colors.white
+                          : Theme.of(context).textTheme.bodyLarge?.color,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      fontStyle: FontStyle.italic,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                ),
+              ],
             ),
+            const SizedBox(height: 4),
+            _buildTimeAndTicks(msg, isMe, isRecipientOnline),
           ],
         ),
       );
@@ -950,10 +1035,9 @@ class _ChatScreenState extends State<ChatScreen> {
     return Container(
       constraints:
           BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color:
-            isMe ? const Color(0xFFFF4D85) : Theme.of(context).cardColor,
+        color: isMe ? const Color(0xFFFF4D85) : Theme.of(context).cardColor,
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(20),
           topRight: const Radius.circular(20),
@@ -968,40 +1052,88 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
-      child: Text(
-        msg.text,
-        style: TextStyle(
-          color: isMe
-              ? Colors.white
-              : Theme.of(context).textTheme.bodyLarge?.color,
-          fontSize: 15,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            msg.text,
+            style: TextStyle(
+              color: isMe
+                  ? Colors.white
+                  : Theme.of(context).textTheme.bodyLarge?.color,
+              fontSize: 15,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _formatTime(msg.timestamp),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: (isMe ? Colors.white : Theme.of(context).hintColor)
+                      .withOpacity(0.6),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (isMe) ...[
+                const SizedBox(width: 4),
+                _buildTickMarks(msg, isRecipientOnline, isMe: true),
+              ],
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildTickMarks(ChatMessage msg, bool isRecipientOnline) {
-    if (msg.isRead) {
-      return const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.done, size: 14, color: Color(0xFFFF4D85)),
-          SizedBox(width: 1),
-          Icon(Icons.done, size: 14, color: Color(0xFFFF4D85)),
-        ],
-      );
-    } else if (isRecipientOnline) {
+  Widget _buildTickMarks(ChatMessage msg, bool isRecipientOnline,
+      {bool isMe = false}) {
+    // Deliverance is represented by two ticks, sent by one tick.
+    // In our model, isRecipientOnline OR msg.isRead counts as delivered.
+    final bool isDelivered = msg.isRead || isRecipientOnline;
+    final Color color = isMe
+        ? Colors.white.withOpacity(0.8)
+        : Colors.grey[400]!;
+
+    if (isDelivered) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.done, size: 14, color: Colors.grey[400]),
+          Icon(Icons.done, size: 14, color: color),
           const SizedBox(width: 1),
-          Icon(Icons.done, size: 14, color: Colors.grey[400]),
+          Icon(Icons.done, size: 14, color: color),
         ],
       );
     } else {
-      return Icon(Icons.done, size: 14, color: Colors.grey[400]);
+      return Icon(Icons.done, size: 14, color: color);
     }
+  }
+
+  Widget _buildTimeAndTicks(ChatMessage msg, bool isMe, bool isRecipientOnline,
+      {bool overlaid = false}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          _formatTime(msg.timestamp),
+          style: TextStyle(
+            fontSize: 10,
+            color: overlaid
+                ? Colors.white
+                : (isMe ? Colors.white : Theme.of(context).hintColor)
+                    .withOpacity(0.6),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        if (isMe) ...[
+          const SizedBox(width: 4),
+          _buildTickMarks(msg, isRecipientOnline, isMe: true),
+        ],
+      ],
+    );
   }
 
   Widget _buildMessageInput() {
@@ -1168,9 +1300,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                 end: Alignment.bottomRight,
                               )
                             : null,
-                        color: _isRecording
-                            ? null
-                            : Theme.of(context).cardColor,
+                        color:
+                            _isRecording ? null : Theme.of(context).cardColor,
                         shape: BoxShape.circle,
                         border: _isRecording
                             ? null
@@ -1207,18 +1338,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   String _formatTime(DateTime dt) {
-    final now = DateTime.now();
-    final diff = now.difference(dt);
+    return DateFormatter.formatClockTime(dt);
+  }
 
-    if (diff.inDays == 0) {
-      final hour = dt.hour.toString().padLeft(2, '0');
-      final min = dt.minute.toString().padLeft(2, '0');
-      return '$hour:$min';
-    } else if (diff.inDays == 1) {
-      return 'Yesterday';
-    } else {
-      return '${dt.day}/${dt.month}/${dt.year}';
-    }
+  String _formatDateDivider(DateTime dt) {
+    return DateFormatter.formatDateDivider(dt);
   }
 }
 
@@ -1293,7 +1417,7 @@ class _CallSheet extends StatelessWidget {
                   onTap: () async {
                     // Capture navigator before context unmounts
                     final navigator = Navigator.of(context);
-                    
+
                     // Immediately close bottom sheet
                     navigator.pop();
 
@@ -1306,7 +1430,7 @@ class _CallSheet extends StatelessWidget {
                       receiverId: receiverId,
                       isVideo: isVideo,
                     );
-                    
+
                     // Add chat transcript record
                     final callType = isVideo ? 'Video call' : 'Voice call';
                     await chatService.sendMessage(
@@ -1379,8 +1503,8 @@ class _CallButton extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(label,
-              style: const TextStyle(
-                  fontSize: 12, fontWeight: FontWeight.w600)),
+              style:
+                  const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -1392,8 +1516,17 @@ class _CallButton extends StatelessWidget {
 class _VoiceNoteBubble extends StatefulWidget {
   final String url;
   final bool isMe;
+  final DateTime timestamp;
+  final bool isRead;
+  final bool isRecipientOnline;
 
-  const _VoiceNoteBubble({required this.url, required this.isMe});
+  const _VoiceNoteBubble({
+    required this.url,
+    required this.isMe,
+    required this.timestamp,
+    required this.isRead,
+    required this.isRecipientOnline,
+  });
 
   @override
   State<_VoiceNoteBubble> createState() => _VoiceNoteBubbleState();
@@ -1458,9 +1591,8 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble> {
         ? _position.inMilliseconds / _duration.inMilliseconds
         : 0.0;
 
-    final bubbleColor = widget.isMe
-        ? const Color(0xFFFF4D85)
-        : Theme.of(context).cardColor;
+    final bubbleColor =
+        widget.isMe ? const Color(0xFFFF4D85) : Theme.of(context).cardColor;
     final contentColor = widget.isMe ? Colors.white : const Color(0xFFFF4D85);
     final textColor = widget.isMe
         ? Colors.white.withOpacity(0.85)
@@ -1485,71 +1617,116 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Play/Pause button
-          GestureDetector(
-            onTap: _togglePlay,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: contentColor.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                color: contentColor,
-                size: 24,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Waveform progress bar
-                SliderTheme(
-                  data: SliderThemeData(
-                    trackHeight: 3,
-                    thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 5),
-                    overlayShape: SliderComponentShape.noOverlay,
-                    activeTrackColor: contentColor,
-                    inactiveTrackColor: contentColor.withOpacity(0.25),
-                    thumbColor: contentColor,
+          Row(
+            children: [
+              // Play/Pause button
+              GestureDetector(
+                onTap: _togglePlay,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: contentColor.withOpacity(0.15),
+                    shape: BoxShape.circle,
                   ),
-                  child: Slider(
-                    value: progress.clamp(0.0, 1.0),
-                    onChanged: (val) {
-                      final seekTo = Duration(
-                          milliseconds:
-                              (_duration.inMilliseconds * val).round());
-                      _player.seek(seekTo);
-                    },
+                  child: Icon(
+                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    color: contentColor,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _formatDuration(_position),
-                      style: TextStyle(fontSize: 10, color: textColor),
+                    // Waveform progress bar
+                    SliderTheme(
+                      data: SliderThemeData(
+                        trackHeight: 3,
+                        thumbShape:
+                            const RoundSliderThumbShape(enabledThumbRadius: 5),
+                        overlayShape: SliderComponentShape.noOverlay,
+                        activeTrackColor: contentColor,
+                        inactiveTrackColor: contentColor.withOpacity(0.25),
+                        thumbColor: contentColor,
+                      ),
+                      child: Slider(
+                        value: progress.clamp(0.0, 1.0),
+                        onChanged: (val) {
+                          final seekTo = Duration(
+                              milliseconds:
+                                  (_duration.inMilliseconds * val).round());
+                          _player.seek(seekTo);
+                        },
+                      ),
                     ),
-                    Text(
-                      _formatDuration(_duration),
-                      style: TextStyle(fontSize: 10, color: textColor),
+                    const SizedBox(height: 2),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _formatDuration(_position),
+                          style: TextStyle(fontSize: 10, color: textColor),
+                        ),
+                        Text(
+                          _formatDuration(_duration),
+                          style: TextStyle(fontSize: 10, color: textColor),
+                        ),
+                      ],
                     ),
                   ],
                 ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                DateFormatter.formatClockTime(widget.timestamp),
+                style: TextStyle(
+                  fontSize: 10,
+                  color:
+                      (widget.isMe ? Colors.white : Theme.of(context).hintColor)
+                          .withOpacity(0.6),
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              if (widget.isMe) ...[
+                const SizedBox(width: 4),
+                _buildTickMarks(),
               ],
-            ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildTickMarks() {
+    final bool isDelivered = widget.isRead || widget.isRecipientOnline;
+    final Color color = widget.isMe
+        ? Colors.white.withOpacity(0.8)
+        : Colors.grey[400]!;
+
+    if (isDelivered) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.done, size: 14, color: color),
+          const SizedBox(width: 1),
+          Icon(Icons.done, size: 14, color: color),
+        ],
+      );
+    } else {
+      return Icon(Icons.done, size: 14, color: color);
+    }
   }
 }

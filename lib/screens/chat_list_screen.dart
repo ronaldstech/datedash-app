@@ -7,6 +7,7 @@ import '../services/chat_service.dart';
 import '../services/profile_service.dart';
 import 'chat_screen.dart';
 import '../widgets/bordered_search_bar.dart';
+import '../utils/date_formatter.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -24,17 +25,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
     super.initState();
     _chatService = ChatService();
     _profileService = ProfileService();
-  }
-
-  String _formatTime(DateTime? dt) {
-    if (dt == null) return '';
-    final now = DateTime.now();
-    final diff = now.difference(dt);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays == 1) return 'Yesterday';
-    return '${dt.day}/${dt.month}';
   }
 
   @override
@@ -67,20 +57,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 centerTitle: false,
                 floating: true,
                 snap: true,
-                actions: [
-                  IconButton(
-                    onPressed: () {
-                      // Refresh the stream by rebuilding
-                      setState(() {});
-                    },
-                    icon: Icon(
-                      Iconsax.refresh,
-                      color: Theme.of(context).iconTheme.color?.withOpacity(0.7),
-                      size: 24,
-                    ),
-                  ),
-                  const BorderedSearchBar(),
-                  const SizedBox(width: 8),
+                actions: const [
+                  BorderedSearchBar(),
+                  SizedBox(width: 8),
                 ],
               ),
 
@@ -190,7 +169,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                           child: Center(
                             child: Text(
                               'No matches yet. Keep swiping!',
-                              style: TextStyle(color: Theme.of(context).hintColor, fontSize: 13),
+                              style: TextStyle(
+                                  color: Theme.of(context).hintColor,
+                                  fontSize: 13),
                             ),
                           ),
                         );
@@ -201,7 +182,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         itemCount: matches.length,
                         itemBuilder: (context, index) {
                           final match = matches[index];
-                          final photo = match.photos.isNotEmpty ? match.photos.first : null;
+                          final photo = match.photos.isNotEmpty
+                              ? match.photos.first
+                              : null;
                           return GestureDetector(
                             onTap: () async {
                               await Navigator.push(
@@ -217,15 +200,20 @@ class _ChatListScreenState extends State<ChatListScreen> {
                               setState(() {});
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
                               child: Column(
                                 children: [
                                   CircleAvatar(
                                     radius: 34,
-                                    backgroundColor: const Color(0xFFFF4D85).withOpacity(0.15),
-                                    backgroundImage: photo != null ? NetworkImage(photo) : null,
+                                    backgroundColor: const Color(0xFFFF4D85)
+                                        .withOpacity(0.15),
+                                    backgroundImage: photo != null
+                                        ? NetworkImage(photo)
+                                        : null,
                                     child: photo == null
-                                        ? const Icon(Iconsax.user, color: Color(0xFFFF4D85), size: 28)
+                                        ? const Icon(Iconsax.user,
+                                            color: Color(0xFFFF4D85), size: 28)
                                         : null,
                                   ),
                                   const SizedBox(height: 8),
@@ -256,7 +244,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
                     child: Text(
                       'Recent Messages',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                     ),
                   ),
                 ),
@@ -322,7 +311,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                   ),
                                 ),
                                 Text(
-                                  _formatTime(chat.lastMessageTime),
+                                  chat.lastMessageTime != null
+                                      ? DateFormatter.format(
+                                          chat.lastMessageTime!)
+                                      : '',
                                   style: TextStyle(
                                     color: unread > 0
                                         ? const Color(0xFFFF4D85)
