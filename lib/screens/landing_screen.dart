@@ -11,7 +11,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/profile_provider.dart';
 import '../services/notification_service.dart';
 import '../screens/notification_screen.dart';
-import 'edit_profile_screen.dart';
+import '../screens/edit_profile_screen.dart';
+import '../screens/swipe_filters_screen.dart';
+import '../screens/premium_screen.dart';
 import '../services/auth_service.dart';
 import '../providers/language_provider.dart';
 
@@ -60,6 +62,18 @@ class _LandingScreenState extends State<LandingScreen> {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 actions: [
+                  if (currentIndex == 0) // Show Filter icon only on Swipe View
+                    IconButton(
+                      icon: Icon(Iconsax.setting_4, color: Theme.of(context).iconTheme.color?.withOpacity(0.7), size: 22),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => const SwipeFiltersScreen(),
+                        );
+                      },
+                    ),
                   StreamBuilder<int>(
                     stream: NotificationService().getUnreadCountStream(
                         FirebaseAuth.instance.currentUser?.uid ?? ''),
@@ -160,6 +174,7 @@ class _LandingScreenState extends State<LandingScreen> {
                   const ExploreScreen(),
                   LikesScreen(),
                   const ChatListScreen(),
+                  const PremiumScreen(),
                 ],
               ),
               endDrawer: const ProfileDrawer(),
@@ -206,6 +221,8 @@ class _LandingScreenState extends State<LandingScreen> {
                         _buildNavItem(3, Iconsax.message, Iconsax.message5,
                             languageProvider.getString('nav_chat'), currentIndex, profileProvider,
                             hasBadge: true),
+                        _buildNavItem(4, Iconsax.crown, Iconsax.crown5,
+                            'Premium', currentIndex, profileProvider),
                       ],
                     ),
                   ),

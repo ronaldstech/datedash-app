@@ -130,6 +130,30 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
+  /// Updates and saves the user's swipe filter preferences
+  Future<void> updateFilters(int minAge, int maxAge, double maxDistance, String gender, bool ageStrict, bool distanceStrict) async {
+    if (_userProfile == null || _currentUser == null) return;
+    
+    _userProfile!.filterMinAge = minAge;
+    _userProfile!.filterMaxAge = maxAge;
+    _userProfile!.filterMaxDistance = maxDistance;
+    _userProfile!.filterGender = gender;
+    _userProfile!.filterAgeStrict = ageStrict;
+    _userProfile!.filterDistanceStrict = distanceStrict;
+    
+    notifyListeners();
+    
+    try {
+      await saveUserProfile(_currentUser!.uid, _userProfile!);
+      // Increment swipes version to force a reload of the swiping stack with new filters
+      _swipesVersion++;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('ProfileProvider: Error saving filters: $e');
+      rethrow;
+    }
+  }
+
   /// Sets the last swiped user ID for potential rewind
   void setLastSwipedUserId(String? uid) {
     _lastSwipedUserId = uid;

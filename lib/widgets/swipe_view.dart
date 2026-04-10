@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_profile_model.dart';
 import '../providers/profile_provider.dart';
@@ -446,8 +447,8 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                                               child: Opacity(
                                                 opacity: (offset.dx / 100)
                                                     .clamp(0.0, 1.0),
-                                                child: _buildStamp(languageProvider.getString('like_stamp'),
-                                                    const Color(0xFF00D68F)),
+                                                child: _buildStamp('assets/images/like.svg',
+                                                    const Color(0xFF00C853)),
                                               ),
                                             ),
                                           ),
@@ -459,7 +460,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                                               child: Opacity(
                                                 opacity: (-offset.dx / 100)
                                                     .clamp(0.0, 1.0),
-                                                child: _buildStamp(languageProvider.getString('nope_stamp'),
+                                                child: _buildStamp('assets/images/pass.svg',
                                                     const Color(0xFFFF5E5E)),
                                               ),
                                             ),
@@ -971,24 +972,20 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildStamp(String text, Color color) {
+  Widget _buildStamp(String svgAsset, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        border: Border.all(color: color, width: 3.5),
-        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color, width: 4),
+        shape: BoxShape.circle,
         color: color.withOpacity(0.12),
         boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 16)],
       ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: color,
-          fontSize: 36,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 3,
-          shadows: [Shadow(color: color.withOpacity(0.5), blurRadius: 12)],
-        ),
+      child: SvgPicture.asset(
+        svgAsset,
+        width: 56,
+        height: 56,
+        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
       ),
     );
   }

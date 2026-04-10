@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
 import '../models/user_profile_model.dart';
 import '../services/notification_service.dart';
 
@@ -29,9 +30,9 @@ class ProfileService {
   Future<void> saveUserProfile(String uid, UserProfile profile) async {
     try {
       await _usersCollection.doc(uid).set(
-        profile.toMap(),
-        SetOptions(merge: true),
-      );
+            profile.toMap(),
+            SetOptions(merge: true),
+          );
     } catch (e) {
       debugPrint('Error saving user profile: $e');
       rethrow;
@@ -54,51 +55,110 @@ class ProfileService {
   Future<List<UserProfile>> getSwipeProfiles(String currentUserId) async {
     try {
       debugPrint('Fetching swipe profiles for user: $currentUserId');
-      
+
       // Get UIDs of users already swiped on (likes/dislikes)
       final swipedQuery = await _firestore
           .collection('swipes')
           .where('fromId', isEqualTo: currentUserId)
           .get();
-      
-      final swipedIds = swipedQuery.docs.map((doc) => doc['toId'] as String).toSet();
+
+      final swipedIds =
+          swipedQuery.docs.map((doc) => doc['toId'] as String).toSet();
       debugPrint('Users already swiped on: ${swipedIds.length}');
 
       // Basic implementation: fetch all users (ideal for this scale)
       QuerySnapshot snapshot = await _usersCollection.get();
       debugPrint('Total users in Firestore: ${snapshot.docs.length}');
-      
+
       final filteredDocs = snapshot.docs.where((doc) {
         final isSelf = doc.id == currentUserId;
         final isSwiped = swipedIds.contains(doc.id);
-        
+
         if (isSelf) debugPrint('Filtering out self: ${doc.id}');
         if (isSwiped) debugPrint('Filtering out swiped: ${doc.id}');
-        
+
         return !isSelf && !isSwiped;
       }).toList();
-      
+
       debugPrint('Users after filtering: ${filteredDocs.length}');
 
-      List<UserProfile> profiles = [];
+      final currentUserProfile = await getUserProfile(currentUserId);
+      final minAge = currentUserProfile?.filterMinAge ?? 18;
+      final maxAge = currentUserProfile?.filterMaxAge ?? 60;
+      final maxDistance = currentUserProfile?.filterMaxDistance ?? 50.0;
+      String filterGender = currentUserProfile?.filterGender ?? 'Everyone';
+      if ((currentUserProfile?.filterGender == null ||
+              currentUserProfile!.filterGender!.isEmpty) &&
+          currentUserProfile?.gender != null) {
+        if (currentUserProfile!.gender == 'Male') filterGender = 'Women';
+        if (currentUserProfile.gender == 'Female') filterGender = 'Men';
+      }
+      final ageStrict = currentUserProfile?.filterAgeStrict ?? false;
+      final distanceStrict = currentUserProfile?.filterDistanceStrict ?? false;
+
+      List<UserProfile> strictProfiles = [];
+      List<UserProfile> relaxedProfiles = [];
+
       for (var doc in filteredDocs) {
         try {
           final data = doc.data() as Map<String, dynamic>;
           data['uid'] = doc.id;
           final profile = UserProfile.fromMap(data);
-          
-          // Debugging: check if profile is being parsed correctly
+
           if (profile.firstName == null) {
             debugPrint('Warning: User ${doc.id} has no firstName');
           }
-          
-          profiles.add(profile);
+
+          // Apply gender filter (always strict)
+          if (filterGender != 'Everyone' && filterGender.isNotEmpty) {
+            String targetGender = filterGender;
+            if (filterGender == 'Men') targetGender = 'Male';
+            if (filterGender == 'Women') targetGender = 'Female';
+            if (profile.gender != targetGender) continue;
+          }
+
+          bool isStrictMatch = true;
+
+          // Apply age filter
+          final age = profile.age;
+          if (age != null) {
+            if (age < minAge || age > maxAge) {
+              if (ageStrict) continue;
+              isStrictMatch = false;
+            }
+          }
+
+          // Apply distance filter
+          if (currentUserProfile != null &&
+              currentUserProfile.latitude != null &&
+              currentUserProfile.longitude != null &&
+              profile.latitude != null &&
+              profile.longitude != null) {
+            double distanceInMeters = Geolocator.distanceBetween(
+              currentUserProfile.latitude!,
+              currentUserProfile.longitude!,
+              profile.latitude!,
+              profile.longitude!,
+            );
+            double distanceInKm = distanceInMeters / 1000;
+            if (distanceInKm > maxDistance) {
+              if (distanceStrict) continue;
+              isStrictMatch = false;
+            }
+          }
+
+          if (isStrictMatch) {
+            strictProfiles.add(profile);
+          } else {
+            relaxedProfiles.add(profile);
+          }
         } catch (e) {
           debugPrint('Error parsing user ${doc.id}: $e');
         }
       }
-      
-      return profiles;
+
+      strictProfiles.addAll(relaxedProfiles);
+      return strictProfiles;
     } catch (e) {
       debugPrint('Error fetching swipe profiles globally: $e');
       return [];
@@ -129,11 +189,15 @@ class ProfileService {
 
         if (reverseLike.docs.isNotEmpty) {
           // It's a MATCH!
-          debugPrint('ProfileService: IT\'S A MATCH between $fromId and $toId!');
-          final matchId = fromId.compareTo(toId) < 0 ? '${fromId}_$toId' : '${toId}_$fromId';
-          
-          final matchDoc = await _firestore.collection('matches').doc(matchId).get();
-          
+          debugPrint(
+              'ProfileService: IT\'S A MATCH between $fromId and $toId!');
+          final matchId = fromId.compareTo(toId) < 0
+              ? '${fromId}_$toId'
+              : '${toId}_$fromId';
+
+          final matchDoc =
+              await _firestore.collection('matches').doc(matchId).get();
+
           if (!matchDoc.exists) {
             await _firestore.collection('matches').doc(matchId).set({
               'uids': [fromId, toId],
@@ -170,13 +234,14 @@ class ProfileService {
   Future<void> undoLastSwipe(String fromId, String toId) async {
     try {
       final swipeId = '${fromId}_$toId';
-      final matchId = fromId.compareTo(toId) < 0 ? '${fromId}_$toId' : '${toId}_$fromId';
+      final matchId =
+          fromId.compareTo(toId) < 0 ? '${fromId}_$toId' : '${toId}_$fromId';
 
       final batch = _firestore.batch();
-      
+
       // Delete swipe doc
       batch.delete(_firestore.collection('swipes').doc(swipeId));
-      
+
       // Attempt to delete match doc (it might not exist, but batch.delete is safe if we have the ref)
       batch.delete(_firestore.collection('matches').doc(matchId));
 
@@ -199,7 +264,8 @@ class ProfileService {
       List<UserProfile> profiles = [];
       for (var doc in snapshot.docs) {
         final List<dynamic> uids = doc['uids'];
-        final otherId = uids.firstWhere((id) => id != userId, orElse: () => null);
+        final otherId =
+            uids.firstWhere((id) => id != userId, orElse: () => null);
         if (otherId != null) {
           final profile = await getUserProfile(otherId);
           if (profile != null) {
@@ -223,7 +289,8 @@ class ProfileService {
         batch.delete(doc.reference);
       }
       await batch.commit();
-      debugPrint('Swipes reset for user: $userId (${snapshot.docs.length} records deleted)');
+      debugPrint(
+          'Swipes reset for user: $userId (${snapshot.docs.length} records deleted)');
     } catch (e) {
       debugPrint('Error resetting swipes: $e');
       rethrow;
@@ -271,29 +338,30 @@ class ProfileService {
   }
 
   /// Returns a stream of profiles who are looking for a specific category
-  Stream<List<UserProfile>> getProfilesByCategory(String category, String currentUserId) {
+  Stream<List<UserProfile>> getProfilesByCategory(
+      String category, String currentUserId) {
     return _usersCollection
         .where('lookingFor', arrayContains: category)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs
-              .where((doc) => doc.id != currentUserId)
-              .map((doc) {
-                final data = doc.data() as Map<String, dynamic>;
-                data['uid'] = doc.id;
-                return UserProfile.fromMap(data);
-              }).toList();
-        });
+      return snapshot.docs.where((doc) => doc.id != currentUserId).map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['uid'] = doc.id;
+        return UserProfile.fromMap(data);
+      }).toList();
+    });
   }
 
   /// Fetches swipeable profiles filtered by a lookingFor category, excluding already-swiped users
-  Future<List<UserProfile>> getSwipeProfilesByCategory(String currentUserId, String category) async {
+  Future<List<UserProfile>> getSwipeProfilesByCategory(
+      String currentUserId, String category) async {
     try {
       final swipedQuery = await _firestore
           .collection('swipes')
           .where('fromId', isEqualTo: currentUserId)
           .get();
-      final swipedIds = swipedQuery.docs.map((doc) => doc['toId'] as String).toSet();
+      final swipedIds =
+          swipedQuery.docs.map((doc) => doc['toId'] as String).toSet();
 
       final snapshot = await _usersCollection
           .where('lookingFor', arrayContains: category)
@@ -338,7 +406,8 @@ class ProfileService {
       // Check if this specific view has already been recorded in the new format
       final doc = await docRef.get();
       if (doc.exists) {
-        debugPrint('ProfileService: view $viewId already exists, skipping write.');
+        debugPrint(
+            'ProfileService: view $viewId already exists, skipping write.');
         return;
       }
 

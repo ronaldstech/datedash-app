@@ -68,6 +68,14 @@ class UserProfile {
   bool showDistance;
   bool allowMessages;
 
+  // 🎛️ Swiping Filters
+  int? filterMinAge;
+  int? filterMaxAge;
+  double? filterMaxDistance;
+  String? filterGender;
+  bool filterAgeStrict;
+  bool filterDistanceStrict;
+
   UserProfile({
     this.firstName,
     this.dob,
@@ -114,6 +122,12 @@ class UserProfile {
     this.latitude,
     this.longitude,
     this.uid,
+    this.filterMinAge = 18,
+    this.filterMaxAge = 60,
+    this.filterMaxDistance = 50.0,
+    this.filterGender,
+    this.filterAgeStrict = false,
+    this.filterDistanceStrict = false,
   });
 
   int? get age {
@@ -240,6 +254,12 @@ class UserProfile {
         latitude: _parseDouble(map['latitude']),
         longitude: _parseDouble(map['longitude']),
         uid: map['uid']?.toString(),
+        filterMinAge: map['filterMinAge'] ?? 18,
+        filterMaxAge: map['filterMaxAge'] ?? 60,
+        filterMaxDistance: _parseDouble(map['filterMaxDistance']) ?? 50.0,
+        filterGender: map['filterGender']?.toString(),
+        filterAgeStrict: map['filterAgeStrict'] ?? false,
+        filterDistanceStrict: map['filterDistanceStrict'] ?? false,
       );
     } catch (e) {
       debugPrint('UserProfile error parsing map: $e');
@@ -319,6 +339,12 @@ class UserProfile {
       'latitude': latitude,
       'longitude': longitude,
       'uid': uid,
+      'filterMinAge': filterMinAge,
+      'filterMaxAge': filterMaxAge,
+      'filterMaxDistance': filterMaxDistance,
+      'filterGender': filterGender,
+      'filterAgeStrict': filterAgeStrict,
+      'filterDistanceStrict': filterDistanceStrict,
       'lastUpdated': FieldValue.serverTimestamp(),
     };
   }

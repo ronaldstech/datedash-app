@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LanguageProvider with ChangeNotifier {
   static const String _languageKey = 'app_language_code';
-  
+
   // Default to English (US)
   String _currentLanguageCode = 'en';
   String _currentLanguageName = 'English (US)';
@@ -46,10 +46,10 @@ class LanguageProvider with ChangeNotifier {
 
     _currentLanguageCode = lang['code']!;
     _currentLanguageName = lang['name']!;
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_languageKey, _currentLanguageCode);
-    
+
     notifyListeners();
   }
 
@@ -109,7 +109,8 @@ class LanguageProvider with ChangeNotifier {
       'nope_stamp': 'NOPE',
       'add_photos_now': 'Add Photos Now',
       'upload_more_photos_title': 'Upload More Photos',
-      'upload_more_photos_sub': 'Add at least 4 photos to your profile to keep swiping, view profiles, and browse photos.',
+      'upload_more_photos_sub':
+          'Add at least 4 photos to your profile to keep swiping, view profiles, and browse photos.',
       'view_full_profile': 'View Full Profile',
       'about_me': 'About Me',
       'quick_facts': 'Quick Facts',
@@ -149,7 +150,8 @@ class LanguageProvider with ChangeNotifier {
       'allow_messages_label': 'Allow Messages',
       'allow_messages_sub': 'Anyone can send you a message',
       'reset_swipes_title': 'Reset Swipes',
-      'reset_swipes_content': 'This will clear your entire swipe history. You will see all users again, including those you disliked.\n\nThis action cannot be undone.',
+      'reset_swipes_content':
+          'This will clear your entire swipe history. You will see all users again, including those you disliked.\n\nThis action cannot be undone.',
       'cancel': 'Cancel',
       'reset': 'Reset',
       'swipes_reset_success': 'Swipes reset! Fresh profiles are loading.',
@@ -192,7 +194,8 @@ class LanguageProvider with ChangeNotifier {
       'nav_likes': 'Likes',
       'nav_chat': 'Chat',
       'profile_needs_attention': 'Profile Needs Attention',
-      'profile_completion_sub': 'Your profile is currently {completion}% complete. You need to complete your profile past 40% before you can start matching, chatting, and exploring!',
+      'profile_completion_sub':
+          'Your profile is currently {completion}% complete. You need to complete your profile past 40% before you can start matching, chatting, and exploring!',
       'complete_profile_button': 'Complete Profile',
       'signout_label': 'Sign Out',
       'unread_notifications': 'Notifications',
@@ -260,7 +263,8 @@ class LanguageProvider with ChangeNotifier {
       'upload_photos_sub': 'Upload at least 4 photos to stand out. Max 8.',
       'uploading_photos': 'Uploading photos...',
       'location_title': 'Your Location',
-      'location_sub': 'Sync your GPS to see potential matches nearby and calculate distances.',
+      'location_sub':
+          'Sync your GPS to see potential matches nearby and calculate distances.',
       'city_neighborhood_label': 'City / Neighborhood',
       'location_synced': 'Location Synchronized',
       'location_not_set': 'Location Not Set',
@@ -272,17 +276,21 @@ class LanguageProvider with ChangeNotifier {
       'green_flag_prompt': 'My biggest green flag is...',
       'two_truths_prompt': 'Two truths and a lie...',
       'verification_title': 'Profile Verification',
-      'verification_sub': 'Get verified to show everyone that you\'re real! Verified profiles get 3x more matches.',
+      'verification_sub':
+          'Get verified to show everyone that you\'re real! Verified profiles get 3x more matches.',
       'profile_verified': 'Profile Verified',
       'facial_verification': 'Facial Verification',
-      'verification_confirmed_sub': 'Your identity has been confirmed. You\'re all set!',
+      'verification_confirmed_sub':
+          'Your identity has been confirmed. You\'re all set!',
       'quick_scan_sub': 'A quick 3D face scan confirms you match your photos.',
       'start_verification_button': 'Start Verification',
       'profile_saved_snack': 'Profile saved successfully!',
       'failed_save_profile_snack': 'Failed to save profile',
-      'location_services_disabled': 'Location services are disabled. Please enable them.',
+      'location_services_disabled':
+          'Location services are disabled. Please enable them.',
       'location_permission_denied': 'Location permissions are denied.',
-      'location_permission_denied_forever': 'Location permissions are permanently denied.',
+      'location_permission_denied_forever':
+          'Location permissions are permanently denied.',
       'fetching_coordinates': 'Fetching high-accuracy coordinates...',
       'location_updated_snack': 'Location updated and saved!',
       'error_fetching_location': 'Error fetching location',
@@ -291,7 +299,7 @@ class LanguageProvider with ChangeNotifier {
       'offline': 'Offline',
       'voice_call_tooltip': 'Voice Call',
       'video_call_tooltip': 'Video Call',
-      'search_messages_hint': 'Search messages...',
+      'search_messages_hint': 'Search...',
       'no_messages_found': 'No messages found',
       'say_hi_to': 'Say hi to {name}!',
       'try_different_search': 'Try a different search term',
@@ -303,7 +311,8 @@ class LanguageProvider with ChangeNotifier {
       'error_sending_voice': 'Error sending voice note',
       'error_uploading_image': 'Error uploading image',
       'clear_chat_title': 'Clear Chat',
-      'clear_chat_confirm_message': 'All messages with {name} will be permanently deleted. This cannot be undone.',
+      'clear_chat_confirm_message':
+          'All messages with {name} will be permanently deleted. This cannot be undone.',
       'chat_cleared_snack': 'Chat cleared',
       'explore_header': 'Explore',
       'looking_for_header': 'What are you looking for?',
@@ -393,7 +402,8 @@ class LanguageProvider with ChangeNotifier {
       'nope_stamp': 'PITA',
       'add_photos_now': 'Ongeza Picha Sasa',
       'upload_more_photos_title': 'Pakia Picha Zaidi',
-      'upload_more_photos_sub': 'Ongeza angalau picha 4 kwenye wasifu wako ili kuendelea kupapasa, kuona wasifu, na kuvinjari picha.',
+      'upload_more_photos_sub':
+          'Ongeza angalau picha 4 kwenye wasifu wako ili kuendelea kupapasa, kuona wasifu, na kuvinjari picha.',
       'view_full_profile': 'Tazama Wasifu Kamili',
       'about_me': 'Kuhusu Mimi',
       'quick_facts': 'Ukweli wa Haraka',
@@ -433,14 +443,17 @@ class LanguageProvider with ChangeNotifier {
       'allow_messages_label': 'Ruhusu Ujumbe',
       'allow_messages_sub': 'Kila mtu anaweza kukutumia ujumbe',
       'reset_swipes_title': 'Anza Upya Swipes',
-      'reset_swipes_content': 'Hii itafuta historia yako yote ya kutelezesha. Utaona watumiaji wote tena, pamoja na wale uliowakataa.\n\nHatua hii haiwezi kubadilishwa.',
+      'reset_swipes_content':
+          'Hii itafuta historia yako yote ya kutelezesha. Utaona watumiaji wote tena, pamoja na wale uliowakataa.\n\nHatua hii haiwezi kubadilishwa.',
       'cancel': 'Ghairi',
       'reset': 'Anza Upya',
       'swipes_reset_success': 'Swipes zimeanzishwa upya! Wasifu mpya unapakia.',
-      'swipes_reset_failed': 'Imeshindwa kuanzisha upya swipes. Tafadhali jaribu tena.',
+      'swipes_reset_failed':
+          'Imeshindwa kuanzisha upya swipes. Tafadhali jaribu tena.',
       'photo_lock_snack': 'Pakia angalau picha 4 ili kuona picha zaidi!',
       'upload_label': 'Pakia',
-      'messages_disabled_snack': 'Mtumiaji huyu amezuia kutuma ujumbe wa moja kwa moja.',
+      'messages_disabled_snack':
+          'Mtumiaji huyu amezuia kutuma ujumbe wa moja kwa moja.',
       'signup_title': 'Jisajili',
       'signup_sub': 'Jiunge na DateDash na upate mwenza wako kamili',
       'full_name': 'Jina Kamili',
@@ -476,7 +489,8 @@ class LanguageProvider with ChangeNotifier {
       'nav_likes': 'Penda',
       'nav_chat': 'Mazungumzo',
       'profile_needs_attention': 'Wasifu Unahitaji Makini',
-      'profile_completion_sub': 'Wasifu wako kwa sasa umekamilika kwa {completion}%. Unahitaji kukamilisha wasifu wako zaidi ya 40% kabla ya kuanza kulinganisha, kuzungumza, na kuvinjari!',
+      'profile_completion_sub':
+          'Wasifu wako kwa sasa umekamilika kwa {completion}%. Unahitaji kukamilisha wasifu wako zaidi ya 40% kabla ya kuanza kulinganisha, kuzungumza, na kuvinjari!',
       'complete_profile_button': 'Kamilisha Wasifu',
       'signout_label': 'Ondoka',
       'unread_notifications': 'Arifa',
@@ -509,7 +523,8 @@ class LanguageProvider with ChangeNotifier {
       'profile_complete_title': 'Wasifu Umekamilika!',
       'complete_your_profile': 'Kamilisha Wasifu Wako',
       'tap_update_details': 'Gusa hapa ili kusasisha maelezo yako',
-      'matches_3x_likely': 'Uwezekano wa kupata mechi unaongezeka mara 3 ukiwa na wasifu kamili.',
+      'matches_3x_likely':
+          'Uwezekano wa kupata mechi unaongezeka mara 3 ukiwa na wasifu kamili.',
       'views_label': 'Walioona',
       'edit_profile_label': 'Hariri Wasifu',
       'saving_label': 'Inahifadhi...',
@@ -541,7 +556,8 @@ class LanguageProvider with ChangeNotifier {
       'weekend_activities_label': 'Shughuli za Wikiendi',
       'political_views_label': 'Mitazamo ya Kisiasa',
       'add_photos_title': 'Ongeza Picha Zako',
-      'upload_photos_sub': 'Pakia angalau picha 4 ili upate nafasi zaidi. Max 8.',
+      'upload_photos_sub':
+          'Pakia angalau picha 4 ili upate nafasi zaidi. Max 8.',
       'uploading_photos': 'Inakia picha...',
       'location_title': 'Mahali Pako',
       'location_sub': 'Sawazisha GPS yako ili uone mechi karibu na wewe.',
@@ -556,17 +572,22 @@ class LanguageProvider with ChangeNotifier {
       'green_flag_prompt': 'Sifa yangu bora ni...',
       'two_truths_prompt': 'Ukweli mbili na uongo mmoja...',
       'verification_title': 'Uthibitisho wa Wasifu',
-      'verification_sub': 'Thibitishwa ili kuonyesha kila mtu kuwa wewe ni wa kweli! Wasifu uliothibitishwa hupata mechi mara 3 zaidi.',
+      'verification_sub':
+          'Thibitishwa ili kuonyesha kila mtu kuwa wewe ni wa kweli! Wasifu uliothibitishwa hupata mechi mara 3 zaidi.',
       'profile_verified': 'Wasifu Umethibitishwa',
       'facial_verification': 'Uthibitisho wa Uso',
-      'verification_confirmed_sub': 'Utambulisho wako umethibitishwa. Kila kitu kiko tayari!',
-      'quick_scan_sub': 'Scan ya haraka ya uso inathibitisha kuwa unalingana na picha zako.',
+      'verification_confirmed_sub':
+          'Utambulisho wako umethibitishwa. Kila kitu kiko tayari!',
+      'quick_scan_sub':
+          'Scan ya haraka ya uso inathibitisha kuwa unalingana na picha zako.',
       'start_verification_button': 'Anza Uthibitisho',
       'profile_saved_snack': 'Wasifu umehifadhiwa kikamilifu!',
       'failed_save_profile_snack': 'Imeshindwa kuhifadhi wasifu',
-      'location_services_disabled': 'Huduma za eneo zimezimwa. Tafadhali ziwashe.',
+      'location_services_disabled':
+          'Huduma za eneo zimezimwa. Tafadhali ziwashe.',
       'location_permission_denied': 'Ruhusa za eneo zimekataliwa.',
-      'location_permission_denied_forever': 'Ruhusa za eneo zimekataliwa kabisa.',
+      'location_permission_denied_forever':
+          'Ruhusa za eneo zimekataliwa kabisa.',
       'fetching_coordinates': 'Inatafuta kuratibu...',
       'location_updated_snack': 'Mahali pamesasishwa na kuhifadhiwa!',
       'error_fetching_location': 'Hitilafu katika kutafuta eneo',
@@ -587,7 +608,8 @@ class LanguageProvider with ChangeNotifier {
       'error_sending_voice': 'Hitilafu katika kutuma sauti',
       'error_uploading_image': 'Hitilafu katika kupakia picha',
       'clear_chat_title': 'Futa Mazungumzo',
-      'clear_chat_confirm_message': 'Ujumbe wote na {name} utafutwa kabisa. Hii haiwezi kubadilishwa.',
+      'clear_chat_confirm_message':
+          'Ujumbe wote na {name} utafutwa kabisa. Hii haiwezi kubadilishwa.',
       'chat_cleared_snack': 'Mazungumzo yamefutwa',
       'explore_header': 'Gundua',
       'looking_for_header': 'Unatafuta nini?',
