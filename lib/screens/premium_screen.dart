@@ -67,10 +67,23 @@ class _PremiumScreenState extends State<PremiumScreen>
   }
 
   @override
+  void didUpdateWidget(covariant PremiumScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTab != oldWidget.initialTab) {
+      _tabController.animateTo(widget.initialTab);
+    }
+  }
+
+  @override
   void dispose() {
     _tabController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  String _formatNumber(int number) {
+    return number.toString().replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
   }
 
   @override
@@ -589,7 +602,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                           Consumer<ProfileProvider>(
                             builder: (context, provider, _) {
                               return Text(
-                                '${provider.userProfile?.credits ?? 0}',
+                                _formatNumber(provider.userProfile?.credits ?? 0),
                                 style: const TextStyle(
                                   fontSize: 48,
                                   fontWeight: FontWeight.w900,
@@ -711,7 +724,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '$amount',
+                    _formatNumber(amount),
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,

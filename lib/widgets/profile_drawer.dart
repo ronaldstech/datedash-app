@@ -143,18 +143,16 @@ class ProfileDrawer extends StatelessWidget {
                             child: _buildDrawerTile(
                               context,
                               title: 'Credits',
-                              value:
-                                  '${profileProvider.userProfile?.credits ?? 0}',
+                              value: (profileProvider.userProfile?.credits ?? 0)
+                                  .toString()
+                                  .replaceAllMapped(
+                                      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                                      (Match m) => '${m[1]},'),
                               icon: Iconsax.wallet_3,
                               iconColor: const Color(0xFFFFB300),
                               onTap: () {
                                 Navigator.pop(context);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          const PremiumScreen(initialTab: 1)),
-                                );
+                                profileProvider.navigateToPremium(1);
                               },
                               isDark: isDark,
                             ),
@@ -175,12 +173,7 @@ class ProfileDrawer extends StatelessWidget {
                               iconColor: const Color(0xFFFF4D85),
                               onTap: () {
                                 Navigator.pop(context);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          const PremiumScreen(initialTab: 0)),
-                                );
+                                profileProvider.navigateToPremium(0);
                               },
                               isDark: isDark,
                             ),

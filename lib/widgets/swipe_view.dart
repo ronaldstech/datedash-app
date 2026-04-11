@@ -715,12 +715,110 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
   }
 
   Future<void> _handleRewind() async {
+    final languageProvider = context.read<LanguageProvider>();
     final profileProvider = context.read<ProfileProvider>();
     final lastId = profileProvider.lastSwipedUserId;
-    
+
     if (lastId == null || _currentIndex <= 0) return;
 
+    // Premium users rewind for free
+    if (profileProvider.userProfile?.isPremium == true) {
+      _executeRewind();
+      return;
+    }
+
+    // Non-premium users must use 10 credits
+    final userCredits = profileProvider.userProfile?.credits ?? 0;
+    if (userCredits >= 10) {
+      _showRewindConfirmationDialog(languageProvider, profileProvider);
+    } else {
+      _showInsufficientCreditsDialog(languageProvider);
+    }
+  }
+
+  void _showRewindConfirmationDialog(
+      LanguageProvider languageProvider, ProfileProvider profileProvider) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          languageProvider.getString('rewind_confirm_title'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text(languageProvider.getString('rewind_confirm_message')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              languageProvider.getString('cancel'),
+              style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _executeRewind(useCredits: 10);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4D85),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(
+              languageProvider.getString('confirm_button'),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showInsufficientCreditsDialog(LanguageProvider languageProvider) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          languageProvider.getString('insufficient_credits_title'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text(languageProvider.getString('insufficient_credits_message')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              languageProvider.getString('cancel'),
+              style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigate to Premium tab (index 4) and Sub-tab 1 (Credits)
+              context.read<ProfileProvider>().navigateToPremium(1);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFB300),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(
+              languageProvider.getString('get_credits_button'),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _executeRewind({int? useCredits}) async {
+    final profileProvider = context.read<ProfileProvider>();
     try {
+      if (useCredits != null) {
+        await profileProvider.useCredits(useCredits);
+      }
+      
       await profileProvider.rewindSwipe();
       setState(() {
         _currentIndex--;
@@ -729,6 +827,11 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
       HapticFeedback.mediumImpact();
     } catch (e) {
       debugPrint('SwipeView: Rewind error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to rewind profile')),
+        );
+      }
     }
   }
 

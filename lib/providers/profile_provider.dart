@@ -19,6 +19,7 @@ class ProfileProvider with ChangeNotifier {
   int _matchesCount = 0;
   int _unreadMessageCount = 0;
   int _swipesVersion = 0;
+  int _initialPremiumTab = 0;
   StreamSubscription<int>? _likesCountSubscription;
   StreamSubscription<int>? _visitorsCountSubscription;
   StreamSubscription<int>? _matchesCountSubscription;
@@ -89,14 +90,30 @@ class ProfileProvider with ChangeNotifier {
   User? get currentUser => _currentUser;
   int get currentTabIndex => _currentTabIndex;
   int get likesCount => _likesCount;
+  
+  /// Returns the count for the Likes badge: 
+  /// - Full count if Premium
+  /// - Unlocked profiles count if not Premium
+  int get unlockedLikesCount {
+    if (_userProfile?.isPremium == true) return _likesCount;
+    return _userProfile?.unlockedLikes.length ?? 0;
+  }
+
   int get visitorsCount => _visitorsCount;
   int get matchesCount => _matchesCount;
   int get unreadMessageCount => _unreadMessageCount;
   int get swipesVersion => _swipesVersion;
   double get swipeOffset => _swipeOffset;
+  int get initialPremiumTab => _initialPremiumTab;
 
   void setTabIndex(int index) {
     _currentTabIndex = index;
+    notifyListeners();
+  }
+
+  void navigateToPremium(int subTabIndex) {
+    _currentTabIndex = 4; // Premium Tab
+    _initialPremiumTab = subTabIndex;
     notifyListeners();
   }
 
@@ -150,6 +167,39 @@ class ProfileProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('ProfileProvider: Error saving filters: $e');
+      rethrow;
+    }
+  }
+
+  /// Deducts credits from the current user
+  Future<void> useCredits(int amount) async {
+    final uid = _currentUser?.uid;
+    if (uid == null) return;
+    try {
+      await _profileService.deductCredits(uid, amount);
+      // Local state will update via stream
+    } catch (e) {
+      debugPrint('ProfileProvider: Error using credits: $e');
+      rethrow;
+    }
+  }
+
+  /// Unlocks a specific profile for 20 credits
+  Future<void> unlockProfile(String targetId) async {
+    final uid = _currentUser?.uid;
+    if (uid == null) return;
+    try {
+      // 1. Deduct 20 credits
+      await useCredits(20);
+      
+      // 2. Add to unlockedLikes in Firestore
+      await _profileService.unlockProfile(uid, targetId);
+      
+      // 3. Update local state
+      _userProfile?.unlockedLikes.add(targetId);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('ProfileProvider: Error unlocking profile: $e');
       rethrow;
     }
   }

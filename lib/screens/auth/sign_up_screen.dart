@@ -99,47 +99,49 @@ class _SignUpScreenState extends State<SignUpScreen> {
             Center(
               child: Image.asset(
                 'assets/images/signlogo.png',
-                height: 200,
+                height: 120,
                 fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
             Text(
               languageProvider.getString('signup_title'),
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
                 letterSpacing: -1,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               languageProvider.getString('signup_sub'),
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
             _buildTextField(
               controller: _nameController,
               hintText: languageProvider.getString('full_name'),
               icon: Iconsax.user,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             _buildTextField(
               controller: _emailController,
               hintText: languageProvider.getString('email'),
               icon: Iconsax.sms,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             _buildTextField(
               controller: _passwordController,
               hintText: languageProvider.getString('password'),
               icon: Iconsax.lock,
               isPassword: true,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 12),
             ElevatedButton(
               onPressed: _handleSignUp,
               style: ElevatedButton.styleFrom(
@@ -169,7 +171,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                     ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             Row(
               children: [
                 const Expanded(child: Divider()),
@@ -183,13 +185,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const Expanded(child: Divider()),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             SocialLoginButton(
               text: languageProvider.getString('google_signin'),
               assetPath: 'assets/images/google_logo.png',
               onPressed: _isLoading ? () {} : _handleGoogleSignIn,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -226,7 +228,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).dividerColor),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.4),
+        ),
       ),
       child: TextField(
         controller: controller,

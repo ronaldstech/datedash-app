@@ -81,6 +81,7 @@ class UserProfile {
   String? premiumType; // 'Pro', 'Premium', 'Elite'
   DateTime? premiumExpiry;
   int credits;
+  List<String> unlockedLikes;
 
   UserProfile({
     this.firstName,
@@ -138,6 +139,7 @@ class UserProfile {
     this.premiumType,
     this.premiumExpiry,
     this.credits = 0,
+    this.unlockedLikes = const [],
   });
 
   int? get age {
@@ -274,6 +276,7 @@ class UserProfile {
         premiumType: map['premiumType']?.toString(),
         premiumExpiry: _parseDate(map['premiumExpiry']),
         credits: (map['credits'] as num?)?.toInt() ?? 0,
+        unlockedLikes: _parseList(map['unlockedLikes']),
       );
     } catch (e) {
       debugPrint('UserProfile error parsing map: $e');
@@ -363,6 +366,7 @@ class UserProfile {
       'premiumType': premiumType,
       'premiumExpiry': premiumExpiry != null ? Timestamp.fromDate(premiumExpiry!) : null,
       'credits': credits,
+      'unlockedLikes': unlockedLikes,
       'lastUpdated': FieldValue.serverTimestamp(),
     };
   }

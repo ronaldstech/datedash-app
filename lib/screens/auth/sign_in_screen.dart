@@ -90,15 +90,15 @@ class _SignInScreenState extends State<SignInScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               Center(
                 child: Image.asset(
                   'assets/images/signlogo.png',
-                  height: 200,
+                  height: 120,
                   fit: BoxFit.cover,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
               Text(
                 languageProvider.getString('signin_title'),
                 textAlign: TextAlign.center,
@@ -108,13 +108,13 @@ class _SignInScreenState extends State<SignInScreen> {
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 languageProvider.getString('signin_sub'),
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               _buildTextField(
                 controller: _emailController,
                 hintText: languageProvider.getString('email'),
@@ -127,7 +127,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 icon: Iconsax.lock,
                 isPassword: true,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 4),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -141,7 +141,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: _handleSignIn,
                 style: ElevatedButton.styleFrom(
@@ -171,7 +171,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                       ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   const Expanded(child: Divider()),
@@ -185,13 +185,13 @@ class _SignInScreenState extends State<SignInScreen> {
                   const Expanded(child: Divider()),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               SocialLoginButton(
                 text: languageProvider.getString('google_signin'),
                 assetPath: 'assets/images/google_logo.png',
                 onPressed: _isLoading ? () {} : _handleGoogleSignIn,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -235,7 +235,9 @@ class _SignInScreenState extends State<SignInScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).dividerColor),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.4),
+        ),
       ),
       child: TextField(
         controller: controller,
@@ -243,7 +245,8 @@ class _SignInScreenState extends State<SignInScreen> {
         style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          hintStyle:
+              TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
           prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:iconsax/iconsax.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
@@ -135,31 +136,54 @@ class LikesScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: newLikes.length,
             itemBuilder: (context, index) {
-              final photo = newLikes[index].photos.isNotEmpty
-                  ? newLikes[index].photos.first
+              final profile = likes[index];
+              final photo = profile.photos.isNotEmpty
+                  ? profile.photos.first
                   : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
 
+              final profileProvider = context.watch<ProfileProvider>();
+              final isUnlocked = profileProvider.userProfile?.isPremium == true ||
+                  (profileProvider.userProfile?.unlockedLikes
+                          .contains(profile.uid) ??
+                      false);
+
               return GestureDetector(
-                onTap: () => _showProfileDetails(context, newLikes[index], lp),
+                onTap: isUnlocked
+                    ? () => _showProfileDetails(context, profile, lp)
+                    : () => _showUnlockDialog(context, profile, lp),
                 child: Container(
                   margin: const EdgeInsets.only(right: 12),
                   child: Column(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(3),
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [Color(0xFFFF4D85), Color(0xFFFF9A8B)],
-                          ),
+                          gradient: isUnlocked
+                              ? const LinearGradient(
+                                  colors: [Color(0xFFFF4D85), Color(0xFFFF9A8B)],
+                                )
+                              : LinearGradient(
+                                  colors: [
+                                    Colors.grey.withOpacity(0.5),
+                                    Colors.grey.withOpacity(0.2)
+                                  ],
+                                ),
                         ),
                         child: CircleAvatar(
                           radius: 35,
                           backgroundColor:
                               Theme.of(context).scaffoldBackgroundColor,
-                          child: CircleAvatar(
-                            radius: 32,
-                            backgroundImage: NetworkImage(photo),
+                          child: ClipOval(
+                            child: ImageFiltered(
+                              imageFilter: isUnlocked
+                                  ? ImageFilter.blur(sigmaX: 0, sigmaY: 0)
+                                  : ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                              child: CircleAvatar(
+                                radius: 32,
+                                backgroundImage: NetworkImage(photo),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -191,15 +215,20 @@ class LikesScreen extends StatelessWidget {
                 ? profile.photos.first
                 : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
 
+            final profileProvider = context.watch<ProfileProvider>();
+            final isUnlocked = profileProvider.userProfile?.isPremium == true ||
+                (profileProvider.userProfile?.unlockedLikes
+                        .contains(profile.uid) ??
+                    false);
+
             return GestureDetector(
-              onTap: () => _showProfileDetails(context, profile, lp),
+              onTap: isUnlocked
+                  ? () => _showProfileDetails(context, profile, lp)
+                  : () => _showUnlockDialog(context, profile, lp),
               child: Container(
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  image: DecorationImage(
-                    image: NetworkImage(photo),
-                    fit: BoxFit.cover,
-                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
@@ -208,59 +237,196 @@ class LikesScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.8),
-                      ],
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ImageFiltered(
+                      imageFilter: isUnlocked
+                          ? ImageFilter.blur(sigmaX: 0, sigmaY: 0)
+                          : ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                      child: Image.network(
+                        photo,
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${profile.firstName ?? lp.getString('someone_fallback')}, ${profile.age ?? '??'}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.8),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Consumer<ProfileProvider>(
-                        builder: (context, profileProvider, _) {
-                          return Row(
+                    ),
+                    if (!isUnlocked)
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.4),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Iconsax.lock,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        ),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              const Icon(Iconsax.location,
-                                  color: Colors.white, size: 12),
-                              const SizedBox(width: 4),
                               Text(
-                                profile.getDistanceDisplay(
-                                    profileProvider.userProfile),
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
-                                  fontSize: 12,
+                                isUnlocked
+                                    ? '${profile.firstName ?? lp.getString('someone_fallback')}, ${profile.age ?? '??'}'
+                                    : '•••••, ${profile.age ?? '??'}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
                                 ),
                               ),
+                              if (profile.isVerified) ...[
+                                const SizedBox(width: 4),
+                                const Icon(Icons.verified_rounded,
+                                    color: Color(0xFF4FC3F7), size: 16),
+                              ],
                             ],
-                          );
-                        },
+                          ),
+                          const SizedBox(height: 4),
+                          if (!isUnlocked && profile.lookingFor.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Row(
+                                children: [
+                                  const Icon(Iconsax.search_normal_1,
+                                      color: Colors.white70, size: 12),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    profile.lookingFor.first,
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.8),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (isUnlocked)
+                            Row(
+                              children: [
+                                const Icon(Iconsax.location,
+                                    color: Colors.white, size: 12),
+                                const SizedBox(width: 4),
+                                Text(
+                                  profile.getDistanceDisplay(
+                                      profileProvider.userProfile),
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             );
           },
           childCount: likes.length,
         ),
+      ),
+    );
+  }
+
+  void _showUnlockDialog(
+      BuildContext context, UserProfile profile, LanguageProvider lp) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          lp.getString('unlock_title'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text(lp.getString('unlock_message')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              lp.getString('cancel'),
+              style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: () async {
+                  final profileProvider = context.read<ProfileProvider>();
+                  if ((profileProvider.userProfile?.credits ?? 0) < 20) {
+                    Navigator.pop(context);
+                    profileProvider.navigateToPremium(1);
+                    return;
+                  }
+
+                  try {
+                    Navigator.pop(context);
+                    await profileProvider.unlockProfile(profile.uid!);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Profile unlocked!')),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to unlock: $e')),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFB300),
+                  minimumSize: const Size(double.infinity, 44),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  lp.getString('unlock_for_credits'),
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  context.read<ProfileProvider>().navigateToPremium(0);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF4D85),
+                  minimumSize: const Size(double.infinity, 44),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  lp.getString('go_premium'),
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

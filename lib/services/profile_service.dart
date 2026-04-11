@@ -503,6 +503,19 @@ class ProfileService {
     }
   }
 
+  /// Deducts credits from a user's account
+  Future<void> deductCredits(String uid, int amount) async {
+    try {
+      await _usersCollection.doc(uid).update({
+        'credits': FieldValue.increment(-amount),
+      });
+      debugPrint('ProfileService: Deducted $amount credits from $uid');
+    } catch (e) {
+      debugPrint('Error deducting credits: $e');
+      rethrow;
+    }
+  }
+
   /// Saves a payment transaction to Firestore
   Future<String> saveTransaction(Map<String, dynamic> txMap) async {
     try {
@@ -544,5 +557,18 @@ class ProfileService {
           .map((doc) => TransactionModel.fromMap(doc.data(), doc.id))
           .toList();
     });
+  }
+
+  /// Adds a target UID to the user's unlockedLikes list
+  Future<void> unlockProfile(String uid, String targetId) async {
+    try {
+      await _usersCollection.doc(uid).update({
+        'unlockedLikes': FieldValue.arrayUnion([targetId]),
+      });
+      debugPrint('ProfileService: Unlocked profile $targetId for user $uid');
+    } catch (e) {
+      debugPrint('Error unlocking profile: $e');
+      rethrow;
+    }
   }
 }

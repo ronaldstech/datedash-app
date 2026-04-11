@@ -174,7 +174,7 @@ class _LandingScreenState extends State<LandingScreen> {
                   const ExploreScreen(),
                   LikesScreen(),
                   const ChatListScreen(),
-                  const PremiumScreen(),
+                  PremiumScreen(initialTab: profileProvider.initialPremiumTab),
                 ],
               ),
               endDrawer: const ProfileDrawer(),
@@ -330,7 +330,7 @@ class _LandingScreenState extends State<LandingScreen> {
     int badgeCount = 0;
     if (hasBadge) {
       badgeCount = index == 2
-          ? profileProvider.likesCount
+          ? profileProvider.unlockedLikesCount
           : profileProvider.unreadMessageCount;
     }
 
