@@ -12,6 +12,8 @@ class ChatMessage {
   final MessageType messageType;
   final String? mediaUrl; // URL for image, voice, GIF
   final int? voiceDuration; // Duration in milliseconds for voice messages
+  final bool isEdited;
+  final bool isDeleted;
 
   ChatMessage({
     required this.id,
@@ -23,6 +25,8 @@ class ChatMessage {
     this.messageType = MessageType.text,
     this.mediaUrl,
     this.voiceDuration,
+    this.isEdited = false,
+    this.isDeleted = false,
   });
 
   factory ChatMessage.fromDoc(DocumentSnapshot doc) {
@@ -37,6 +41,8 @@ class ChatMessage {
       messageType: _parseMessageType(data['messageType'] ?? 'text'),
       mediaUrl: data['mediaUrl'],
       voiceDuration: data['voiceDuration'],
+      isEdited: data['isEdited'] ?? false,
+      isDeleted: data['isDeleted'] ?? false,
     );
   }
 
@@ -68,6 +74,8 @@ class ChatMessage {
         'messageType': messageType.toString().split('.').last,
         'mediaUrl': mediaUrl,
         'voiceDuration': voiceDuration,
+        'isEdited': isEdited,
+        'isDeleted': isDeleted,
       };
 }
 

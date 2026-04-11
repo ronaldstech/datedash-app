@@ -5,7 +5,6 @@ import 'package:datedash/services/payment_service.dart';
 import 'package:datedash/models/payment_operator_model.dart';
 import 'package:datedash/providers/profile_provider.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui';
 
 class PremiumScreen extends StatefulWidget {
   final int initialTab;
@@ -316,8 +315,8 @@ class _PremiumScreenState extends State<PremiumScreen>
   }) {
     final price = _isMonthly ? monthlyPrice : weeklyPrice;
     final period = _isMonthly ? 'month' : 'week';
-    final themePink = const Color(0xFFFF4D85);
-    final themePinkLight = const Color(0xFFFF8EBD);
+    const themePink = Color(0xFFFF4D85);
+    const themePinkLight = Color(0xFFFF8EBD);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -412,7 +411,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Text(
+                          child: const Text(
                             'MOST POPULAR',
                             style: TextStyle(
                               color: themePink,
@@ -442,7 +441,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                     textBaseline: TextBaseline.alphabetic,
                     children: [
                       Text(
-                        '$price',
+                        price.toString(),
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.w900,
@@ -602,7 +601,8 @@ class _PremiumScreenState extends State<PremiumScreen>
                           Consumer<ProfileProvider>(
                             builder: (context, provider, _) {
                               return Text(
-                                _formatNumber(provider.userProfile?.credits ?? 0),
+                                _formatNumber(
+                                    provider.userProfile?.credits ?? 0),
                                 style: const TextStyle(
                                   fontSize: 48,
                                   fontWeight: FontWeight.w900,
@@ -675,7 +675,7 @@ class _PremiumScreenState extends State<PremiumScreen>
 
   Widget _buildCreditGlassBundle(int amount, bool isDark,
       {bool isPopular = false, String? bonus}) {
-    final themePink = const Color(0xFFFF4D85);
+    const themePink = Color(0xFFFF4D85);
 
     return Container(
       decoration: BoxDecoration(
@@ -771,7 +771,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                             borderRadius: BorderRadius.circular(16)),
                       ),
                       child: Text(
-                        'MK ${amount}',
+                        'MK $amount',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
@@ -790,14 +790,14 @@ class _PremiumScreenState extends State<PremiumScreen>
                 right: 0,
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 4),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.white,
-                    borderRadius: const BorderRadius.only(
+                    borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(32),
                       topRight: Radius.circular(32),
                     ),
                   ),
-                  child: Text(
+                  child: const Text(
                     'BEST VALUE',
                     textAlign: TextAlign.center,
                     style: TextStyle(

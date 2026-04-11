@@ -214,6 +214,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                     backgroundImage: photo != null
                                         ? NetworkImage(photo)
                                         : null,
+                                    onBackgroundImageError: (e, s) {
+                                      debugPrint('Error loading match profile: $e');
+                                    },
                                     child: photo == null
                                         ? const Icon(Iconsax.user,
                                             color: Color(0xFFFF4D85), size: 28)
@@ -296,6 +299,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                   const Color(0xFFFF4D85).withOpacity(0.15),
                               backgroundImage:
                                   photo != null ? NetworkImage(photo) : null,
+                              onBackgroundImageError: (e, s) {
+                                debugPrint('Error loading chat list profile: $e');
+                              },
                               child: photo == null
                                   ? const Icon(Iconsax.user,
                                       color: Color(0xFFFF4D85), size: 24)

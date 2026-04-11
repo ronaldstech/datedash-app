@@ -24,10 +24,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
   final NotificationService _notificationService = NotificationService();
   final ProfileService _profileService = ProfileService();
 
-  String _formatDateTime(DateTime dateTime, LanguageProvider lp) {
-    return DateFormatter.format(dateTime, lp);
-  }
-
   Map<String, List<DatedashNotification>> _groupNotifications(
       List<DatedashNotification> notifications, LanguageProvider lp) {
     final Map<String, List<DatedashNotification>> groups = {
@@ -93,7 +89,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   centerTitle: false,
                   titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
                   title: Text(
-                    lp.getString('nav_likes'), // Reuse nav_likes or add specific key
+                    lp.getString(
+                        'nav_likes'), // Reuse nav_likes or add specific key
                     style: const TextStyle(
                       fontWeight: FontWeight.w900,
                       fontSize: 22,
@@ -121,7 +118,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 _buildSectionHeader(lp.getString('yesterday')),
               if (grouped['Yesterday']!.isNotEmpty)
                 _buildNotificationSliver(grouped['Yesterday']!),
-              if (grouped['Earlier']!.isNotEmpty) _buildSectionHeader(lp.getString('earlier')),
+              if (grouped['Earlier']!.isNotEmpty)
+                _buildSectionHeader(lp.getString('earlier')),
               if (grouped['Earlier']!.isNotEmpty)
                 _buildNotificationSliver(grouped['Earlier']!),
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -370,7 +368,8 @@ class _NotificationCard extends StatelessWidget {
     );
 
     try {
-      final senderProfile = await profileService.getUserProfile(notification.senderId);
+      final senderProfile =
+          await profileService.getUserProfile(notification.senderId);
       if (context.mounted) Navigator.pop(context);
 
       if (senderProfile != null && context.mounted) {
@@ -381,7 +380,8 @@ class _NotificationCard extends StatelessWidget {
     }
   }
 
-  void _showProfileDetails(BuildContext context, UserProfile profile, LanguageProvider lp) {
+  void _showProfileDetails(
+      BuildContext context, UserProfile profile, LanguageProvider lp) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -412,11 +412,17 @@ class _NotificationCard extends StatelessWidget {
           Navigator.pop(context);
           await ChatService().getOrCreateChat(myUid, profile.uid!);
           if (context.mounted) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(
-              otherUserId: profile.uid!,
-              otherUserName: profile.firstName ?? lp.getString('user_fallback'),
-              otherUserPhoto: profile.photos.isNotEmpty ? profile.photos.first : null,
-            )));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => ChatScreen(
+                          otherUserId: profile.uid!,
+                          otherUserName: profile.firstName ??
+                              lp.getString('user_fallback'),
+                          otherUserPhoto: profile.photos.isNotEmpty
+                              ? profile.photos.first
+                              : null,
+                        )));
           }
         },
       ),

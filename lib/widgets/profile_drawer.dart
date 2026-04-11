@@ -1,4 +1,3 @@
-import 'package:datedash/screens/premium_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -121,7 +120,8 @@ class ProfileDrawer extends StatelessWidget {
                               letterSpacing: -0.5,
                             ),
                           ),
-                          if (profileProvider.userProfile?.isVerified == true) ...[
+                          if (profileProvider.userProfile?.isVerified ==
+                              true) ...[
                             const SizedBox(width: 6),
                             const Icon(Icons.verified,
                                 color: Color(0xFFFF4D85), size: 18),

@@ -10,9 +10,10 @@ import 'local_db_service.dart';
 class ChatService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final LocalDbService _localDb = LocalDbService();
-  
+
   // Change this to your actual PHP server endpoint
-  static const String _uploadEndpoint = 'https://unimarket-mw.com/datedash/api/upload2.php';
+  static const String _uploadEndpoint =
+      'https://unimarket-mw.com/datedash/api/upload2.php';
 
   /// Deterministic chat ID — sorted UIDs joined by underscore
   String getChatId(String uid1, String uid2) {
@@ -53,7 +54,7 @@ class ChatService {
 
     final msgRef =
         _firestore.collection('chats').doc(chatId).collection('messages').doc();
-    
+
     // Create a local message object for caching
     final localMessage = ChatMessage(
       id: msgRef.id,
@@ -88,7 +89,7 @@ class ChatService {
       });
 
       await batch.commit();
-      
+
       // Cache locally after successful send
       await _localDb.insertMessage(localMessage, chatId);
     } catch (e) {
@@ -109,11 +110,8 @@ class ChatService {
     required String mediaUrl,
     int? voiceDuration,
   }) async {
-    final msgRef = _firestore
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .doc();
+    final msgRef =
+        _firestore.collection('chats').doc(chatId).collection('messages').doc();
 
     // Create a local message object for caching
     final localMessage = ChatMessage(
@@ -190,7 +188,7 @@ class ChatService {
       if (filePath.contains('.')) {
         fileExtension = filePath.split('.').last.toLowerCase();
       }
-      
+
       // Fallback to jpg if the extension is missing or invalid for web standards
       const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
       if (fileExtension.isEmpty || !validExtensions.contains(fileExtension)) {
@@ -202,38 +200,43 @@ class ChatService {
 
       // Create multipart request
       var request = http.MultipartRequest('POST', Uri.parse(_uploadEndpoint));
-      
+
       // Add file to request
       request.files.add(
         await http.MultipartFile.fromPath(
           'file',
           filePath,
-          filename: '${DateTime.now().millisecondsSinceEpoch}_$userId.$fileExtension',
+          filename:
+              '${DateTime.now().millisecondsSinceEpoch}_$userId.$fileExtension',
           contentType: MediaType('image', mimeSubtype),
         ),
       );
-      
+
       // Add metadata
       request.fields['chatId'] = chatId;
       request.fields['userId'] = userId;
       request.fields['fileType'] = fileType;
 
       // Send request
-      var streamResponse = await request.send().timeout(const Duration(seconds: 60));
+      var streamResponse =
+          await request.send().timeout(const Duration(seconds: 60));
       var response = await http.Response.fromStream(streamResponse);
 
       if (response.statusCode != 200) {
-        throw Exception('Upload failed with status ${response.statusCode}: ${response.body}');
+        throw Exception(
+            'Upload failed with status ${response.statusCode}: ${response.body}');
       }
 
       // Parse response
-      final Map<String, dynamic> data = jsonDecode(response.body) as Map<String, dynamic>;
-      
+      final Map<String, dynamic> data =
+          jsonDecode(response.body) as Map<String, dynamic>;
+
       if (data['success'] == true && data['file_url'] != null) {
         String url = data['file_url'] as String;
         // Fix for backend script upload2.php omitting the app directory
         if (url.contains('unimarket-mw.com/uploads/')) {
-          url = url.replaceFirst('unimarket-mw.com/uploads/', 'unimarket-mw.com/datedash/api/uploads/');
+          url = url.replaceFirst('unimarket-mw.com/uploads/',
+              'unimarket-mw.com/datedash/api/uploads/');
         }
         return url;
       } else {
@@ -251,19 +254,22 @@ class ChatService {
         .collection('chats')
         .doc(chatId)
         .collection('messages')
-        .orderBy('timestamp', descending: false)
-        .snapshots()
+        .snapshots(includeMetadataChanges: true)
         .map((snap) {
-          final messages = snap.docs.map(ChatMessage.fromDoc).toList();
-          // Cache messages to local DB
-          _localDb.insertMessages(messages, chatId);
-          return messages;
-        })
-        .handleError((error) {
-          debugPrint('Error in getMessagesStream: $error');
-          // Return cached messages on error
-          return _localDb.getMessagesForChat(chatId);
-        });
+      final messages = snap.docs.map(ChatMessage.fromDoc).toList();
+
+      // Sort in Dart to include messages with null timestamps (pending server sync)
+      // null timestamps are handled by ChatMessage.fromDoc using DateTime.now()
+      messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+      // Cache messages to local DB
+      _localDb.insertMessages(messages, chatId);
+      return messages;
+    }).handleError((error) {
+      debugPrint('Error in getMessagesStream: $error');
+      // Return cached messages on error
+      return _localDb.getMessagesForChat(chatId);
+    });
   }
 
   /// Get messages since a specific timestamp (for incremental sync)
@@ -285,12 +291,12 @@ class ChatService {
 
       final snap = await targetQuery.get();
       final messages = snap.docs.map(ChatMessage.fromDoc).toList();
-      
+
       // Cache new messages
       if (messages.isNotEmpty) {
         await _localDb.insertMessages(messages, chatId);
       }
-      
+
       return messages;
     } catch (e) {
       debugPrint('Error fetching messages since timestamp: $e');
@@ -301,48 +307,45 @@ class ChatService {
   /// Smart stream that combines cached + new messages
   Stream<List<ChatMessage>> getMessagesStreamSmart(String chatId) async* {
     try {
-      // 1. First, yield cached messages
+      // 1. First, yield cached messages from local DB for instant UX
       final cachedMessages = await _localDb.getMessagesForChat(chatId);
-      yield cachedMessages;
+      if (cachedMessages.isNotEmpty) {
+        yield cachedMessages;
+      }
 
-      // 2. Get the timestamp of the last cached message
-      final lastCachedTimestamp = cachedMessages.isNotEmpty
-          ? cachedMessages.last.timestamp
-          : DateTime.fromMillisecondsSinceEpoch(0);
-
-      // 3. Stream new messages from Firestore after the last cached timestamp
+      // 2. Stream all messages from Firestore for this chat.
+      // We don't filter by timestamp here to avoid missing updates to old messages
+      // and to ensure pending writes (null timestamp) are included.
       yield* _firestore
           .collection('chats')
           .doc(chatId)
           .collection('messages')
-          .where('timestamp',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(lastCachedTimestamp))
-          .orderBy('timestamp', descending: false)
-          .snapshots()
+          .snapshots(includeMetadataChanges: true)
           .map((snap) {
-            final newMessages = snap.docs.map(ChatMessage.fromDoc).toList();
-            
-            // Cache new messages
-            if (newMessages.isNotEmpty) {
-              _localDb.insertMessages(newMessages, chatId);
-            }
+        final firestoreMessages = snap.docs.map(ChatMessage.fromDoc).toList();
 
-            // Combine cached + new messages, avoiding duplicates
-            final allMessages = [...cachedMessages];
-            for (final newMsg in newMessages) {
-              if (!allMessages.any((msg) => msg.id == newMsg.id)) {
-                allMessages.add(newMsg);
-              }
-            }
-            allMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+        // Cache new messages
+        if (firestoreMessages.isNotEmpty) {
+          _localDb.insertMessages(firestoreMessages, chatId);
+        }
 
-            return allMessages;
-          })
-          .handleError((error) {
-            debugPrint('Error in smart message stream: $error');
-            // Return cached on error
-            return cachedMessages;
-          });
+        // Merge with cached messages and deduplicate by ID
+        final Map<String, ChatMessage> messageMap = {};
+        for (var msg in cachedMessages) {
+          messageMap[msg.id] = msg;
+        }
+        for (var msg in firestoreMessages) {
+          messageMap[msg.id] = msg;
+        }
+
+        final combinedMessages = messageMap.values.toList();
+        combinedMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+        return combinedMessages;
+      }).handleError((error) {
+        debugPrint('Error in smart message stream: $error');
+        return cachedMessages;
+      });
     } catch (e) {
       debugPrint('Error in initial message load: $e');
       yield [];
@@ -411,24 +414,25 @@ class ChatService {
         .where('participants', arrayContains: uid)
         .snapshots()
         .map((snap) {
-          final chats = snap.docs.map(Chat.fromDoc).toList();
-          // Cache chats to local DB
-          for (final chat in chats) {
-            _localDb.insertOrUpdateChat(chat);
-          }
-          // Sort on client side
-          chats.sort((a, b) {
-            final aTime = a.lastMessageTime ?? DateTime.fromMillisecondsSinceEpoch(0);
-            final bTime = b.lastMessageTime ?? DateTime.fromMillisecondsSinceEpoch(0);
-            return bTime.compareTo(aTime);
-          });
-          return chats;
-        })
-        .handleError((error) {
-          debugPrint('Error in getChatsStream: $error');
-          // Return cached chats on error
-          return _localDb.getChatsForUser(uid);
-        });
+      final chats = snap.docs.map(Chat.fromDoc).toList();
+      // Cache chats to local DB
+      for (final chat in chats) {
+        _localDb.insertOrUpdateChat(chat);
+      }
+      // Sort on client side
+      chats.sort((a, b) {
+        final aTime =
+            a.lastMessageTime ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bTime =
+            b.lastMessageTime ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bTime.compareTo(aTime);
+      });
+      return chats;
+    }).handleError((error) {
+      debugPrint('Error in getChatsStream: $error');
+      // Return cached chats on error
+      return _localDb.getChatsForUser(uid);
+    });
   }
 
   /// Mark message as read
@@ -506,18 +510,13 @@ class ChatService {
 
   /// Stream user's online status
   Stream<bool> getUserOnlineStatus(String uid) {
-    return _firestore
-        .collection('users')
-        .doc(uid)
-        .snapshots()
-        .map((snap) {
-          if (!snap.exists) return false;
-          return (snap.data()?['isOnline'] as bool?) ?? false;
-        })
-        .handleError((error) {
-          debugPrint('Error getting user online status: $error');
-          return false;
-        });
+    return _firestore.collection('users').doc(uid).snapshots().map((snap) {
+      if (!snap.exists) return false;
+      return (snap.data()?['isOnline'] as bool?) ?? false;
+    }).handleError((error) {
+      debugPrint('Error getting user online status: $error');
+      return false;
+    });
   }
 
   /// Marks all messages as read when opening a chat
@@ -554,23 +553,22 @@ class ChatService {
         .where('participants', arrayContains: uid)
         .snapshots()
         .map((snap) {
-          int totalUnread = 0;
-          for (final doc in snap.docs) {
-            final data = doc.data();
-            final unreadCount = data['unreadCount'] as Map<dynamic, dynamic>?;
-            if (unreadCount != null) {
-              final userUnread = unreadCount[uid];
-              if (userUnread is int) {
-                totalUnread += userUnread;
-              }
-            }
+      int totalUnread = 0;
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        final unreadCount = data['unreadCount'] as Map<dynamic, dynamic>?;
+        if (unreadCount != null) {
+          final userUnread = unreadCount[uid];
+          if (userUnread is int) {
+            totalUnread += userUnread;
           }
-          return totalUnread;
-        })
-        .handleError((error) {
-          debugPrint('Error getting unread count: $error');
-          return 0;
-        });
+        }
+      }
+      return totalUnread;
+    }).handleError((error) {
+      debugPrint('Error getting unread count: $error');
+      return 0;
+    });
   }
 
   /// Deletes all messages in a chat and resets metadata
@@ -605,6 +603,98 @@ class ChatService {
       await _localDb.deleteMessagesForChat(chatId);
     } catch (e) {
       debugPrint('Error clearing chat: $e');
+      rethrow;
+    }
+  }
+
+  /// Edits a message's text
+  Future<void> editMessage(
+      String chatId, String messageId, String newText) async {
+    try {
+      final trimmed = newText.trim();
+      if (trimmed.isEmpty) return;
+
+      final batch = _firestore.batch();
+      final msgRef = _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId);
+
+      batch.update(msgRef, {
+        'text': trimmed,
+        'isEdited': true,
+      });
+
+      // Update chat meta if this was the last message
+      final chatDoc = await _firestore.collection('chats').doc(chatId).get();
+      if (chatDoc.exists) {
+        // We can't easily know if this EXACT message was the last one without checking id
+        // but checking the timestamp proximity is a good heuristic if we don't have lastMsgId in chat meta.
+        // For now, let's just update lastMessage if it matches the previous text or just always update if it's the sender
+        // A better way would be to check the actual last message in the collection.
+
+        final lastMsgs = await _firestore
+            .collection('chats')
+            .doc(chatId)
+            .collection('messages')
+            .orderBy('timestamp', descending: true)
+            .limit(1)
+            .get();
+
+        if (lastMsgs.docs.isNotEmpty && lastMsgs.docs.first.id == messageId) {
+          batch.update(_firestore.collection('chats').doc(chatId), {
+            'lastMessage': trimmed,
+          });
+        }
+      }
+
+      await batch.commit();
+      await _localDb.updateMessageTextOrStatus(messageId,
+          text: trimmed, isEdited: true);
+    } catch (e) {
+      debugPrint('Error editing message: $e');
+      rethrow;
+    }
+  }
+
+  /// Soft deletes a message
+  Future<void> deleteMessage(String chatId, String messageId) async {
+    try {
+      final batch = _firestore.batch();
+      final msgRef = _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId);
+
+      batch.update(msgRef, {
+        'text': 'This message was deleted',
+        'isDeleted': true,
+        'mediaUrl': null,
+        'voiceDuration': null,
+      });
+
+      // Update chat meta if this was the last message
+      final lastMsgs = await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .get();
+
+      if (lastMsgs.docs.isNotEmpty && lastMsgs.docs.first.id == messageId) {
+        batch.update(_firestore.collection('chats').doc(chatId), {
+          'lastMessage': 'This message was deleted',
+        });
+      }
+
+      await batch.commit();
+      await _localDb.updateMessageTextOrStatus(messageId,
+          text: 'This message was deleted', isDeleted: true);
+    } catch (e) {
+      debugPrint('Error deleting message: $e');
       rethrow;
     }
   }

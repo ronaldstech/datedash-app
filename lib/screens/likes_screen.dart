@@ -24,7 +24,8 @@ class LikesScreen extends StatelessWidget {
 
     if (currentUser == null) {
       return Scaffold(
-        body: Center(child: Text(languageProvider.getString('signin_to_see_likes'))),
+        body: Center(
+            child: Text(languageProvider.getString('signin_to_see_likes'))),
       );
     }
 
@@ -60,14 +61,16 @@ class LikesScreen extends StatelessWidget {
               ),
               if (likes.isNotEmpty) ...[
                 SliverToBoxAdapter(
-                    child: _buildNewLikesSection(context, likes, languageProvider)),
+                    child: _buildNewLikesSection(
+                        context, likes, languageProvider)),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
                     child: Text(
                       languageProvider.getString('all_likes'),
-                      style:
-                          const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w800),
                     ),
                   ),
                 ),
@@ -113,7 +116,8 @@ class LikesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNewLikesSection(BuildContext context, List<UserProfile> likes, LanguageProvider lp) {
+  Widget _buildNewLikesSection(
+      BuildContext context, List<UserProfile> likes, LanguageProvider lp) {
     final newLikes = likes.take(5).toList();
 
     return Column(
@@ -142,10 +146,11 @@ class LikesScreen extends StatelessWidget {
                   : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
 
               final profileProvider = context.watch<ProfileProvider>();
-              final isUnlocked = profileProvider.userProfile?.isPremium == true ||
-                  (profileProvider.userProfile?.unlockedLikes
-                          .contains(profile.uid) ??
-                      false);
+              final isUnlocked =
+                  profileProvider.userProfile?.isPremium == true ||
+                      (profileProvider.userProfile?.unlockedLikes
+                              .contains(profile.uid) ??
+                          false);
 
               return GestureDetector(
                 onTap: isUnlocked
@@ -161,7 +166,10 @@ class LikesScreen extends StatelessWidget {
                           shape: BoxShape.circle,
                           gradient: isUnlocked
                               ? const LinearGradient(
-                                  colors: [Color(0xFFFF4D85), Color(0xFFFF9A8B)],
+                                  colors: [
+                                    Color(0xFFFF4D85),
+                                    Color(0xFFFF9A8B)
+                                  ],
                                 )
                               : LinearGradient(
                                   colors: [
@@ -182,6 +190,12 @@ class LikesScreen extends StatelessWidget {
                               child: CircleAvatar(
                                 radius: 32,
                                 backgroundImage: NetworkImage(photo),
+                                onBackgroundImageError: (e, s) {
+                                  debugPrint(
+                                      'Error loading likes drawer profile: $e');
+                                },
+                                child: const Icon(Iconsax.user,
+                                    color: Colors.grey),
                               ),
                             ),
                           ),
@@ -198,7 +212,8 @@ class LikesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLikesGrid(BuildContext context, List<UserProfile> likes, LanguageProvider lp) {
+  Widget _buildLikesGrid(
+      BuildContext context, List<UserProfile> likes, LanguageProvider lp) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       sliver: SliverGrid(
@@ -247,6 +262,15 @@ class LikesScreen extends StatelessWidget {
                       child: Image.network(
                         photo,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey.withOpacity(0.2),
+                            child: const Center(
+                              child: Icon(Icons.broken_image_rounded,
+                                  color: Colors.grey, size: 40),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     Container(
@@ -367,7 +391,8 @@ class LikesScreen extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             child: Text(
               lp.getString('cancel'),
-              style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.grey, fontWeight: FontWeight.bold),
             ),
           ),
           Column(
@@ -385,10 +410,12 @@ class LikesScreen extends StatelessWidget {
                   try {
                     Navigator.pop(context);
                     await profileProvider.unlockProfile(profile.uid!);
+                    // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Profile unlocked!')),
                     );
                   } catch (e) {
+                    // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Failed to unlock: $e')),
                     );
@@ -431,7 +458,8 @@ class LikesScreen extends StatelessWidget {
     );
   }
 
-  void _showProfileDetails(BuildContext context, UserProfile profile, LanguageProvider lp) {
+  void _showProfileDetails(
+      BuildContext context, UserProfile profile, LanguageProvider lp) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -470,7 +498,8 @@ class LikesScreen extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) => ChatScreen(
                     otherUserId: profile.uid!,
-                    otherUserName: profile.firstName ?? lp.getString('user_fallback'),
+                    otherUserName:
+                        profile.firstName ?? lp.getString('user_fallback'),
                     otherUserPhoto:
                         profile.photos.isNotEmpty ? profile.photos.first : null,
                   ),

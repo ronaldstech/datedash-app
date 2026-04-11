@@ -166,6 +166,20 @@ class ProfileService {
     }
   }
 
+  /// Checks if two users are matched
+  Future<bool> checkMatchStatus(String uid1, String uid2) async {
+    try {
+      final matchId = uid1.compareTo(uid2) < 0
+          ? '${uid1}_$uid2'
+          : '${uid2}_$uid1';
+      final matchDoc = await _firestore.collection('matches').doc(matchId).get();
+      return matchDoc.exists;
+    } catch (e) {
+      debugPrint('Error checking match status: $e');
+      return false;
+    }
+  }
+
   /// Records a swipe (like/dislike) in Firestore
   Future<void> swipeUser(String fromId, String toId, String type,
       {String? senderName}) async {
@@ -317,6 +331,16 @@ class ProfileService {
       }
       return profiles;
     });
+  }
+
+  /// Returns a stream of the number of likes the current user has sent
+  Stream<int> getSentLikesCountStream(String userId) {
+    return _firestore
+        .collection('swipes')
+        .where('fromId', isEqualTo: userId)
+        .where('type', isEqualTo: 'like')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
   }
 
   /// Returns a stream of the number of likes the current user has received

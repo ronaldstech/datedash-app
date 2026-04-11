@@ -11,12 +11,15 @@ import 'providers/profile_provider.dart';
 import 'services/chat_service.dart';
 import 'widgets/call_listener_wrapper.dart';
 import 'providers/language_provider.dart';
+import 'services/update_service.dart';
+import 'screens/update_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(
     MultiProvider(
       providers: [
@@ -94,7 +97,45 @@ class _DateDashAppState extends State<DateDashApp> with WidgetsBindingObserver {
             );
           }
           if (snapshot.hasData) {
-            return const LandingScreen();
+            return FutureBuilder<AppUpdateInfo?>(
+              future: UpdateService().checkForUpdate(),
+              builder: (context, updateSnapshot) {
+                if (updateSnapshot.connectionState == ConnectionState.waiting) {
+                  // Show a minimal splash while checking for updates
+                  return Scaffold(
+                    backgroundColor: const Color(0xFF1A0A14),
+                    body: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ClipOval(
+                            child: Image.asset(
+                              'assets/images/logo2.png',
+                              width: 90,
+                              height: 90,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Color(0xFFFF4D85),
+                              strokeWidth: 2.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                if (updateSnapshot.data != null) {
+                  return UpdateScreen(info: updateSnapshot.data!);
+                }
+                return const LandingScreen();
+              },
+            );
           }
           return const SignInScreen();
         },

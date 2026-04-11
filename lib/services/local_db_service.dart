@@ -23,7 +23,7 @@ class LocalDbService {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createTables,
       onUpgrade: _upgradeDb,
     );
@@ -34,6 +34,10 @@ class LocalDbService {
       try { await db.execute('ALTER TABLE messages ADD COLUMN messageType TEXT DEFAULT "text"'); } catch (_) {}
       try { await db.execute('ALTER TABLE messages ADD COLUMN mediaUrl TEXT'); } catch (_) {}
       try { await db.execute('ALTER TABLE messages ADD COLUMN voiceDuration INTEGER'); } catch (_) {}
+    }
+    if (oldVersion < 3) {
+      try { await db.execute('ALTER TABLE messages ADD COLUMN isEdited INTEGER DEFAULT 0'); } catch (_) {}
+      try { await db.execute('ALTER TABLE messages ADD COLUMN isDeleted INTEGER DEFAULT 0'); } catch (_) {}
     }
   }
 
@@ -51,6 +55,8 @@ class LocalDbService {
         messageType TEXT NOT NULL DEFAULT 'text',
         mediaUrl TEXT,
         voiceDuration INTEGER,
+        isEdited INTEGER NOT NULL DEFAULT 0,
+        isDeleted INTEGER NOT NULL DEFAULT 0,
         createdAt INTEGER NOT NULL
       )
     ''');
@@ -96,6 +102,8 @@ class LocalDbService {
         'messageType': msg.messageType.toString().split('.').last,
         'mediaUrl': msg.mediaUrl,
         'voiceDuration': msg.voiceDuration,
+        'isEdited': msg.isEdited ? 1 : 0,
+        'isDeleted': msg.isDeleted ? 1 : 0,
         'createdAt': DateTime.now().millisecondsSinceEpoch,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -118,6 +126,8 @@ class LocalDbService {
           'messageType': msg.messageType.toString().split('.').last,
           'mediaUrl': msg.mediaUrl,
           'voiceDuration': msg.voiceDuration,
+          'isEdited': msg.isEdited ? 1 : 0,
+          'isDeleted': msg.isDeleted ? 1 : 0,
           'createdAt': DateTime.now().millisecondsSinceEpoch,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
@@ -154,6 +164,8 @@ class LocalDbService {
               messageType: _parseLocalMessageType(row['messageType'] as String?),
               mediaUrl: row['mediaUrl'] as String?,
               voiceDuration: row['voiceDuration'] as int?,
+              isEdited: (row['isEdited'] as int) == 1,
+              isDeleted: (row['isDeleted'] as int) == 1,
             ))
         .toList();
   }
@@ -175,6 +187,23 @@ class LocalDbService {
       where: 'chatId = ?',
       whereArgs: [chatId],
     );
+  }
+
+  Future<void> updateMessageTextOrStatus(String msgId, {String? text, bool? isEdited, bool? isDeleted}) async {
+    final db = await database;
+    final Map<String, dynamic> updates = {};
+    if (text != null) updates['text'] = text;
+    if (isEdited != null) updates['isEdited'] = isEdited ? 1 : 0;
+    if (isDeleted != null) updates['isDeleted'] = isDeleted ? 1 : 0;
+    
+    if (updates.isNotEmpty) {
+      await db.update(
+        'messages',
+        updates,
+        where: 'id = ?',
+        whereArgs: [msgId],
+      );
+    }
   }
 
   // ─── CHAT OPERATIONS ───

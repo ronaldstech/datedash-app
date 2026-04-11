@@ -69,8 +69,10 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
 
   String _getLocalizedCategoryName(String key, LanguageProvider lp) {
     switch (key) {
-      case 'Long Term':
+      case 'Long Term Relationship':
         return lp.getString('cat_long_term');
+      case 'Short Term Relationship':
+        return 'Short Term Relationship'; // New key
       case 'Hookups':
         return lp.getString('cat_hookups');
       case 'Short Term Fun':
@@ -81,11 +83,16 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
         return lp.getString('cat_coffee_date');
       case 'Movie Night':
         return lp.getString('cat_movie_night');
-      case 'Fitness Duo':
-        return lp.getString('cat_fitness_duo');
-      case 'Gaming Duo':
+      case 'Sponsor':
+        return lp.getString('cat_sponsor');
+      case 'Figuring Out':
+        return lp.getString('cat_figuring_out');
+      case 'Gaming':
         return lp.getString('cat_gaming_duo');
       default:
+        // Try to handle legacy keys just in case
+        if (key == 'Long Term') return lp.getString('cat_long_term');
+        if (key == 'Gaming Duo') return lp.getString('cat_gaming_duo');
         return key;
     }
   }
@@ -151,12 +158,14 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
+    context.watch<ProfileProvider>();
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(_getLocalizedCategoryName(widget.category, languageProvider),
+        title: Text(
+            _getLocalizedCategoryName(widget.category, languageProvider),
             style: const TextStyle(
                 fontWeight: FontWeight.w900, color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -234,6 +243,38 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
       padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 0),
       child: Column(
         children: [
+          // --- Engagement Nudge Banner ---
+          if (context.watch<ProfileProvider>().sentLikesCount < 5)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12, top: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF4D85).withOpacity(0.12),
+                borderRadius: BorderRadius.circular(16),
+                border:
+                    Border.all(color: const Color(0xFFFF4D85).withOpacity(0.2)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Iconsax.heart5,
+                      color: Color(0xFFFF4D85), size: 18),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      lp.getString('nudge_send_more_likes').replaceAll(
+                          '{count}',
+                          (5 - context.read<ProfileProvider>().sentLikesCount)
+                              .toString()),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFFF4D85),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: AnimatedBuilder(
               animation: _swipeController,
@@ -556,8 +597,47 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
           size: 64,
           label: lp.getString('like'),
         ),
+        if (context.watch<ProfileProvider>().sentLikesCount >= 5)
+          ActionButton(
+            icon: Iconsax.message_text_1,
+            color: const Color(0xFFFF4D85),
+            onTap: () => _handleDirectMessage(lp),
+            size: 54, // Slightly smaller than Like/Pass
+            label: lp.getString('message'),
+          ),
       ],
     );
+  }
+
+  Future<void> _handleDirectMessage(LanguageProvider lp) async {
+    final profileProvider = context.read<ProfileProvider>();
+    final targetProfile = _profiles[_currentIndex];
+    final myUid = profileProvider.currentUser?.uid;
+
+    if (myUid == null || targetProfile.uid == null) return;
+
+    if (!targetProfile.allowMessages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(lp.getString('messages_disabled_snack'))));
+      return;
+    }
+
+    await ChatService().getOrCreateChat(myUid, targetProfile.uid!);
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChatScreen(
+            otherUserId: targetProfile.uid!,
+            otherUserName:
+                targetProfile.firstName ?? lp.getString('user_fallback'),
+            otherUserPhoto: targetProfile.photos.isNotEmpty
+                ? targetProfile.photos.first
+                : null,
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildStamp(String text, Color color) {
@@ -598,8 +678,8 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
         },
         onMessage: () async {
           if (!profile.allowMessages) {
-            ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(lp.getString('messages_disabled_snack'))));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(lp.getString('messages_disabled_snack'))));
             return;
           }
           Navigator.pop(context);
@@ -612,7 +692,8 @@ class _CategoryProfilesScreenState extends State<CategoryProfilesScreen>
                 MaterialPageRoute(
                   builder: (_) => ChatScreen(
                     otherUserId: profile.uid!,
-                    otherUserName: profile.firstName ?? lp.getString('user_fallback'),
+                    otherUserName:
+                        profile.firstName ?? lp.getString('user_fallback'),
                     otherUserPhoto:
                         profile.photos.isNotEmpty ? profile.photos.first : null,
                   ),

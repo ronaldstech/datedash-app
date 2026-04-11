@@ -54,63 +54,80 @@ class ExploreScreen extends StatelessWidget {
 
   Widget _buildCategoryGrid(BuildContext context, LanguageProvider languageProvider) {
     final ProfileService profileService = ProfileService();
-    
+
+    // Keys match EXACTLY what edit_profile_screen.dart writes to Firestore
     final categories = [
       {
         'title': languageProvider.getString('cat_long_term'),
         'subtitle': languageProvider.getString('cat_long_term_sub'),
-        'key': 'Long Term', // Original key for DB query
+        'key': 'Long Term Relationship',
         'icon': Iconsax.heart5,
-        'colors': [const Color(0xFFFF4D85), const Color(0xFFFF9A8B)],
+        'photo': 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&q=80',
+        'accent': const Color(0xFFFF4D85),
+      },
+      {
+        'title': languageProvider.getString('cat_short_term_rel'),
+        'subtitle': languageProvider.getString('cat_short_term_rel_sub'),
+        'key': 'Short Term Relationship',
+        'icon': Iconsax.calendar_1,
+        'photo': 'https://images.unsplash.com/photo-1488116438332-b2bced9c1b4c?w=600&q=80',
+        'accent': const Color(0xFFFF9A8B),
       },
       {
         'title': languageProvider.getString('cat_hookups'),
         'subtitle': languageProvider.getString('cat_hookups_sub'),
         'key': 'Hookups',
         'icon': Iconsax.flash,
-        'colors': [const Color(0xFF8E2DE2), const Color(0xFF4A00E0)],
+        'photo': 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80',
+        'accent': const Color(0xFF8E2DE2),
       },
       {
         'title': languageProvider.getString('cat_short_term'),
         'subtitle': languageProvider.getString('cat_short_term_sub'),
         'key': 'Short Term Fun',
         'icon': Iconsax.emoji_happy,
-        'colors': [const Color(0xFFF2994A), const Color(0xFFF2C94C)],
+        'photo': 'https://images.unsplash.com/photo-1536697246787-1f7ae568d89a?w=600&q=80',
+        'accent': const Color(0xFFF2994A),
       },
       {
         'title': languageProvider.getString('cat_new_friends'),
         'subtitle': languageProvider.getString('cat_new_friends_sub'),
         'key': 'New Friends',
         'icon': Iconsax.user_add,
-        'colors': [const Color(0xFF56CCF2), const Color(0xFF2F80ED)],
+        'photo': 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80',
+        'accent': const Color(0xFF56CCF2),
       },
       {
         'title': languageProvider.getString('cat_coffee_date'),
         'subtitle': languageProvider.getString('cat_coffee_date_sub'),
         'key': 'Coffee Date',
         'icon': Iconsax.cup,
-        'colors': [const Color(0xFF11998e), const Color(0xFF38ef7d)],
+        'photo': 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80',
+        'accent': const Color(0xFF7B4F2E),
       },
       {
         'title': languageProvider.getString('cat_movie_night'),
         'subtitle': languageProvider.getString('cat_movie_night_sub'),
         'key': 'Movie Night',
         'icon': Iconsax.video_play4,
-        'colors': [const Color(0xFFEB5757), const Color(0xFF000000)],
+        'photo': 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&q=80',
+        'accent': const Color(0xFFEB5757),
       },
       {
-        'title': languageProvider.getString('cat_fitness_duo'),
-        'subtitle': languageProvider.getString('cat_fitness_duo_sub'),
-        'key': 'Fitness Duo',
-        'icon': Iconsax.activity,
-        'colors': [const Color(0xFFf857a6), const Color(0xFFff5858)],
+        'title': languageProvider.getString('cat_sponsor'),
+        'subtitle': languageProvider.getString('cat_sponsor_sub'),
+        'key': 'Sponsor',
+        'icon': Iconsax.money_2,
+        'photo': 'https://images.unsplash.com/photo-1512358959174-688404bc0e0c?w=600&q=80',
+        'accent': const Color(0xFFDAA520),
       },
       {
-        'title': languageProvider.getString('cat_gaming_duo'),
-        'subtitle': languageProvider.getString('cat_gaming_duo_sub'),
-        'key': 'Gaming Duo',
-        'icon': Iconsax.game,
-        'colors': [const Color(0xFF7F00FF), const Color(0xFFE100FF)],
+        'title': languageProvider.getString('cat_figuring_out'),
+        'subtitle': languageProvider.getString('cat_figuring_out_sub'),
+        'key': 'Figuring Out',
+        'icon': Iconsax.message_question,
+        'photo': 'https://images.unsplash.com/photo-1499209974431-9dac36b44491?w=600&q=80',
+        'accent': const Color(0xFF607D8B),
       },
     ];
 
@@ -119,14 +136,15 @@ class ExploreScreen extends StatelessWidget {
       sliver: SliverGrid(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.85,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
+          childAspectRatio: 0.78,
+          crossAxisSpacing: 14,
+          mainAxisSpacing: 14,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final cat = categories[index];
-            final colors = cat['colors'] as List<Color>;
+            final accent = cat['accent'] as Color;
+            final photo = cat['photo'] as String;
 
             return GestureDetector(
               onTap: () {
@@ -138,101 +156,117 @@ class ExploreScreen extends StatelessWidget {
                   ),
                 );
               },
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: colors,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colors[0].withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(22),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // ── Photo background
+                    Image.network(
+                      photo,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(color: accent),
+                      loadingBuilder: (_, child, progress) {
+                        if (progress == null) return child;
+                        return Container(color: accent.withOpacity(0.6));
+                      },
+                    ),
+
+                    // ── Dark gradient overlay (bottom-heavy for text legibility)
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.35),
+                            Colors.black.withOpacity(0.82),
+                          ],
+                          stops: const [0.0, 0.45, 1.0],
+                        ),
+                      ),
+                    ),
+
+                    // ── Content
+                    Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Icon badge
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.35),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.15),
+                                  width: 0.5),
+                            ),
+                            child: Icon(
+                              cat['icon'] as IconData,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+
+                          const Spacer(),
+
+                          // Title
+                          Text(
+                            cat['title'] as String,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              height: 1.2,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+
+                          // Subtitle
+                          Text(
+                            cat['subtitle'] as String,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.72),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+
+                          // People count pill
+                          StreamBuilder<int>(
+                            stream: profileService
+                                .getCategoryCountStream(cat['key'] as String),
+                            builder: (context, countSnapshot) {
+                              final count = countSnapshot.data ?? 0;
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: accent.withOpacity(0.75),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '$count ${languageProvider.getString('people_count_suffix')}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        right: -10,
-                        bottom: -10,
-                        child: Opacity(
-                          opacity: 0.2,
-                          child: Icon(
-                            cat['icon'] as IconData,
-                            size: 100,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                cat['icon'] as IconData,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              cat['title'] as String,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            Text(
-                              cat['subtitle'] as String,
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: StreamBuilder<int>(
-                                stream: profileService
-                                    .getCategoryCountStream(cat['key'] as String),
-                                builder: (context, countSnapshot) {
-                                  final count = countSnapshot.data ?? 0;
-                                  return Text(
-                                    '$count ${languageProvider.getString('people_count_suffix')}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             );

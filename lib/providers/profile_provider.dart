@@ -18,9 +18,11 @@ class ProfileProvider with ChangeNotifier {
   int _visitorsCount = 0;
   int _matchesCount = 0;
   int _unreadMessageCount = 0;
+  int _sentLikesCount = 0;
   int _swipesVersion = 0;
   int _initialPremiumTab = 0;
   StreamSubscription<int>? _likesCountSubscription;
+  StreamSubscription<int>? _sentLikesCountSubscription;
   StreamSubscription<int>? _visitorsCountSubscription;
   StreamSubscription<int>? _matchesCountSubscription;
   StreamSubscription<int>? _unreadMessageCountSubscription;
@@ -71,13 +73,23 @@ class ProfileProvider with ChangeNotifier {
           _unreadMessageCount = count;
           notifyListeners();
         });
+
+        _sentLikesCountSubscription?.cancel();
+        _sentLikesCountSubscription = _profileService
+            .getSentLikesCountStream(user.uid)
+            .listen((count) {
+          _sentLikesCount = count;
+          notifyListeners();
+        });
       } else {
         _userProfile = null;
         _likesCount = 0;
         _visitorsCount = 0;
         _matchesCount = 0;
         _unreadMessageCount = 0;
+        _sentLikesCount = 0;
         _likesCountSubscription?.cancel();
+        _sentLikesCountSubscription?.cancel();
         _visitorsCountSubscription?.cancel();
         _matchesCountSubscription?.cancel();
         _unreadMessageCountSubscription?.cancel();
@@ -102,6 +114,7 @@ class ProfileProvider with ChangeNotifier {
   int get visitorsCount => _visitorsCount;
   int get matchesCount => _matchesCount;
   int get unreadMessageCount => _unreadMessageCount;
+  int get sentLikesCount => _sentLikesCount;
   int get swipesVersion => _swipesVersion;
   double get swipeOffset => _swipeOffset;
   int get initialPremiumTab => _initialPremiumTab;
@@ -256,6 +269,7 @@ class ProfileProvider with ChangeNotifier {
     _visitorsCountSubscription?.cancel();
     _matchesCountSubscription?.cancel();
     _unreadMessageCountSubscription?.cancel();
+    _sentLikesCountSubscription?.cancel();
     super.dispose();
   }
 }
