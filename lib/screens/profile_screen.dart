@@ -1,3 +1,5 @@
+import 'package:datedash/providers/profile_provider.dart';
+import 'package:datedash/screens/premium_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -48,7 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       MaterialPageRoute(builder: (context) => const EditProfileScreen()),
     );
     // Reload data to reflect any changes and update percentage globally
-    _loadProfile(); 
+    _loadProfile();
   }
 
   @override
@@ -56,7 +58,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final languageProvider = context.watch<LanguageProvider>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(languageProvider.getString('my_profile'), style: const TextStyle(fontWeight: FontWeight.w800)),
+        title: Text(languageProvider.getString('my_profile'),
+            style: const TextStyle(fontWeight: FontWeight.w800)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
@@ -75,14 +78,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: _isLoading 
+      body: _isLoading
           ? Center(child: CircularProgressIndicator(color: _primaryColor))
           : RefreshIndicator(
               color: _primaryColor,
               onRefresh: _loadProfile,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                 children: [
                   _buildProfileHeader(languageProvider),
                   const SizedBox(height: 36),
@@ -119,7 +123,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   radius: 61,
                   backgroundColor: _primaryColor.withOpacity(0.1),
                   child: ClipOval(
-                    child: (_profile.photos.isNotEmpty || _user?.photoURL != null)
+                    child: (_profile.photos.isNotEmpty ||
+                            _user?.photoURL != null)
                         ? Image.network(
                             _profile.photos.isNotEmpty
                                 ? _profile.photos.first
@@ -151,7 +156,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               decoration: BoxDecoration(
                 color: _primaryColor,
                 shape: BoxShape.circle,
-                border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 3),
+                border: Border.all(
+                    color: Theme.of(context).scaffoldBackgroundColor, width: 3),
               ),
               child: const Icon(Iconsax.edit_2, color: Colors.white, size: 20),
             ),
@@ -159,13 +165,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(height: 24),
         Text(
-          _profile.firstName ?? _user?.displayName ?? languageProvider.getString('welcome_back'),
+          _profile.firstName ??
+              _user?.displayName ??
+              languageProvider.getString('welcome_back'),
           style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 4),
         Text(
           _user?.email ?? '',
-          style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodySmall?.color, fontWeight: FontWeight.w500),
+          style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).textTheme.bodySmall?.color,
+              fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -173,23 +184,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildCompletionCard(LanguageProvider languageProvider) {
     final bool isComplete = _profile.completionPercentage == 100;
-    
+
     return GestureDetector(
       onTap: _navigateToEditScreen,
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: isComplete 
-              ? [const Color(0xFF4CAF50), const Color(0xFF2E7D32)]
-              : [_primaryColor, const Color(0xFFFF7A9F)],
+            colors: isComplete
+                ? [const Color(0xFF4CAF50), const Color(0xFF2E7D32)]
+                : [_primaryColor, const Color(0xFFFF7A9F)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: (isComplete ? Colors.green : _primaryColor).withOpacity(0.3),
+              color:
+                  (isComplete ? Colors.green : _primaryColor).withOpacity(0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -207,12 +219,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     value: _profile.completionPercentage / 100,
                     strokeWidth: 6,
                     backgroundColor: Colors.white.withOpacity(0.3),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor:
+                        const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 ),
                 Text(
                   '${_profile.completionPercentage}%',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16),
                 ),
               ],
             ),
@@ -222,15 +238,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isComplete ? languageProvider.getString('profile_complete_title') : languageProvider.getString('complete_your_profile'),
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
+                    isComplete
+                        ? languageProvider.getString('profile_complete_title')
+                        : languageProvider.getString('complete_your_profile'),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    isComplete 
+                    isComplete
                         ? languageProvider.getString('tap_update_details')
                         : languageProvider.getString('matches_3x_likely'),
-                    style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14, height: 1.3),
+                    style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 14,
+                        height: 1.3),
                   ),
                 ],
               ),
@@ -241,7 +265,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Colors.white.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Iconsax.arrow_right_3, color: Colors.white, size: 24),
+              child: const Icon(Iconsax.arrow_right_3,
+                  color: Colors.white, size: 24),
             ),
           ],
         ),
@@ -252,42 +277,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildStatsGrid(LanguageProvider languageProvider) {
     if (_user == null) return const SizedBox.shrink();
 
-    return Row(
+    return Column(
       children: [
-        // Likes Stat
-        Expanded(
-          child: StreamBuilder<int>(
-            stream: _profileService.getLikesCountStream(_user.uid),
-            builder: (context, snapshot) {
-              return _buildStatCard(
-                Iconsax.heart5,
-                languageProvider.getString('likes_label'),
-                snapshot.data?.toString() ?? '0',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LikesScreen()),
-                ),
-              );
-            },
-          ),
+        Row(
+          children: [
+            // Likes Stat
+            Expanded(
+              child: StreamBuilder<int>(
+                stream: _profileService.getLikesCountStream(_user.uid),
+                builder: (context, snapshot) {
+                  return _buildStatCard(
+                    Iconsax.heart5,
+                    languageProvider.getString('likes_label'),
+                    snapshot.data?.toString() ?? '0',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LikesScreen()),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Views Stat
+            Expanded(
+              child: StreamBuilder<int>(
+                stream: _profileService.getViewCountStream(_user.uid),
+                builder: (context, snapshot) {
+                  return _buildStatCard(
+                    Iconsax.eye,
+                    languageProvider.getString('views_label'),
+                    snapshot.data?.toString() ?? '0',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ProfileViewersScreen()),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 16),
-        // Views Stat
-        Expanded(
-          child: StreamBuilder<int>(
-            stream: _profileService.getViewCountStream(_user.uid),
-            builder: (context, snapshot) {
-              return _buildStatCard(
-                Iconsax.eye,
-                languageProvider.getString('views_label'),
-                snapshot.data?.toString() ?? '0',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfileViewersScreen()),
-                ),
-              );
-            },
-          ),
+        const SizedBox(height: 16),
+        // Credits Stat (Full Width)
+        Consumer<ProfileProvider>(
+          builder: (context, profileProvider, _) {
+            return _buildStatCard(
+              Iconsax.wallet_3,
+              languageProvider.getString('my_credits'),
+              profileProvider.userProfile?.credits.toString() ?? '0',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PremiumScreen()),
+              ),
+            );
+          },
         ),
       ],
     );

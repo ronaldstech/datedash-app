@@ -76,6 +76,12 @@ class UserProfile {
   bool filterAgeStrict;
   bool filterDistanceStrict;
 
+  // 💰 Monetization
+  bool isPremium;
+  String? premiumType; // 'Pro', 'Premium', 'Elite'
+  DateTime? premiumExpiry;
+  int credits;
+
   UserProfile({
     this.firstName,
     this.dob,
@@ -128,6 +134,10 @@ class UserProfile {
     this.filterGender,
     this.filterAgeStrict = false,
     this.filterDistanceStrict = false,
+    this.isPremium = false,
+    this.premiumType,
+    this.premiumExpiry,
+    this.credits = 0,
   });
 
   int? get age {
@@ -260,6 +270,10 @@ class UserProfile {
         filterGender: map['filterGender']?.toString(),
         filterAgeStrict: map['filterAgeStrict'] ?? false,
         filterDistanceStrict: map['filterDistanceStrict'] ?? false,
+        isPremium: map['isPremium'] == true,
+        premiumType: map['premiumType']?.toString(),
+        premiumExpiry: _parseDate(map['premiumExpiry']),
+        credits: (map['credits'] as num?)?.toInt() ?? 0,
       );
     } catch (e) {
       debugPrint('UserProfile error parsing map: $e');
@@ -345,6 +359,10 @@ class UserProfile {
       'filterGender': filterGender,
       'filterAgeStrict': filterAgeStrict,
       'filterDistanceStrict': filterDistanceStrict,
+      'isPremium': isPremium,
+      'premiumType': premiumType,
+      'premiumExpiry': premiumExpiry != null ? Timestamp.fromDate(premiumExpiry!) : null,
+      'credits': credits,
       'lastUpdated': FieldValue.serverTimestamp(),
     };
   }

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:datedash/models/transaction_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/user_profile_model.dart';
@@ -460,6 +461,88 @@ class ProfileService {
         }
       }
       return viewerData;
+    });
+  }
+
+  /// Updates a user's premium status in Firestore
+  Future<void> updatePremiumStatus(
+      String uid, String plan, bool isMonthly) async {
+    try {
+      final days = isMonthly ? 30 : 7;
+      final expiry = DateTime.now().add(Duration(days: days));
+
+      Map<String, dynamic> updates = {
+        'isPremium': true,
+        'premiumType': plan,
+        'premiumExpiry': Timestamp.fromDate(expiry),
+      };
+
+      // If Elite, add 2000 credits
+      if (plan == 'Elite') {
+        updates['credits'] = FieldValue.increment(2000);
+      }
+
+      await _usersCollection.doc(uid).update(updates);
+      debugPrint('ProfileService: Updated premium status for $uid to $plan');
+    } catch (e) {
+      debugPrint('Error updating premium status: $e');
+      rethrow;
+    }
+  }
+
+  /// Adds credits to a user's account
+  Future<void> addCredits(String uid, int amount) async {
+    try {
+      await _usersCollection.doc(uid).update({
+        'credits': FieldValue.increment(amount),
+      });
+      debugPrint('ProfileService: Added $amount credits to $uid');
+    } catch (e) {
+      debugPrint('Error adding credits: $e');
+      rethrow;
+    }
+  }
+
+  /// Saves a payment transaction to Firestore
+  Future<String> saveTransaction(Map<String, dynamic> txMap) async {
+    try {
+      final docRef = await _firestore.collection('transactions').add({
+        ...txMap,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      debugPrint('ProfileService: Saved transaction record: ${docRef.id}');
+      return docRef.id;
+    } catch (e) {
+      debugPrint('Error saving transaction: $e');
+      rethrow;
+    }
+  }
+
+  /// Updates an existing transaction status in Firestore
+  Future<void> updateTransactionStatus(String docId, String status) async {
+    try {
+      await _firestore.collection('transactions').doc(docId).update({
+        'status': status,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+      debugPrint('ProfileService: Updated transaction $docId to $status');
+    } catch (e) {
+      debugPrint('Error updating transaction: $e');
+      rethrow;
+    }
+  }
+
+  /// Returns a stream of transactions for a specific user
+  Stream<List<TransactionModel>> getUserTransactions(String uid) {
+    return _firestore
+        .collection('transactions')
+        .where('uid', isEqualTo: uid)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => TransactionModel.fromMap(doc.data(), doc.id))
+          .toList();
     });
   }
 }

@@ -1,3 +1,4 @@
+import 'package:datedash/screens/premium_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +12,7 @@ import '../screens/chat_list_screen.dart';
 import '../theme/theme_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/language_provider.dart';
+import '../screens/transactions_screen.dart';
 
 class ProfileDrawer extends StatelessWidget {
   const ProfileDrawer({super.key});
@@ -33,15 +35,16 @@ class ProfileDrawer extends StatelessWidget {
     return Drawer(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
-        child: Column(
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
             // Premium Header with Glassmorphism
             Consumer<ProfileProvider>(
               builder: (context, profileProvider, _) {
                 final photoUrl = profileProvider.photoURL;
                 final displayName = profileProvider.displayName;
-                final email =
-                    profileProvider.currentUser?.email ?? languageProvider.getString('join_community');
+                final email = profileProvider.currentUser?.email ??
+                    languageProvider.getString('join_community');
 
                 return Container(
                   padding: const EdgeInsets.all(24.0),
@@ -89,30 +92,41 @@ class ProfileDrawer extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFFF4D85),
-                                  shape: BoxShape.circle,
+                            if (profileProvider.userProfile?.isVerified == true)
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFFF4D85),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.check,
+                                      color: Colors.white, size: 14),
                                 ),
-                                child: const Icon(Icons.check,
-                                    color: Colors.white, size: 14),
                               ),
-                            ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 10),
-                      Text(
-                        displayName,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            displayName,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          if (profileProvider.userProfile?.isVerified == true) ...[
+                            const SizedBox(width: 6),
+                            const Icon(Icons.verified,
+                                color: Color(0xFFFF4D85), size: 18),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -123,76 +137,55 @@ class ProfileDrawer extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      // Stats Row — real numbers, tappable
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.05)
-                              : Colors.black.withOpacity(0.03),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildStatItem(
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDrawerTile(
                               context,
-                              languageProvider.getString('likes_label'),
-                              profileProvider.likesCount.toString(),
-                              Iconsax.heart5,
-                              const Color(0xFFFF4D85),
+                              title: 'Credits',
+                              value:
+                                  '${profileProvider.userProfile?.credits ?? 0}',
+                              icon: Iconsax.wallet_3,
+                              iconColor: const Color(0xFFFFB300),
                               onTap: () {
                                 Navigator.pop(context);
                                 Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) => LikesScreen()));
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const PremiumScreen(initialTab: 1)),
+                                );
                               },
+                              isDark: isDark,
                             ),
-                            Container(
-                                width: 1,
-                                height: 24,
-                                color: Theme.of(context)
-                                    .dividerColor
-                                    .withOpacity(0.2)),
-                            _buildStatItem(
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildDrawerTile(
                               context,
-                              languageProvider.getString('visitors_label'),
-                              profileProvider.visitorsCount.toString(),
-                              Iconsax.eye,
-                              Colors.blueAccent,
+                              title: 'Membership',
+                              value:
+                                  profileProvider.userProfile?.isPremium == true
+                                      ? 'Premium'
+                                      : 'Free',
+                              icon:
+                                  profileProvider.userProfile?.isPremium == true
+                                      ? Iconsax.crown5
+                                      : Iconsax.star5,
+                              iconColor: const Color(0xFFFF4D85),
                               onTap: () {
                                 Navigator.pop(context);
                                 Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            ProfileViewersScreen()));
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const PremiumScreen(initialTab: 0)),
+                                );
                               },
+                              isDark: isDark,
                             ),
-                            Container(
-                                width: 1,
-                                height: 24,
-                                color: Theme.of(context)
-                                    .dividerColor
-                                    .withOpacity(0.2)),
-                            _buildStatItem(
-                              context,
-                              languageProvider.getString('matches_label'),
-                              profileProvider.matchesCount.toString(),
-                              Iconsax.flash5,
-                              const Color(0xFFFFD700),
-                              onTap: () {
-                                Navigator.pop(context);
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            const ChatListScreen()));
-                              },
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -200,14 +193,15 @@ class ProfileDrawer extends StatelessWidget {
               },
             ),
 
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Column(
                 children: [
                   const SizedBox(height: 4),
 
                   // Account Section
-                  _buildSectionHeader(context, languageProvider.getString('account_section')),
+                  _buildSectionHeader(
+                      context, languageProvider.getString('account_section')),
                   _buildItem(
                     context,
                     Iconsax.user,
@@ -236,12 +230,15 @@ class ProfileDrawer extends StatelessWidget {
                   const SizedBox(height: 4),
 
                   // Discovery Section
-                  _buildSectionHeader(context, languageProvider.getString('discovery_section')),
-                  _buildItem(context, Iconsax.discover_1, languageProvider.getString('explore_people')),
+                  _buildSectionHeader(
+                      context, languageProvider.getString('discovery_section')),
+                  _buildItem(context, Iconsax.discover_1,
+                      languageProvider.getString('explore_people')),
                   const SizedBox(height: 4),
 
                   // Activity Section
-                  _buildSectionHeader(context, languageProvider.getString('activity_section')),
+                  _buildSectionHeader(
+                      context, languageProvider.getString('activity_section')),
                   _buildItem(
                     context,
                     Iconsax.heart_tick,
@@ -267,8 +264,10 @@ class ProfileDrawer extends StatelessWidget {
                               builder: (_) => ProfileViewersScreen()));
                     },
                   ),
-                  _buildItem(context, Iconsax.document_text, languageProvider.getString('blog')),
-                  _buildItem(context, Iconsax.video_circle, languageProvider.getString('live_videos')),
+                  _buildItem(context, Iconsax.document_text,
+                      languageProvider.getString('blog')),
+                  _buildItem(context, Iconsax.video_circle,
+                      languageProvider.getString('live_videos')),
                   _buildItem(
                     context,
                     Iconsax.heart5,
@@ -283,29 +282,38 @@ class ProfileDrawer extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   // Finance Section - Subscription & Credits
-                  _buildSectionHeader(context, languageProvider.getString('finance_section')),
+                  _buildSectionHeader(
+                      context, languageProvider.getString('finance_section')),
+                  _buildItem(context, Iconsax.gift,
+                      languageProvider.getString('gifts'),
+                      color: Colors.purple.shade300),
                   _buildItem(
                     context,
-                    Iconsax.ranking,
-                    languageProvider.getString('go_premium'),
-                    color: const Color(0xFFFFD700),
-                    onTap: () {},
+                    Iconsax.receipt_21,
+                    languageProvider.getString('transactions'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const TransactionsScreen()));
+                    },
                   ),
-                  _buildItem(context, Iconsax.wallet_2, languageProvider.getString('my_credits')),
-                  _buildItem(context, Iconsax.gift, languageProvider.getString('gifts'),
-                      color: Colors.purple.shade300),
-                  _buildItem(context, Iconsax.receipt_21, languageProvider.getString('transactions')),
                   const SizedBox(height: 20),
 
                   // Appearance Section
-                  _buildSectionHeader(context, languageProvider.getString('appearance_section')),
+                  _buildSectionHeader(context,
+                      languageProvider.getString('appearance_section')),
                   _buildThemeToggle(context, languageProvider),
                   const SizedBox(height: 20),
 
                   // Support Section
-                  _buildSectionHeader(context, languageProvider.getString('support_section')),
-                  _buildItem(context, Iconsax.info_circle, languageProvider.getString('about_us')),
-                  _buildItem(context, Iconsax.security_safe, languageProvider.getString('safety_tips')),
+                  _buildSectionHeader(
+                      context, languageProvider.getString('support_section')),
+                  _buildItem(context, Iconsax.info_circle,
+                      languageProvider.getString('about_us')),
+                  _buildItem(context, Iconsax.security_safe,
+                      languageProvider.getString('safety_tips')),
                   const SizedBox(height: 32),
                   _buildLogoutButton(context, languageProvider),
                   const SizedBox(height: 40),
@@ -318,38 +326,57 @@ class ProfileDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon,
-    Color color, {
-    VoidCallback? onTap,
+  Widget _buildDrawerTile(
+    BuildContext context, {
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color iconColor,
+    required VoidCallback onTap,
+    required bool isDark,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
         decoration: BoxDecoration(
-          color: onTap != null ? color.withOpacity(0.06) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          color: isDark
+              ? Colors.white.withOpacity(0.05)
+              : Colors.black.withOpacity(0.03),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
+          ),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(height: 10),
             Text(
               value,
               style: TextStyle(
-                fontWeight: FontWeight.w800,
                 fontSize: 16,
-                color: color,
+                fontWeight: FontWeight.w900,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
+            const SizedBox(height: 2),
             Text(
-              label,
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
+              title,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white54 : Colors.black54,
+                letterSpacing: 0.5,
+              ),
             ),
           ],
         ),
@@ -427,7 +454,8 @@ class ProfileDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildThemeToggle(BuildContext context, LanguageProvider languageProvider) {
+  Widget _buildThemeToggle(
+      BuildContext context, LanguageProvider languageProvider) {
     final themeProvider = context.watch<ThemeProvider>();
     final isDark = themeProvider.isDarkMode;
 
@@ -445,7 +473,9 @@ class ProfileDrawer extends StatelessWidget {
               Icon(isDark ? Iconsax.moon : Iconsax.sun_1, size: 22),
               const SizedBox(width: 12),
               Text(
-                isDark ? languageProvider.getString('dark_mode') : languageProvider.getString('light_mode'),
+                isDark
+                    ? languageProvider.getString('dark_mode')
+                    : languageProvider.getString('light_mode'),
                 style:
                     const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
@@ -461,7 +491,8 @@ class ProfileDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context, LanguageProvider languageProvider) {
+  Widget _buildLogoutButton(
+      BuildContext context, LanguageProvider languageProvider) {
     return Container(
       margin: const EdgeInsets.only(top: 12),
       child: ListTile(
