@@ -8,7 +8,6 @@ import '../providers/profile_provider.dart';
 import '../services/notification_service.dart';
 import '../services/profile_service.dart';
 import '../widgets/profile_detail_sheet.dart';
-import '../services/chat_service.dart';
 import '../utils/date_formatter.dart';
 import '../providers/language_provider.dart';
 import 'chat_screen.dart';
@@ -23,6 +22,17 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   final NotificationService _notificationService = NotificationService();
   final ProfileService _profileService = ProfileService();
+  Stream<List<DatedashNotification>>? _notificationsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _notificationsStream =
+          _notificationService.getNotificationsStream(user.uid);
+    }
+  }
 
   Map<String, List<DatedashNotification>> _groupNotifications(
       List<DatedashNotification> notifications, LanguageProvider lp) {
@@ -64,7 +74,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     return Scaffold(
       body: StreamBuilder<List<DatedashNotification>>(
-        stream: _notificationService.getNotificationsStream(user.uid),
+        stream: _notificationsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -89,8 +99,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   centerTitle: false,
                   titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
                   title: Text(
-                    lp.getString(
-                        'nav_likes'), // Reuse nav_likes or add specific key
+                    lp.getString('notifications'),
                     style: const TextStyle(
                       fontWeight: FontWeight.w900,
                       fontSize: 22,
@@ -193,13 +202,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 }
 
-class _NotificationCard extends StatelessWidget {
+class _NotificationCard extends StatefulWidget {
   final DatedashNotification notification;
   final NotificationService service;
   final ProfileService profileService;
   final VoidCallback onPop;
 
   const _NotificationCard({
+    super.key,
     required this.notification,
     required this.service,
     required this.profileService,
@@ -207,9 +217,31 @@ class _NotificationCard extends StatelessWidget {
   });
 
   @override
+  State<_NotificationCard> createState() => _NotificationCardState();
+}
+
+class _NotificationCardState extends State<_NotificationCard> {
+  late Future<UserProfile?> _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // Only fetch profile if it's not a system/reward notification
+    if (widget.notification.senderId != 'system' &&
+        widget.notification.type != 'reward') {
+      _profileFuture =
+          widget.profileService.getUserProfile(widget.notification.senderId);
+    } else {
+      _profileFuture = Future.value(null);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bool isLike = notification.type == 'like';
-    final bool isMissedCall = notification.type == 'missed_call';
+    final bool isLike = widget.notification.type == 'like';
+    final bool isMissedCall = widget.notification.type == 'missed_call';
+    final bool isGift = widget.notification.type == 'gift';
+    final bool isReward = widget.notification.type == 'reward';
     final lp = context.watch<LanguageProvider>();
 
     return Padding(
@@ -220,12 +252,12 @@ class _NotificationCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: notification.isRead
+            color: widget.notification.isRead
                 ? Colors.transparent
                 : const Color(0xFFFF4D85).withOpacity(0.03),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: notification.isRead
+              color: widget.notification.isRead
                   ? Colors.grey.withOpacity(0.08)
                   : const Color(0xFFFF4D85).withOpacity(0.15),
               width: 1,
@@ -246,7 +278,7 @@ class _NotificationCard extends StatelessWidget {
                             fontSize: 15),
                         children: [
                           TextSpan(
-                              text: notification.senderName,
+                              text: widget.notification.senderName,
                               style:
                                   const TextStyle(fontWeight: FontWeight.w800)),
                           TextSpan(
@@ -254,13 +286,28 @@ class _NotificationCard extends StatelessWidget {
                                   ? ' ${lp.getString('liked_profile_suffix')}'
                                   : isMissedCall
                                       ? ' ${lp.getString('missed_call_suffix')}'
-                                      : ' ${lp.getString('viewed_profile_suffix')}'),
+                                      : isGift
+                                          ? ' ${lp.getString('received_gift_suffix')}'
+                                          : isReward
+                                              ? '' // Rewards already have full message
+                                              : ' ${lp.getString('viewed_profile_suffix')}'),
                         ],
                       ),
                     ),
+                    if (widget.notification.message != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.notification.message!,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFFF4D85),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 6),
                     Text(
-                      _formatDateTime(notification.timestamp, lp),
+                      _formatDateTime(widget.notification.timestamp, lp),
                       style: TextStyle(
                         color: Theme.of(context).hintColor.withOpacity(0.6),
                         fontSize: 12,
@@ -270,7 +317,7 @@ class _NotificationCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (!notification.isRead)
+              if (!widget.notification.isRead)
                 Container(
                   width: 10,
                   height: 10,
@@ -293,21 +340,32 @@ class _NotificationCard extends StatelessWidget {
   }
 
   Widget _buildAvatar(BuildContext context) {
-    final bool isLike = notification.type == 'like';
-    final bool isMissedCall = notification.type == 'missed_call';
+    final bool isLike = widget.notification.type == 'like';
+    final bool isMissedCall = widget.notification.type == 'missed_call';
+    final bool isGift = widget.notification.type == 'gift';
+    final bool isReward = widget.notification.type == 'reward';
+
     final IconData icon = isLike
         ? Iconsax.heart5
         : isMissedCall
             ? Iconsax.call_slash
-            : Iconsax.eye;
+            : isGift
+                ? Iconsax.gift
+                : isReward
+                    ? Iconsax.wallet_3
+                    : Iconsax.eye;
     final Color badgeColor = isLike
         ? const Color(0xFFFF4D85)
         : isMissedCall
             ? Colors.red
-            : Colors.blue;
+            : isGift
+                ? Colors.amber
+                : isReward
+                    ? Colors.orangeAccent
+                    : Colors.blue;
 
     return FutureBuilder<UserProfile?>(
-      future: profileService.getUserProfile(notification.senderId),
+      future: _profileFuture,
       builder: (context, snapshot) {
         final profile = snapshot.data;
         final photo =
@@ -357,26 +415,44 @@ class _NotificationCard extends StatelessWidget {
   }
 
   void _handleTap(BuildContext context, LanguageProvider lp) async {
-    service.markAsRead(notification.id);
-    onPop();
+    widget.service.markAsRead(widget.notification.id);
+    widget.onPop();
 
+    // Show loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-          child: CircularProgressIndicator(color: Color(0xFFFF4D85))),
+      builder: (ctx) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFFFF4D85)),
+      ),
     );
 
     try {
+      // Use the cached future instead of starting a new fetch
       final senderProfile =
-          await profileService.getUserProfile(notification.senderId);
-      if (context.mounted) Navigator.pop(context);
+          await _profileFuture.timeout(const Duration(seconds: 10));
 
-      if (senderProfile != null && context.mounted) {
-        _showProfileDetails(context, senderProfile, lp);
+      if (mounted) {
+        // Pop the loading dialog specifically
+        Navigator.of(context).pop();
+
+        if (senderProfile != null) {
+          _showProfileDetails(context, senderProfile, lp);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(lp.getString('swipes_reset_failed'))),
+          );
+        }
       }
-    } catch (_) {
-      if (context.mounted) Navigator.pop(context);
+    } catch (e) {
+      debugPrint('Error handling notification tap: $e');
+      if (mounted) {
+        // Pop the loading dialog if it's still there
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(lp.getString('swipes_reset_failed'))),
+        );
+      }
     }
   }
 
@@ -392,7 +468,7 @@ class _NotificationCard extends StatelessWidget {
           final profileProvider = context.read<ProfileProvider>();
           final myUid = profileProvider.currentUser?.uid;
           if (myUid != null && profile.uid != null) {
-            await profileService.swipeUser(myUid, profile.uid!, 'like',
+            await widget.profileService.swipeUser(myUid, profile.uid!, 'like',
                 senderName: profileProvider.displayName);
           }
           if (context.mounted) Navigator.pop(context);
@@ -401,7 +477,8 @@ class _NotificationCard extends StatelessWidget {
           final profileProvider = context.read<ProfileProvider>();
           final myUid = profileProvider.currentUser?.uid;
           if (myUid != null && profile.uid != null) {
-            await profileService.swipeUser(myUid, profile.uid!, 'dislike',
+            await widget.profileService.swipeUser(
+                myUid, profile.uid!, 'dislike',
                 senderName: profileProvider.displayName);
           }
           if (context.mounted) Navigator.pop(context);
@@ -410,7 +487,6 @@ class _NotificationCard extends StatelessWidget {
           final myUid = FirebaseAuth.instance.currentUser?.uid;
           if (myUid == null || profile.uid == null) return;
           Navigator.pop(context);
-          await ChatService().getOrCreateChat(myUid, profile.uid!);
           if (context.mounted) {
             Navigator.push(
                 context,

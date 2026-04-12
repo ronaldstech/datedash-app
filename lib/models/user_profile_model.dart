@@ -83,6 +83,12 @@ class UserProfile {
   int credits;
   List<String> unlockedLikes;
 
+  // 📈 Usage Tracking
+  double dailyUsageDuration; // in seconds
+  String? lastUsageResetDate; // YYYY-MM-DD
+  String? lastDailyRewardDate; // YYYY-MM-DD
+  List<String> claimedRewards; // One-time reward IDs
+
   UserProfile({
     this.firstName,
     this.dob,
@@ -140,6 +146,10 @@ class UserProfile {
     this.premiumExpiry,
     this.credits = 0,
     this.unlockedLikes = const [],
+    this.dailyUsageDuration = 0.0,
+    this.lastUsageResetDate,
+    this.lastDailyRewardDate,
+    this.claimedRewards = const [],
   });
 
   int? get age {
@@ -277,6 +287,10 @@ class UserProfile {
         premiumExpiry: _parseDate(map['premiumExpiry']),
         credits: (map['credits'] as num?)?.toInt() ?? 0,
         unlockedLikes: _parseList(map['unlockedLikes']),
+        dailyUsageDuration: (map['dailyUsageDuration'] as num?)?.toDouble() ?? 0.0,
+        lastUsageResetDate: map['lastUsageResetDate']?.toString(),
+        lastDailyRewardDate: map['lastDailyRewardDate']?.toString(),
+        claimedRewards: _parseList(map['claimedRewards']),
       );
     } catch (e) {
       debugPrint('UserProfile error parsing map: $e');
@@ -367,6 +381,10 @@ class UserProfile {
       'premiumExpiry': premiumExpiry != null ? Timestamp.fromDate(premiumExpiry!) : null,
       'credits': credits,
       'unlockedLikes': unlockedLikes,
+      'dailyUsageDuration': dailyUsageDuration,
+      'lastUsageResetDate': lastUsageResetDate,
+      'lastDailyRewardDate': lastDailyRewardDate,
+      'claimedRewards': claimedRewards,
       'lastUpdated': FieldValue.serverTimestamp(),
     };
   }

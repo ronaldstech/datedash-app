@@ -1,3 +1,4 @@
+import 'package:datedash/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'profile_service.dart';
@@ -27,7 +28,8 @@ class AuthService {
   }
 
   // Register with email & password
-  Future<UserCredential?> signUpWithEmail(String email, String password, String name) async {
+  Future<UserCredential?> signUpWithEmail(
+      String email, String password, String name) async {
     try {
       final cred = await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -35,9 +37,18 @@ class AuthService {
       );
 
       if (cred.user != null) {
-        // Initialize user document in Firestore with name
+        // Initialize user document in Firestore with name and 50 signup credits
         await _profileService.saveUserProfile(
-            cred.user!.uid, UserProfile(firstName: name));
+            cred.user!.uid, UserProfile(firstName: name, credits: 50));
+
+        // Log the signup reward
+        await NotificationService().sendNotification(
+          recipientId: cred.user!.uid,
+          senderId: 'system',
+          senderName: 'Datedash',
+          type: 'reward',
+          message: '🎁 Welcome bonus: 50 free credits added!',
+        );
       }
 
       return cred;
@@ -64,8 +75,17 @@ class AuthService {
         // Check if profile exists, if not initialize it
         final profile = await _profileService.getUserProfile(cred.user!.uid);
         if (profile == null) {
-          await _profileService.saveUserProfile(
-              cred.user!.uid, UserProfile(firstName: cred.user?.displayName));
+          await _profileService.saveUserProfile(cred.user!.uid,
+              UserProfile(firstName: cred.user?.displayName, credits: 50));
+
+          // Log the signup reward
+          await NotificationService().sendNotification(
+            recipientId: cred.user!.uid,
+            senderId: 'system',
+            senderName: 'Datedash',
+            type: 'reward',
+            message: '🎁 Welcome bonus: 50 free credits added!',
+          );
         }
       }
 

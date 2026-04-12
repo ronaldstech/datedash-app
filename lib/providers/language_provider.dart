@@ -152,7 +152,7 @@ class LanguageProvider with ChangeNotifier {
       'allow_messages_sub': 'Anyone can send you a message',
       'reset_swipes_title': 'Reset Swipes',
       'reset_swipes_content':
-          'This will clear your entire swipe history. You will see all users again, including those you disliked.\n\nThis action cannot be undone.',
+          'This will clear your "Pass" history. You will see users you passed on again, but your "Likes" will remain.\n\nThis action cannot be undone.',
       'cancel': 'Cancel',
       'reset': 'Reset',
       'swipes_reset_success': 'Swipes reset! Fresh profiles are loading.',
@@ -160,6 +160,15 @@ class LanguageProvider with ChangeNotifier {
       'photo_lock_snack': 'Upload at least 4 photos to browse more pictures!',
       'upload_label': 'Upload',
       'messages_disabled_snack': 'This user has disabled direct messaging.',
+      'refresh_cost_title': 'Confirm Refresh',
+      'refresh_cost_content':
+          'Refreshing profiles costs 50 credits. Your current balance is {credits} credits.',
+      'not_enough_credits': 'Not enough credits. Please top up to refresh profiles.',
+      'pay_refresh': 'Pay 50 Credits',
+      'send_gift': 'Send Gift',
+      'gift_sent_success': 'Gift sent successfully!',
+      'select_gift': 'Select a Gift',
+      'received_gift_suffix': 'sent you a gift!',
       'signup_title': 'Create Account',
       'signup_sub': 'Join DateDash and find your perfect match',
       'full_name': 'Full Name',
@@ -474,7 +483,7 @@ class LanguageProvider with ChangeNotifier {
       'allow_messages_sub': 'Kila mtu anaweza kukutumia ujumbe',
       'reset_swipes_title': 'Anza Upya Swipes',
       'reset_swipes_content':
-          'Hii itafuta historia yako yote ya kutelezesha. Utaona watumiaji wote tena, pamoja na wale uliowakataa.\n\nHatua hii haiwezi kubadilishwa.',
+          'Hii itafuta historia ya wasifu uliowakataa. Utaona watumiaji uliowapita tena, lakini uliowapenda watabaki.\n\nHatua hii haiwezi kubadilishwa.',
       'cancel': 'Ghairi',
       'reset': 'Anza Upya',
       'swipes_reset_success': 'Swipes zimeanzishwa upya! Wasifu mpya unapakia.',
@@ -484,6 +493,16 @@ class LanguageProvider with ChangeNotifier {
       'upload_label': 'Pakia',
       'messages_disabled_snack':
           'Mtumiaji huyu amezuia kutuma ujumbe wa moja kwa moja.',
+      'refresh_cost_title': 'Thibitisha Upya',
+      'refresh_cost_content':
+          'Kufanya wasifu upya kunagharimu mikopo 50. Salio lako la sasa ni mikopo {credits}.',
+      'not_enough_credits':
+          'Huna mikopo ya kutosha. Tafadhali ongeza mikopo ili kufanya wasifu upya.',
+      'pay_refresh': 'Lipa Mikopo 50',
+      'send_gift': 'Tuma Zawadi',
+      'gift_sent_success': 'Zawadi imetumwa!',
+      'select_gift': 'Chagua Zawadi',
+      'received_gift_suffix': 'amekutumia zawadi!',
       'signup_title': 'Jisajili',
       'signup_sub': 'Jiunge na DateDash na upate mwenza wako kamili',
       'signup_button': 'Jisajili',

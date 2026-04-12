@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import '../models/user_profile_model.dart';
 import '../services/profile_service.dart';
 import '../services/chat_service.dart';
+import '../services/notification_service.dart';
 
-class ProfileProvider with ChangeNotifier {
+class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
   final ProfileService _profileService = ProfileService();
   final ChatService _chatService = ChatService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -28,8 +29,16 @@ class ProfileProvider with ChangeNotifier {
   StreamSubscription<int>? _unreadMessageCountSubscription;
   double _swipeOffset = 0.0;
   String? _lastSwipedUserId;
+  String? _selectedExploreCategory;
+  int _exploreSwipesVersion = 0;
+
+  // Usage tracking
+  DateTime? _sessionStartTime;
 
   ProfileProvider() {
+    WidgetsBinding.instance.addObserver(this);
+    _sessionStartTime = DateTime.now();
+
     _userSubscription = FirebaseAuth.instance.userChanges().listen((user) {
       _currentUser = user;
       _profileSubscription?.cancel();
@@ -118,9 +127,19 @@ class ProfileProvider with ChangeNotifier {
   int get swipesVersion => _swipesVersion;
   double get swipeOffset => _swipeOffset;
   int get initialPremiumTab => _initialPremiumTab;
+  String? get selectedExploreCategory => _selectedExploreCategory;
+  int get exploreSwipesVersion => _exploreSwipesVersion;
 
   void setTabIndex(int index) {
     _currentTabIndex = index;
+    // Clear explore category when leaving Explore tab (optional, depends on UX choice)
+    // if (index != 1) _selectedExploreCategory = null; 
+    notifyListeners();
+  }
+
+  void setExploreCategory(String? category) {
+    _selectedExploreCategory = category;
+    _exploreSwipesVersion++;
     notifyListeners();
   }
 
@@ -270,6 +289,92 @@ class ProfileProvider with ChangeNotifier {
     _matchesCountSubscription?.cancel();
     _unreadMessageCountSubscription?.cancel();
     _sentLikesCountSubscription?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _sessionStartTime = DateTime.now();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      _syncUsage();
+    }
+  }
+
+  Future<void> _syncUsage() async {
+    final uid = _currentUser?.uid;
+    final profile = _userProfile;
+    if (uid == null || profile == null || _sessionStartTime == null) return;
+
+    final now = DateTime.now();
+    final elapsedSeconds = now.difference(_sessionStartTime!).inSeconds.toDouble();
+    _sessionStartTime = now;
+
+    final today = now.toIso8601String().split('T')[0];
+    
+    // Reset daily duration if it's a new day
+    if (profile.lastUsageResetDate != today) {
+      profile.dailyUsageDuration = 0.0;
+      profile.lastUsageResetDate = today;
+    }
+
+    profile.dailyUsageDuration += elapsedSeconds;
+
+    // Save usage update to Firestore
+    await _profileService.saveUserProfile(uid, profile);
+
+    // Check for activity reward
+    // _checkActivityReward(uid, profile, today); // Removed automatic awarding - now manual claim in UI
+  }
+
+  /// Claims a specific reward and grants credits
+  Future<void> claimReward(String rewardId, int amount) async {
+    final uid = _currentUser?.uid;
+    final profile = _userProfile;
+    if (uid == null || profile == null) return;
+
+    try {
+      final now = DateTime.now();
+      final today = now.toIso8601String().split('T')[0];
+      final isDaily = rewardId == 'daily_explorer';
+
+      // 1. Unified Firestore Update via Service
+      await _profileService.claimReward(
+        uid: uid,
+        rewardId: rewardId,
+        amount: amount,
+        isDaily: isDaily,
+        todayDate: today,
+      );
+
+      // 2. Update local state for immediate UI reflection
+      profile.credits += amount;
+      if (isDaily) {
+        profile.lastDailyRewardDate = today;
+      } else {
+        if (!profile.claimedRewards.contains(rewardId)) {
+          profile.claimedRewards.add(rewardId);
+        }
+      }
+
+      notifyListeners();
+
+      // 3. Send Notification for history
+      await NotificationService().sendNotification(
+        recipientId: uid,
+        senderId: 'system',
+        senderName: 'Datedash',
+        type: 'reward',
+        message: '🎁 Challenge completed: $amount free credits added!',
+      );
+      
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error claiming reward $rewardId: $e');
+      rethrow;
+    }
   }
 }

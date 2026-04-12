@@ -15,6 +15,7 @@ class NotificationService {
     required String senderId,
     required String senderName,
     required String type,
+    String? message,
   }) async {
     // Don't notify yourself
     if (recipientId == senderId) return;
@@ -29,6 +30,7 @@ class NotificationService {
         'type': type,
         'timestamp': FieldValue.serverTimestamp(),
         'isRead': false,
+        'message': message,
       });
       
       debugPrint('Notification successfully added to Firestore');

@@ -299,13 +299,14 @@ class ProfileService {
       final snapshot = await _firestore
           .collection('swipes')
           .where('fromId', isEqualTo: userId)
+          .where('type', isEqualTo: 'dislike')
           .get();
       for (final doc in snapshot.docs) {
         batch.delete(doc.reference);
       }
       await batch.commit();
       debugPrint(
-          'Swipes reset for user: $userId (${snapshot.docs.length} records deleted)');
+          'Dislikes reset for user: $userId (${snapshot.docs.length} records deleted)');
     } catch (e) {
       debugPrint('Error resetting swipes: $e');
       rethrow;
@@ -592,6 +593,33 @@ class ProfileService {
       debugPrint('ProfileService: Unlocked profile $targetId for user $uid');
     } catch (e) {
       debugPrint('Error unlocking profile: $e');
+      rethrow;
+    }
+  }
+
+  /// Claims a specific reward atomically
+  Future<void> claimReward({
+    required String uid,
+    required String rewardId,
+    required int amount,
+    required bool isDaily,
+    required String todayDate,
+  }) async {
+    try {
+      final Map<String, dynamic> updates = {
+        'credits': FieldValue.increment(amount),
+      };
+
+      if (isDaily) {
+        updates['lastDailyRewardDate'] = todayDate;
+      } else {
+        updates['claimedRewards'] = FieldValue.arrayUnion([rewardId]);
+      }
+
+      await _usersCollection.doc(uid).update(updates);
+      debugPrint('ProfileService: Claimed $rewardId for $uid (+$amount credits)');
+    } catch (e) {
+      debugPrint('Error claiming reward in service: $e');
       rethrow;
     }
   }

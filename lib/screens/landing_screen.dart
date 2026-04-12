@@ -43,6 +43,7 @@ class _LandingScreenState extends State<LandingScreen> {
         final isProfileIncomplete = completion < 40;
 
         final currentIndex = profileProvider.currentTabIndex;
+        final selectedCategory = profileProvider.selectedExploreCategory;
 
         return Stack(
           children: [
@@ -50,19 +51,29 @@ class _LandingScreenState extends State<LandingScreen> {
               backgroundColor: Theme.of(context).colorScheme.surface,
               extendBody: true,
               appBar: AppBar(
-                title: const Text(
-                  'DateDash',
+                leading: (currentIndex == 1 && selectedCategory != null)
+                    ? IconButton(
+                        icon: const Icon(Iconsax.arrow_left_2),
+                        onPressed: () {
+                          profileProvider.setExploreCategory(null);
+                        },
+                      )
+                    : null,
+                title: Text(
+                  (currentIndex == 1 && selectedCategory != null)
+                      ? _getLocalizedCategoryName(selectedCategory, languageProvider)
+                      : 'DateDash',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 26,
-                    color: Color(0xFFFF4D85),
+                    fontSize: (currentIndex == 1 && selectedCategory != null) ? 20 : 26,
+                    color: const Color(0xFFFF4D85),
                     letterSpacing: -0.5,
                   ),
                 ),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 actions: [
-                  if (currentIndex == 0) // Show Filter icon only on Swipe View
+                  if (currentIndex == 0 || (currentIndex == 1 && selectedCategory != null)) // Show Filter icon on Swipe View OR Category Swipe
                     IconButton(
                       icon: Icon(Iconsax.setting_4, color: Theme.of(context).iconTheme.color?.withOpacity(0.7), size: 22),
                       onPressed: () {
@@ -478,5 +489,30 @@ class _LandingScreenState extends State<LandingScreen> {
         ),
       ),
     );
+  }
+
+  String _getLocalizedCategoryName(String key, LanguageProvider lp) {
+    switch (key) {
+      case 'Long Term Relationship':
+        return lp.getString('cat_long_term');
+      case 'Short Term Relationship':
+        return lp.getString('cat_short_term_rel');
+      case 'Hookups':
+        return lp.getString('cat_hookups');
+      case 'Short Term Fun':
+        return lp.getString('cat_short_term');
+      case 'New Friends':
+        return lp.getString('cat_new_friends');
+      case 'Coffee Date':
+        return lp.getString('cat_coffee_date');
+      case 'Movie Night':
+        return lp.getString('cat_movie_night');
+      case 'Sponsor':
+        return lp.getString('cat_sponsor');
+      case 'Figuring Out':
+        return lp.getString('cat_figuring_out');
+      default:
+        return key;
+    }
   }
 }

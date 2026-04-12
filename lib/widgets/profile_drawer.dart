@@ -8,6 +8,8 @@ import '../screens/settings_screen.dart';
 import '../screens/likes_screen.dart';
 import '../screens/profile_viewers_screen.dart';
 import '../screens/chat_list_screen.dart';
+import '../screens/gifts_screen.dart';
+import '../screens/rewards_screen.dart';
 import '../theme/theme_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/language_provider.dart';
@@ -277,9 +279,32 @@ class ProfileDrawer extends StatelessWidget {
                   // Finance Section - Subscription & Credits
                   _buildSectionHeader(
                       context, languageProvider.getString('finance_section')),
-                  _buildItem(context, Iconsax.gift,
-                      languageProvider.getString('gifts'),
-                      color: Colors.purple.shade300),
+                  _buildItem(
+                    context,
+                    Iconsax.cup,
+                    'Rewards',
+                    color: Colors.orangeAccent,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const RewardsScreen()));
+                    },
+                  ),
+                  _buildItem(
+                    context,
+                    Iconsax.gift,
+                    languageProvider.getString('gifts'),
+                    color: Colors.purple.shade300,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const GiftsScreen()));
+                    },
+                  ),
                   _buildItem(
                     context,
                     Iconsax.receipt_21,

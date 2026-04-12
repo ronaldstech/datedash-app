@@ -188,51 +188,165 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showResetSwipesDialog(BuildContext context, LanguageProvider languageProvider) {
+  void _showResetSwipesDialog(
+      BuildContext context, LanguageProvider languageProvider) {
+    final profileProvider = context.read<ProfileProvider>();
+    final isPremium = profileProvider.userProfile?.isPremium ?? false;
+
+    if (isPremium) {
+      // Standard reset dialog for Premium users
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(
+            children: [
+              const Icon(Iconsax.refresh, color: Colors.orange),
+              const SizedBox(width: 10),
+              Text(languageProvider.getString('reset_swipes_title'),
+                  style: const TextStyle(fontWeight: FontWeight.w800)),
+            ],
+          ),
+          content: Text(
+            languageProvider.getString('reset_swipes_content'),
+            style: const TextStyle(height: 1.5),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(languageProvider.getString('cancel'),
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.orange),
+              onPressed: () async {
+                Navigator.pop(ctx);
+                try {
+                  await profileProvider.resetSwipes();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            const Icon(Icons.check_circle_rounded,
+                                color: Colors.white, size: 20),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                languageProvider
+                                    .getString('swipes_reset_success'),
+                                style:
+                                    const TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                        backgroundColor: Colors.orange,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
+                        margin: const EdgeInsets.all(16),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            languageProvider.getString('swipes_reset_failed')),
+                        backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
+                        margin: const EdgeInsets.all(16),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: Text(languageProvider.getString('reset'),
+                  style: const TextStyle(fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // Non-premium: Show credit cost dialog
+    final credits = profileProvider.userProfile?.credits ?? 0;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Row(
           children: [
-            const Icon(Iconsax.refresh, color: Colors.orange),
+            const Icon(Iconsax.refresh, color: Color(0xFFFF4D85)),
             const SizedBox(width: 10),
-            Text(languageProvider.getString('reset_swipes_title'), style: const TextStyle(fontWeight: FontWeight.w800)),
+            Text(languageProvider.getString('refresh_cost_title'),
+                style: const TextStyle(fontWeight: FontWeight.w800)),
           ],
         ),
         content: Text(
-          languageProvider.getString('reset_swipes_content'),
+          languageProvider
+              .getString('refresh_cost_content')
+              .replaceAll('{credits}', credits.toString()),
           style: const TextStyle(height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(languageProvider.getString('cancel'), style: const TextStyle(fontWeight: FontWeight.w600)),
+            child: Text(languageProvider.getString('cancel'),
+                style: const TextStyle(fontWeight: FontWeight.w600)),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.orange),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4D85),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
             onPressed: () async {
               Navigator.pop(ctx);
+              if (credits < 50) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(languageProvider.getString('not_enough_credits')),
+                  backgroundColor: const Color(0xFFFF4D85),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                  margin: const EdgeInsets.all(20),
+                ));
+                return;
+              }
+
               try {
-                await context.read<ProfileProvider>().resetSwipes();
+                await profileProvider.useCredits(50);
+                await profileProvider.resetSwipes();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Row(
                         children: [
-                          const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                          const Icon(Icons.check_circle_rounded,
+                              color: Colors.white, size: 20),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              languageProvider.getString('swipes_reset_success'),
-                              style: const TextStyle(fontWeight: FontWeight.w600),
+                              languageProvider
+                                  .getString('swipes_reset_success'),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w600),
                             ),
                           ),
                         ],
                       ),
-                      backgroundColor: Colors.orange,
+                      backgroundColor: Colors.green,
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
                       margin: const EdgeInsets.all(16),
                     ),
                   );
@@ -241,17 +355,20 @@ class SettingsScreen extends StatelessWidget {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(languageProvider.getString('swipes_reset_failed')),
+                      content: Text(
+                          languageProvider.getString('swipes_reset_failed')),
                       backgroundColor: Colors.red,
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
                       margin: const EdgeInsets.all(16),
                     ),
                   );
                 }
               }
             },
-            child: Text(languageProvider.getString('reset'), style: const TextStyle(fontWeight: FontWeight.w700)),
+            child: Text(languageProvider.getString('pay_refresh'),
+                style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
       ),

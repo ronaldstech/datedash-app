@@ -1,10 +1,13 @@
+import 'package:datedash/providers/profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import '../widgets/bordered_search_bar.dart';
-import '../screens/category_profiles_screen.dart';
+
 import '../services/profile_service.dart';
 import '../providers/language_provider.dart';
+
+import '../widgets/swipe_view.dart';
 
 class ExploreScreen extends StatelessWidget {
   const ExploreScreen({super.key});
@@ -12,7 +15,13 @@ class ExploreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
-    
+    final profileProvider = context.watch<ProfileProvider>();
+
+    // If a category is selected, show the SwipeView instead of the grid
+    if (profileProvider.selectedExploreCategory != null) {
+      return SwipeView(category: profileProvider.selectedExploreCategory);
+    }
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -52,7 +61,9 @@ class ExploreScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryGrid(BuildContext context, LanguageProvider languageProvider) {
+  Widget _buildCategoryGrid(
+      BuildContext context, LanguageProvider languageProvider) {
+    final profileProvider = context.read<ProfileProvider>();
     final ProfileService profileService = ProfileService();
 
     // Keys match EXACTLY what edit_profile_screen.dart writes to Firestore
@@ -62,7 +73,8 @@ class ExploreScreen extends StatelessWidget {
         'subtitle': languageProvider.getString('cat_long_term_sub'),
         'key': 'Long Term Relationship',
         'icon': Iconsax.heart5,
-        'photo': 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&q=80',
+        'photo':
+            'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&q=80',
         'accent': const Color(0xFFFF4D85),
       },
       {
@@ -70,7 +82,8 @@ class ExploreScreen extends StatelessWidget {
         'subtitle': languageProvider.getString('cat_short_term_rel_sub'),
         'key': 'Short Term Relationship',
         'icon': Iconsax.calendar_1,
-        'photo': 'https://images.unsplash.com/photo-1488116438332-b2bced9c1b4c?w=600&q=80',
+        'photo':
+            'https://images.unsplash.com/photo-1488116438332-b2bced9c1b4c?w=600&q=80',
         'accent': const Color(0xFFFF9A8B),
       },
       {
@@ -78,7 +91,8 @@ class ExploreScreen extends StatelessWidget {
         'subtitle': languageProvider.getString('cat_hookups_sub'),
         'key': 'Hookups',
         'icon': Iconsax.flash,
-        'photo': 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80',
+        'photo':
+            'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80',
         'accent': const Color(0xFF8E2DE2),
       },
       {
@@ -86,7 +100,8 @@ class ExploreScreen extends StatelessWidget {
         'subtitle': languageProvider.getString('cat_short_term_sub'),
         'key': 'Short Term Fun',
         'icon': Iconsax.emoji_happy,
-        'photo': 'https://images.unsplash.com/photo-1536697246787-1f7ae568d89a?w=600&q=80',
+        'photo':
+            'https://images.unsplash.com/photo-1536697246787-1f7ae568d89a?w=600&q=80',
         'accent': const Color(0xFFF2994A),
       },
       {
@@ -94,7 +109,8 @@ class ExploreScreen extends StatelessWidget {
         'subtitle': languageProvider.getString('cat_new_friends_sub'),
         'key': 'New Friends',
         'icon': Iconsax.user_add,
-        'photo': 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80',
+        'photo':
+            'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80',
         'accent': const Color(0xFF56CCF2),
       },
       {
@@ -102,7 +118,8 @@ class ExploreScreen extends StatelessWidget {
         'subtitle': languageProvider.getString('cat_coffee_date_sub'),
         'key': 'Coffee Date',
         'icon': Iconsax.cup,
-        'photo': 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80',
+        'photo':
+            'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80',
         'accent': const Color(0xFF7B4F2E),
       },
       {
@@ -110,7 +127,8 @@ class ExploreScreen extends StatelessWidget {
         'subtitle': languageProvider.getString('cat_movie_night_sub'),
         'key': 'Movie Night',
         'icon': Iconsax.video_play4,
-        'photo': 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&q=80',
+        'photo':
+            'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&q=80',
         'accent': const Color(0xFFEB5757),
       },
       {
@@ -118,7 +136,8 @@ class ExploreScreen extends StatelessWidget {
         'subtitle': languageProvider.getString('cat_sponsor_sub'),
         'key': 'Sponsor',
         'icon': Iconsax.money_2,
-        'photo': 'https://images.unsplash.com/photo-1512358959174-688404bc0e0c?w=600&q=80',
+        'photo':
+            'https://images.unsplash.com/photo-1512358959174-688404bc0e0c?w=600&q=80',
         'accent': const Color(0xFFDAA520),
       },
       {
@@ -126,7 +145,8 @@ class ExploreScreen extends StatelessWidget {
         'subtitle': languageProvider.getString('cat_figuring_out_sub'),
         'key': 'Figuring Out',
         'icon': Iconsax.message_question,
-        'photo': 'https://images.unsplash.com/photo-1499209974431-9dac36b44491?w=600&q=80',
+        'photo':
+            'https://images.unsplash.com/photo-1499209974431-9dac36b44491?w=600&q=80',
         'accent': const Color(0xFF607D8B),
       },
     ];
@@ -148,13 +168,7 @@ class ExploreScreen extends StatelessWidget {
 
             return GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        CategoryProfilesScreen(category: cat['key'] as String),
-                  ),
-                );
+                profileProvider.setExploreCategory(cat['key'] as String);
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(22),

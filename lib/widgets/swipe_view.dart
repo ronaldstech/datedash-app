@@ -8,15 +8,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../screens/chat_screen.dart';
-import '../services/chat_service.dart';
 import '../services/profile_service.dart';
 import 'action_button.dart';
 import 'profile_detail_sheet.dart';
 import '../screens/edit_profile_screen.dart';
 import '../providers/language_provider.dart';
+import 'gift_selection_sheet.dart';
 
 class SwipeView extends StatefulWidget {
-  const SwipeView({super.key});
+  final String? category;
+  const SwipeView({super.key, this.category});
 
   @override
   State<SwipeView> createState() => _SwipeViewState();
@@ -29,6 +30,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
   int _currentPhotoIndex = 0;
   bool _isLoading = true;
   int _lastSwipesVersion = -1;
+  int _lastExploreVersion = -1;
 
   bool _isFetching = false;
   int _freeSwipesUsed = 0; // tracks swipes used when user has < 4 photos
@@ -67,24 +69,40 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     final profileProvider = context.watch<ProfileProvider>();
     final user = profileProvider.currentUser;
     final version = profileProvider.swipesVersion;
+    final exploreVersion = profileProvider.exploreSwipesVersion;
 
     // Trigger load if user just became available or version changed
     if (user != null && _profiles.isEmpty && !_isFetching && _isLoading) {
       _loadProfiles();
     }
 
-    if (version != _lastSwipesVersion && _lastSwipesVersion != -1) {
+    if (version != _lastSwipesVersion &&
+        _lastSwipesVersion != -1 &&
+        widget.category == null) {
       _lastSwipesVersion = version;
-      setState(() {
-        _profiles = [];
-        _currentIndex = 0;
-        _currentPhotoIndex = 0;
-        _isLoading = true;
-      });
-      _loadProfiles();
+      _reload();
     } else {
       _lastSwipesVersion = version;
     }
+
+    if (exploreVersion != _lastExploreVersion &&
+        _lastExploreVersion != -1 &&
+        widget.category != null) {
+      _lastExploreVersion = exploreVersion;
+      _reload();
+    } else {
+      _lastExploreVersion = exploreVersion;
+    }
+  }
+
+  void _reload() {
+    setState(() {
+      _profiles = [];
+      _currentIndex = 0;
+      _currentPhotoIndex = 0;
+      _isLoading = true;
+    });
+    _loadProfiles();
   }
 
   Future<void> _loadProfiles() async {
@@ -98,8 +116,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
       setState(() => _isFetching = true);
 
       try {
-        final profiles = await _profileService
-            .getSwipeProfiles(currentUser.uid)
+        final profiles = await (widget.category != null
+                ? _profileService.getSwipeProfilesByCategory(
+                    currentUser.uid, widget.category!)
+                : _profileService.getSwipeProfiles(currentUser.uid))
             .timeout(const Duration(seconds: 15)); // Safety timeout
 
         debugPrint('SwipeView: Fetched ${profiles.length} profiles');
@@ -165,8 +185,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     if (currentUser == null) return;
 
     try {
-      final newProfiles =
-          await _profileService.getSwipeProfiles(currentUser.uid);
+      final newProfiles = widget.category != null
+          ? await _profileService.getSwipeProfilesByCategory(
+              currentUser.uid, widget.category!)
+          : await _profileService.getSwipeProfiles(currentUser.uid);
       if (mounted && newProfiles.isNotEmpty) {
         setState(() {
           final existingIds = _profiles.map((p) => p.uid).toSet();
@@ -296,7 +318,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                       color: Theme.of(context).hintColor)),
               const SizedBox(height: 40),
               GestureDetector(
-                onTap: () => context.read<ProfileProvider>().resetSwipes(),
+                onTap: () => _handleResetSwipes(context, languageProvider),
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 36, vertical: 18),
@@ -711,6 +733,83 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
               ),
             ),
 
+          // Top Right Buttons (Gift & Info)
+          if (!isBackCard)
+            Positioned(
+              top: 32,
+              right: 14,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Gift Button
+                  GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => GiftSelectionSheet(
+                          targetUserId: profile.uid!,
+                          targetUserName: profile.firstName ?? 'Someone',
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.55),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.amber.withOpacity(0.6),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.amber.withOpacity(0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Iconsax.gift,
+                        color: Colors.amber,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Info/Details Button
+                  GestureDetector(
+                    onTap: () => _showProfileDetails(profile),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.55),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.4),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Iconsax.user,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           // Bottom info panel + action buttons
           Positioned(
             bottom: 0,
@@ -791,8 +890,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
       return;
     }
 
-    // Show loading? maybe just navigate
-    await ChatService().getOrCreateChat(myUid, targetProfile.uid!);
+    // Navigate instantly, ChatScreen handles its own initialization
     if (mounted) {
       Navigator.push(
         context,
@@ -941,142 +1039,134 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
   Widget _buildProfileInfo(BuildContext context, UserProfile profile,
       {bool hasMinPhotos = true, required LanguageProvider languageProvider}) {
     final occupation = profile.occupation;
+    final school = profile.school;
+    final hobbies = profile.hobbies;
+
     return Padding(
-      padding: const EdgeInsets.only(left: 22, right: 22, bottom: 4),
+      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
+          // ── Name & Age ──────────────────────────────────────────────
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Flexible(
                 child: Text(
                   '${profile.firstName ?? 'Someone'},',
                   style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 34,
+                      fontSize: 32,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: -1,
+                      letterSpacing: -0.5,
                       height: 1.1),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  '${profile.age ?? '??'}',
-                  style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontSize: 26,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: -0.5),
-                ),
+              Text(
+                '${profile.age ?? '??'}',
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: -0.5),
               ),
               if (profile.isVerified) ...[
-                const SizedBox(width: 6),
-                const Padding(
-                    padding: EdgeInsets.only(bottom: 2),
-                    child: Icon(Icons.verified_rounded,
-                        color: Color(0xFF4FC3F7), size: 22))
+                const SizedBox(width: 8),
+                const Icon(Icons.verified_rounded,
+                    color: Color(0xFF4FC3F7), size: 24)
               ],
             ],
           ),
-          const SizedBox(height: 6),
-          Row(
+          const SizedBox(height: 4),
+
+          //Professional Info & Distance (Wrapped Chips)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
+              // Occupation / Work
+              if (occupation != null && occupation.isNotEmpty)
+                _buildInfoChip(
+                  icon: Iconsax.briefcase,
+                  label: school != null && school.isNotEmpty
+                      ? '$occupation at $school'
+                      : occupation,
+                ),
+
+              // Distance
               Consumer<ProfileProvider>(
-                builder: (_, profileProvider, __) => Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.2)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Iconsax.location,
-                          color: Colors.white70, size: 12),
-                      const SizedBox(width: 4),
-                      Text(
-                        profile.getDistanceDisplay(profileProvider.userProfile),
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
+                builder: (_, profileProvider, __) => _buildInfoChip(
+                  icon: Iconsax.location,
+                  label:
+                      profile.getDistanceDisplay(profileProvider.userProfile),
                 ),
               ),
-              if (occupation != null && occupation.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Iconsax.briefcase,
-                            color: Colors.white70, size: 12),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            occupation,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
-          const SizedBox(height: 10),
-          if (hasMinPhotos)
-            GestureDetector(
-              onTap: () => _showProfileDetails(profile),
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.10),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withOpacity(0.2)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Iconsax.user, color: Colors.white70, size: 13),
-                    const SizedBox(width: 6),
-                    Text(languageProvider.getString('view_profile'),
-                        style: TextStyle(
-                            color: Colors.white.withOpacity(0.85),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.2)),
-                    const SizedBox(width: 4),
-                    Icon(Icons.arrow_forward_ios_rounded,
-                        color: Colors.white.withOpacity(0.6), size: 10),
-                  ],
+
+          const SizedBox(height: 4),
+
+          // ── Hobbies / Interests (Horizontal Scroll) ─────────────────
+          if (hobbies.isNotEmpty)
+            SizedBox(
+              height: 24,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: hobbies.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 6),
+                itemBuilder: (context, index) => Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF4D85).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                        color: const Color(0xFFFF4D85).withOpacity(0.3)),
+                  ),
+                  child: Text(
+                    hobbies[index],
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoChip({required IconData icon, required String label}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white70, size: 14),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
         ],
       ),
     );
@@ -1223,7 +1313,6 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
           Navigator.pop(context);
           final myUid = FirebaseAuth.instance.currentUser?.uid;
           if (myUid == null || profile.uid == null) return;
-          await ChatService().getOrCreateChat(myUid, profile.uid!);
           if (mounted) {
             Navigator.push(
                 this.context,
@@ -1282,5 +1371,97 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       margin: const EdgeInsets.all(20),
     ));
+  }
+
+  Future<void> _handleResetSwipes(
+      BuildContext context, LanguageProvider lp) async {
+    final profileProvider = context.read<ProfileProvider>();
+    final isPremium = profileProvider.userProfile?.isPremium ?? false;
+
+    if (isPremium) {
+      await profileProvider.resetSwipes();
+      return;
+    }
+
+    // Non-premium: Confirm 50 credit charge
+    if (!mounted) return;
+
+    final credits = profileProvider.userProfile?.credits ?? 0;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            const Icon(Iconsax.refresh, color: Color(0xFFFF4D85)),
+            const SizedBox(width: 10),
+            Text(lp.getString('refresh_cost_title'),
+                style: const TextStyle(fontWeight: FontWeight.w800)),
+          ],
+        ),
+        content: Text(
+          lp
+              .getString('refresh_cost_content')
+              .replaceAll('{credits}', credits.toString()),
+          style: const TextStyle(height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(lp.getString('cancel'),
+                style: const TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4D85),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              if (credits < 50) {
+                _showPremiumSnack(lp.getString('not_enough_credits'));
+                return;
+              }
+
+              try {
+                await profileProvider.useCredits(50);
+                await profileProvider.resetSwipes();
+                if (mounted) {
+                  // ignore: use_build_context_synchronously
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(lp.getString('swipes_reset_success')),
+                      backgroundColor: Colors.green,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      margin: const EdgeInsets.all(16),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  // ignore: use_build_context_synchronously
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(lp.getString('swipes_reset_failed')),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      margin: const EdgeInsets.all(16),
+                    ),
+                  );
+                }
+              }
+            },
+            child: Text(lp.getString('pay_refresh'),
+                style: const TextStyle(fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
   }
 }

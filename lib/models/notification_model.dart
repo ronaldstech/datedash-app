@@ -5,9 +5,10 @@ class DatedashNotification {
   final String recipientId;
   final String senderId;
   final String senderName;
-  final String type; // 'like', 'view'
+  final String type; // 'like', 'view', 'gift'
   final DateTime timestamp;
   final bool isRead;
+  final String? message;
 
   DatedashNotification({
     required this.id,
@@ -17,6 +18,7 @@ class DatedashNotification {
     required this.type,
     required this.timestamp,
     this.isRead = false,
+    this.message,
   });
 
   Map<String, dynamic> toMap() {
@@ -27,6 +29,7 @@ class DatedashNotification {
       'type': type,
       'timestamp': FieldValue.serverTimestamp(),
       'isRead': isRead,
+      'message': message,
     };
   }
 
@@ -39,6 +42,7 @@ class DatedashNotification {
       type: map['type'] ?? '',
       timestamp: (map['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
       isRead: map['isRead'] ?? false,
+      message: map['message'],
     );
   }
 }
