@@ -209,7 +209,6 @@ class _NotificationCard extends StatefulWidget {
   final VoidCallback onPop;
 
   const _NotificationCard({
-    super.key,
     required this.notification,
     required this.service,
     required this.profileService,
@@ -242,6 +241,7 @@ class _NotificationCardState extends State<_NotificationCard> {
     final bool isMissedCall = widget.notification.type == 'missed_call';
     final bool isGift = widget.notification.type == 'gift';
     final bool isReward = widget.notification.type == 'reward';
+    final bool isBooking = widget.notification.type.startsWith('booking_');
     final lp = context.watch<LanguageProvider>();
 
     return Padding(
@@ -290,7 +290,13 @@ class _NotificationCardState extends State<_NotificationCard> {
                                           ? ' ${lp.getString('received_gift_suffix')}'
                                           : isReward
                                               ? '' // Rewards already have full message
-                                              : ' ${lp.getString('viewed_profile_suffix')}'),
+                                              : isBooking
+                                                  ? (widget.notification.type == 'booking_request'
+                                                      ? ' proposed a date!'
+                                                      : widget.notification.type == 'booking_accepted'
+                                                          ? ' accepted your date proposal!'
+                                                          : ' declined your date proposal.')
+                                                  : ' ${lp.getString('viewed_profile_suffix')}'),
                         ],
                       ),
                     ),
@@ -344,6 +350,7 @@ class _NotificationCardState extends State<_NotificationCard> {
     final bool isMissedCall = widget.notification.type == 'missed_call';
     final bool isGift = widget.notification.type == 'gift';
     final bool isReward = widget.notification.type == 'reward';
+    final bool isBooking = widget.notification.type.startsWith('booking_');
 
     final IconData icon = isLike
         ? Iconsax.heart5
@@ -353,7 +360,9 @@ class _NotificationCardState extends State<_NotificationCard> {
                 ? Iconsax.gift
                 : isReward
                     ? Iconsax.wallet_3
-                    : Iconsax.eye;
+                    : isBooking
+                        ? Iconsax.calendar
+                        : Iconsax.eye;
     final Color badgeColor = isLike
         ? const Color(0xFFFF4D85)
         : isMissedCall
@@ -362,7 +371,9 @@ class _NotificationCardState extends State<_NotificationCard> {
                 ? Colors.amber
                 : isReward
                     ? Colors.orangeAccent
-                    : Colors.blue;
+                    : isBooking
+                        ? Colors.orange
+                        : Colors.blue;
 
     return FutureBuilder<UserProfile?>(
       future: _profileFuture,

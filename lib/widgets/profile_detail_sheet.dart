@@ -345,17 +345,17 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
                     onTap: onDislike,
                   ),
                   _ActionButton(
+                    icon: Iconsax.heart5,
+                    color: primaryColor,
+                    label: languageProvider.getString('like'),
+                    onTap: onLike,
+                  ),
+                  _ActionButton(
                     icon: Iconsax.message_text5,
                     color: Colors.blueAccent,
                     label: languageProvider.getString('message'),
                     onTap: onMessage,
                     isSmall: true,
-                  ),
-                  _ActionButton(
-                    icon: Iconsax.heart5,
-                    color: primaryColor,
-                    label: languageProvider.getString('like'),
-                    onTap: onLike,
                   ),
                 ],
               ),

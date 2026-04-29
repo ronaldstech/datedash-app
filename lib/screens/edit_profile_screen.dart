@@ -376,6 +376,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           value:
               _profile.lookingFor.isNotEmpty ? _profile.lookingFor.first : null,
           items: const [
+            'Marriage',
             'Long Term Relationship',
             'Short Term Relationship',
             'Hookups',

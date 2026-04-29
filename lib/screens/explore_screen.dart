@@ -69,6 +69,15 @@ class ExploreScreen extends StatelessWidget {
     // Keys match EXACTLY what edit_profile_screen.dart writes to Firestore
     final categories = [
       {
+        'title': languageProvider.getString('cat_marriage'),
+        'subtitle': languageProvider.getString('cat_marriage_sub'),
+        'key': 'Marriage',
+        'icon': Iconsax.heart_add,
+        'photo':
+            'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600&q=80',
+        'accent': const Color(0xFFD4AF37), // Gold accent for marriage
+      },
+      {
         'title': languageProvider.getString('cat_long_term'),
         'subtitle': languageProvider.getString('cat_long_term_sub'),
         'key': 'Long Term Relationship',

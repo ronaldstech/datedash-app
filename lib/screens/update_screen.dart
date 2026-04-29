@@ -216,7 +216,7 @@ class _UpdateScreenState extends State<UpdateScreen>
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset('assets/images/logo2.png',
+            child: Image.asset('assets/images/signlogo.png',
                 width: 36, height: 36, fit: BoxFit.cover),
           ),
           const SizedBox(width: 12),

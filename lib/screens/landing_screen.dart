@@ -379,120 +379,263 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
-  Widget _buildIncompleteProfileScreen(BuildContext context, int completion, LanguageProvider languageProvider) {
-    return Material(
-      color: Colors.transparent,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF4D85).withOpacity(0.05),
-                  shape: BoxShape.circle,
-                ),
-                child: Image.asset(
-                  'assets/images/logo2.png',
-                  width: 170,
-                  height: 170,
-                  fit: BoxFit.contain,
+  Widget _buildIncompleteProfileScreen(
+      BuildContext context, int completion, LanguageProvider languageProvider) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          // Elegant dark gradient background
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF0F0F12),
+                    Color(0xFF1A0A14),
+                  ],
                 ),
               ),
-              const SizedBox(height: 32),
-              Text(
-                languageProvider.getString('profile_needs_attention'),
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                languageProvider.getString('profile_completion_sub').replaceAll('{completion}', completion.toString()),
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.color
-                      ?.withOpacity(0.7),
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: LinearProgressIndicator(
-                  value: completion / 100,
-                  backgroundColor: const Color(0xFFFF4D85).withOpacity(0.2),
-                  valueColor:
-                      const AlwaysStoppedAnimation<Color>(Color(0xFFFF4D85)),
-                  minHeight: 12,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                '$completion% / 40% required',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFFF4D85),
-                ),
-              ),
-              const SizedBox(height: 48),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const EditProfileScreen()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: const Color(0xFFFF4D85),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    languageProvider.getString('complete_profile_button'),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => AuthService().signOut(),
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.color
-                      ?.withOpacity(0.6),
-                ),
-                child: Text(languageProvider.getString('signout_label')),
-              ),
-            ],
+            ),
           ),
-        ),
+
+          // Decorative floating blobs for premium feel
+          Positioned(
+            top: -100,
+            right: -50,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFFF4D85).withOpacity(0.08),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -50,
+            left: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFFF4D85).withOpacity(0.05),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(),
+
+                  // Progress Circle + Logo
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 220,
+                        height: 220,
+                        child: CircularProgressIndicator(
+                          value: completion / 100,
+                          strokeWidth: 4,
+                          backgroundColor: Colors.white.withOpacity(0.05),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                              Color(0xFFFF4D85)),
+                        ),
+                      ),
+                      Container(
+                        width: 180,
+                        height: 180,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.03),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.05),
+                            width: 1,
+                          ),
+                        ),
+                        padding: const EdgeInsets.all(32),
+                        child: Image.asset(
+                          'assets/images/signlogo.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF4D85),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFF4D85).withOpacity(0.4),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            '$completion%',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 48),
+
+                  Text(
+                    languageProvider.getString('profile_needs_attention'),
+                    style: const TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: -1,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  Text(
+                    languageProvider.getString('profile_completion_sub')
+                        .replaceAll('{completion}', completion.toString()),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.6),
+                      height: 1.6,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Required threshold indicator
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.08),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Iconsax.info_circle,
+                            color: Color(0xFFFF4D85), size: 18),
+                        const SizedBox(width: 12),
+                        Text(
+                          '40% required to start swiping',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Premium Action Button
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF4D85).withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const EditProfileScreen()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        backgroundColor: const Color(0xFFFF4D85),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        languageProvider.getString('complete_profile_button'),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  TextButton(
+                    onPressed: () => AuthService().signOut(),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white.withOpacity(0.5),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      languageProvider.getString('signout_label'),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   String _getLocalizedCategoryName(String key, LanguageProvider lp) {
     switch (key) {
+      case 'Marriage':
+        return lp.getString('cat_marriage');
       case 'Long Term Relationship':
         return lp.getString('cat_long_term');
       case 'Short Term Relationship':

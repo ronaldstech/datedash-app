@@ -50,4 +50,13 @@ class DateFormatter {
     final String minute = dateTime.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
+  static String formatBookingDateTime(DateTime dateTime) {
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final String hour = dateTime.hour.toString().padLeft(2, '0');
+    final String minute = dateTime.minute.toString().padLeft(2, '0');
+    return '${months[dateTime.month - 1]} ${dateTime.day}, ${dateTime.year} at $hour:$minute';
+  }
 }

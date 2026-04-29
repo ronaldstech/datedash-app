@@ -17,6 +17,8 @@ import '../providers/language_provider.dart';
 import 'image_editor_screen.dart';
 import '../utils/date_formatter.dart';
 import '../providers/profile_provider.dart';
+import '../widgets/booking_sheet.dart';
+import '../widgets/booking_bubble.dart';
 
 class ChatScreen extends StatefulWidget {
   final String otherUserId;
@@ -609,6 +611,24 @@ class _ChatScreenState extends State<ChatScreen> {
                     : 'Exchange at least 6 messages to unlock calls',
                 onPressed:
                     _messageCount >= 6 ? _showVideoCall : _showCallLockedSnack,
+                iconSize: 17,
+              ),
+              IconButton(
+                icon: const Icon(Iconsax.calendar_add, color: Color(0xFFFF4D85)),
+                tooltip: 'Plan a Date',
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => BookingSheet(
+                      otherUserId: widget.otherUserId,
+                      otherUserName: widget.otherUserName,
+                      chatId: _chatId,
+                      myUid: _myUid,
+                    ),
+                  );
+                },
                 iconSize: 17,
               ),
               PopupMenuButton<String>(
@@ -1354,6 +1374,15 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (msg.messageType == MessageType.voice && msg.mediaUrl != null) {
       return _VoiceNoteBubble(url: msg.mediaUrl!, isMe: isMe);
+    }
+
+    if (msg.messageType == MessageType.booking && msg.mediaUrl != null) {
+      return BookingBubble(
+        bookingId: msg.mediaUrl!,
+        isMe: isMe,
+        otherUserId: widget.otherUserId,
+        otherUserName: widget.otherUserName,
+      );
     }
 
     // Default: Text message

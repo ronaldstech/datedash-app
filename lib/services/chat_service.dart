@@ -170,6 +170,58 @@ class ChatService {
     }
   }
 
+  /// Sends a booking request message
+  Future<void> sendBookingMessage({
+    required String chatId,
+    required String senderId,
+    required String receiverId,
+    required String bookingId,
+    required String text, // e.g. "Proposed a date on May 20, 2024 at 18:00"
+  }) async {
+    final msgRef =
+        _firestore.collection('chats').doc(chatId).collection('messages').doc();
+
+    final localMessage = ChatMessage(
+      id: msgRef.id,
+      senderId: senderId,
+      text: text,
+      timestamp: DateTime.now(),
+      isRead: false,
+      isDelivered: true,
+      messageType: MessageType.booking,
+      mediaUrl: bookingId, // Use mediaUrl to store bookingId
+    );
+
+    try {
+      final batch = _firestore.batch();
+
+      batch.set(msgRef, {
+        'senderId': senderId,
+        'text': text,
+        'timestamp': FieldValue.serverTimestamp(),
+        'isRead': false,
+        'isDelivered': true,
+        'messageType': MessageType.booking.toString().split('.').last,
+        'mediaUrl': bookingId,
+      });
+
+      final chatRef = _firestore.collection('chats').doc(chatId);
+      batch.update(chatRef, {
+        'lastMessage': '📅 Date Proposal',
+        'lastMessageTime': FieldValue.serverTimestamp(),
+        'lastMessageSenderId': senderId,
+        'unreadCount.$receiverId': FieldValue.increment(1),
+      });
+
+      await batch.commit();
+      await _localDb.insertMessage(localMessage, chatId);
+    } catch (e) {
+      debugPrint('Error sending booking message: $e');
+      await _localDb.insertMessage(localMessage, chatId);
+      rethrow;
+    }
+  }
+
   /// Upload a file to PHP backend server
   Future<String> uploadFile({
     required String filePath,

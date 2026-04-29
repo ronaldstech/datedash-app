@@ -110,7 +110,7 @@ class _DateDashAppState extends State<DateDashApp> with WidgetsBindingObserver {
                         children: [
                           ClipOval(
                             child: Image.asset(
-                              'assets/images/logo2.png',
+                              'assets/images/signlogo.png',
                               width: 90,
                               height: 90,
                               fit: BoxFit.cover,

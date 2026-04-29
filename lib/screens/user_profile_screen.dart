@@ -4,6 +4,8 @@ import '../models/user_profile_model.dart';
 import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
 import '../services/profile_service.dart';
+import '../widgets/booking_sheet.dart';
+import '../services/chat_service.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final UserProfile profile;
@@ -26,6 +28,8 @@ class UserProfileScreen extends StatefulWidget {
 class _UserProfileScreenState extends State<UserProfileScreen> {
   int _currentPhotoIndex = 0;
   late PageController _pageController;
+  bool _isMatched = false;
+  String? _currentUserId;
 
   @override
   void initState() {
@@ -35,10 +39,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     // Record profile view
     final profileProvider =
         Provider.of<ProfileProvider>(context, listen: false);
-    final currentUserId = profileProvider.currentUser?.uid;
-    if (currentUserId != null && widget.profile.uid != null) {
-      ProfileService().recordProfileView(currentUserId, widget.profile.uid!,
+    _currentUserId = profileProvider.currentUser?.uid;
+    if (_currentUserId != null && widget.profile.uid != null) {
+      ProfileService().recordProfileView(_currentUserId!, widget.profile.uid!,
           senderName: profileProvider.displayName);
+      _checkMatch();
+    }
+  }
+
+  Future<void> _checkMatch() async {
+    if (_currentUserId != null && widget.profile.uid != null) {
+      final matched = await ProfileService().checkMatchStatus(_currentUserId!, widget.profile.uid!);
+      if (mounted) {
+        setState(() => _isMatched = matched);
+      }
     }
   }
 
@@ -317,15 +331,37 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     onTap: widget.onDislike,
                   ),
                   _ActionButton(
+                    icon: Iconsax.heart5,
+                    color: primaryColor,
+                    onTap: widget.onLike,
+                  ),
+                  if (_isMatched)
+                    _ActionButton(
+                      icon: Iconsax.calendar_add,
+                      color: const Color(0xFFFFA000),
+                      onTap: () {
+                        if (_currentUserId != null && widget.profile.uid != null) {
+                          final chatId = ChatService().getChatId(_currentUserId!, widget.profile.uid!);
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => BookingSheet(
+                              otherUserId: widget.profile.uid!,
+                              otherUserName: widget.profile.firstName ?? 'Someone',
+                              chatId: chatId,
+                              myUid: _currentUserId!,
+                            ),
+                          );
+                        }
+                      },
+                      isSmall: true,
+                    ),
+                  _ActionButton(
                     icon: Iconsax.message_text5,
                     color: Colors.blueAccent,
                     onTap: widget.onMessage,
                     isSmall: true,
-                  ),
-                  _ActionButton(
-                    icon: Iconsax.heart5,
-                    color: primaryColor,
-                    onTap: widget.onLike,
                   ),
                 ],
               ),

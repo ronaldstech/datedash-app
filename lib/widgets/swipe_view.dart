@@ -842,13 +842,6 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           ActionButton(
-            svgAsset: 'assets/images/pass.svg',
-            color: const Color(0xFFFF5E5E),
-            onTap: () => _runSwipeAnimation('left'),
-            size: 64,
-            label: languageProvider.getString('pass'),
-          ),
-          ActionButton(
             icon: Iconsax.refresh,
             color: canRewind
                 ? const Color(0xFF2196F3)
@@ -856,6 +849,13 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
             onTap: canRewind ? _handleRewind : () {},
             size: 48,
             label: languageProvider.getString('rewind'),
+          ),
+          ActionButton(
+            svgAsset: 'assets/images/pass.svg',
+            color: const Color(0xFFFF5E5E),
+            onTap: () => _runSwipeAnimation('left'),
+            size: 64,
+            label: languageProvider.getString('pass'),
           ),
           ActionButton(
             svgAsset: 'assets/images/like.svg',
@@ -921,9 +921,9 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
       return;
     }
 
-    // Non-premium users must use 10 credits
+    // Non-premium users must use 100 credits
     final userCredits = profileProvider.userProfile?.credits ?? 0;
-    if (userCredits >= 10) {
+    if (userCredits >= 100) {
       _showRewindConfirmationDialog(languageProvider, profileProvider);
     } else {
       _showInsufficientCreditsDialog(languageProvider);
@@ -932,41 +932,201 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
 
   void _showRewindConfirmationDialog(
       LanguageProvider languageProvider, ProfileProvider profileProvider) {
+    bool isRewinding = false;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(
-          languageProvider.getString('rewind_confirm_title'),
-          style: const TextStyle(fontWeight: FontWeight.bold),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: const Color(0xFF2196F3).withOpacity(0.1), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2196F3).withOpacity(0.15),
+                  blurRadius: 24,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Premium Header with Icon
+                Container(
+                  height: 140,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFF2196F3).withOpacity(0.2),
+                        const Color(0xFF2196F3).withOpacity(0.02),
+                      ],
+                    ),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Decorative circles
+                      Positioned(
+                        top: -20,
+                        right: -20,
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFF2196F3).withOpacity(0.05),
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Iconsax.refresh,
+                        size: 64,
+                        color: Color(0xFF2196F3),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  languageProvider.getString('rewind_confirm_title'),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    languageProvider.getString('rewind_confirm_message'),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Theme.of(context).hintColor,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: isRewinding ? null : () => Navigator.pop(context),
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: Text(
+                                languageProvider.getString('cancel'),
+                                style: TextStyle(
+                                  color: Theme.of(context).hintColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: isRewinding
+                                  ? null
+                                  : () async {
+                                      setDialogState(() => isRewinding = true);
+                                      try {
+                                        await _executeRewind(useCredits: 100);
+                                        if (context.mounted) Navigator.pop(context);
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          setDialogState(() => isRewinding = false);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Error: $e')),
+                                          );
+                                        }
+                                      }
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF2196F3),
+                                foregroundColor: Colors.white,
+                                elevation: 8,
+                                shadowColor: const Color(0xFF2196F3).withOpacity(0.4),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: isRewinding
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      languageProvider.getString('confirm_button'),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: isRewinding
+                              ? null
+                              : () {
+                                  Navigator.pop(context);
+                                  profileProvider.navigateToPremium(0);
+                                },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            side: const BorderSide(color: Color(0xFFFF4D85), width: 1.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            languageProvider.getString('go_premium'),
+                            style: const TextStyle(
+                              color: Color(0xFFFF4D85),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        content: Text(languageProvider.getString('rewind_confirm_message')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              languageProvider.getString('cancel'),
-              style: const TextStyle(
-                  color: Colors.grey, fontWeight: FontWeight.bold),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _executeRewind(useCredits: 10);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4D85),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text(
-              languageProvider.getString('confirm_button'),
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -974,41 +1134,172 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
   void _showInsufficientCreditsDialog(LanguageProvider languageProvider) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(
-          languageProvider.getString('insufficient_credits_title'),
-          style: const TextStyle(fontWeight: FontWeight.bold),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: const Color(0xFFFFB300).withOpacity(0.1), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFB300).withOpacity(0.15),
+                blurRadius: 24,
+                spreadRadius: 0,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Premium Header with Icon
+              Container(
+                height: 140,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFFFFB300).withOpacity(0.2),
+                      const Color(0xFFFFB300).withOpacity(0.02),
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Decorative circles
+                    Positioned(
+                      top: -20,
+                      right: -20,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFFFB300).withOpacity(0.05),
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Iconsax.coin,
+                      size: 64,
+                      color: Color(0xFFFFB300),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                languageProvider.getString('insufficient_credits_title'),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  languageProvider.getString('insufficient_credits_message'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Theme.of(context).hintColor,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: Text(
+                              languageProvider.getString('cancel'),
+                              style: TextStyle(
+                                color: Theme.of(context).hintColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              context.read<ProfileProvider>().navigateToPremium(1);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFFB300),
+                              foregroundColor: Colors.white,
+                              elevation: 8,
+                              shadowColor: const Color(0xFFFFB300).withOpacity(0.4),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: Text(
+                              languageProvider.getString('get_credits_button'),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          context.read<ProfileProvider>().navigateToPremium(0);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: const BorderSide(color: Color(0xFFFF4D85), width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          languageProvider.getString('go_premium'),
+                          style: const TextStyle(
+                            color: Color(0xFFFF4D85),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-        content:
-            Text(languageProvider.getString('insufficient_credits_message')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              languageProvider.getString('cancel'),
-              style: const TextStyle(
-                  color: Colors.grey, fontWeight: FontWeight.bold),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Navigate to Premium tab (index 4) and Sub-tab 1 (Credits)
-              context.read<ProfileProvider>().navigateToPremium(1);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFB300),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text(
-              languageProvider.getString('get_credits_button'),
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
       ),
     );
   }
