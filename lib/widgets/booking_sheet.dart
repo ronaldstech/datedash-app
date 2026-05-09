@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/booking_model.dart';
-import '../services/booking_service.dart';
 import '../services/chat_service.dart';
 import '../utils/date_formatter.dart';
-import '../providers/language_provider.dart';
 import 'package:provider/provider.dart';
+import '../providers/profile_provider.dart';
 
 class BookingSheet extends StatefulWidget {
   final String otherUserId;
@@ -79,6 +78,64 @@ class _BookingSheetState extends State<BookingSheet> {
     }
   }
 
+  void _confirmAndSubmit() async {
+    if (_isSubmitting) return;
+
+    final lp = context.read<ProfileProvider>(); // We'll use this for credits
+    final userProfile = lp.userProfile;
+
+    if (userProfile == null) return;
+
+    if (userProfile.credits < 100) {
+      _showInsufficientCreditsDialog();
+      return;
+    }
+
+    bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Confirm Date Proposal', style: TextStyle(fontWeight: FontWeight.w800)),
+        content: const Text('Sending a date proposal costs 100 credits. Do you want to proceed?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4D85),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Send (100 Credits)'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      _submitBooking();
+    }
+  }
+
+  void _showInsufficientCreditsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Insufficient Credits'),
+        content: const Text('You need 100 credits to send a date proposal.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _submitBooking() async {
     if (_isSubmitting) return;
 
@@ -103,7 +160,9 @@ class _BookingSheetState extends State<BookingSheet> {
     );
 
     try {
-      final bookingService = BookingService();
+      final lp = context.read<ProfileProvider>();
+      await lp.useCredits(100);
+
       // We need to get the booking ID after creation to send in chat
       // Let's modify createBooking to return the ID or just use a manual ID
       final docRef = FirebaseFirestore.instance.collection('bookings').doc();
@@ -148,11 +207,11 @@ class _BookingSheetState extends State<BookingSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final lp = context.watch<LanguageProvider>();
 
     return Container(
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 
+                MediaQuery.of(context).padding.bottom + 20,
         top: 20,
         left: 20,
         right: 20,
@@ -170,7 +229,7 @@ class _BookingSheetState extends State<BookingSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
+                color: Colors.grey.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -243,7 +302,7 @@ class _BookingSheetState extends State<BookingSheet> {
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
-              onPressed: _isSubmitting ? null : _submitBooking,
+              onPressed: _isSubmitting ? null : _confirmAndSubmit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4D85),
                 foregroundColor: Colors.white,
@@ -303,3 +362,4 @@ class _BookingSheetState extends State<BookingSheet> {
     );
   }
 }
+

@@ -66,7 +66,7 @@ class RewardsScreen extends StatelessWidget {
                     child: Icon(
                       Iconsax.cup5,
                       size: 150,
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                     ),
                   ),
                 ],
@@ -167,13 +167,13 @@ class RewardsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: isDark
             ? []
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 )
@@ -184,7 +184,7 @@ class RewardsScreen extends StatelessWidget {
         children: [
           _buildStatItem('Credits', profile.credits.toString(),
               Iconsax.wallet_3, Colors.orangeAccent),
-          Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2)),
+          Container(width: 1, height: 40, color: Colors.grey.withValues(alpha: 0.2)),
           _buildStatItem('Claimed', profile.claimedRewards.length.toString(),
               Iconsax.receipt_21, const Color(0xFFFF4D85)),
         ],
@@ -293,11 +293,11 @@ class _ChallengeCardState extends State<_ChallengeCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: canClaim
-              ? widget.accentColor.withOpacity(0.5)
+              ? widget.accentColor.withValues(alpha: 0.5)
               : Colors.transparent,
           width: 2,
         ),
@@ -311,7 +311,7 @@ class _ChallengeCardState extends State<_ChallengeCard> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: widget.accentColor.withOpacity(0.1),
+                    color: widget.accentColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(widget.icon, color: widget.accentColor, size: 24),
@@ -338,7 +338,7 @@ class _ChallengeCardState extends State<_ChallengeCard> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.orangeAccent.withOpacity(0.1),
+                    color: Colors.orangeAccent.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -358,7 +358,7 @@ class _ChallengeCardState extends State<_ChallengeCard> {
                     borderRadius: BorderRadius.circular(10),
                     child: LinearProgressIndicator(
                       value: widget.progress,
-                      backgroundColor: Colors.grey.withOpacity(0.1),
+                      backgroundColor: Colors.grey.withValues(alpha: 0.1),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         widget.isClaimed ? Colors.green : widget.accentColor,
                       ),
@@ -387,8 +387,8 @@ class _ChallengeCardState extends State<_ChallengeCard> {
                   backgroundColor: canClaim
                       ? widget.accentColor
                       : (widget.isClaimed
-                          ? Colors.green.withOpacity(0.1)
-                          : Colors.grey.withOpacity(0.1)),
+                          ? Colors.green.withValues(alpha: 0.1)
+                          : Colors.grey.withValues(alpha: 0.1)),
                   foregroundColor: canClaim
                       ? Colors.white
                       : (widget.isClaimed ? Colors.green : Colors.grey),
@@ -420,3 +420,4 @@ class _ChallengeCardState extends State<_ChallengeCard> {
     );
   }
 }
+

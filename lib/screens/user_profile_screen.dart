@@ -101,7 +101,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: CircleAvatar(
-                    backgroundColor: Colors.black.withOpacity(0.3),
+                    backgroundColor: Colors.black.withValues(alpha: 0.3),
                     child: IconButton(
                       icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
@@ -160,7 +160,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   decoration: BoxDecoration(
                                     color: index == _currentPhotoIndex
                                         ? Colors.white
-                                        : Colors.white.withOpacity(0.3),
+                                        : Colors.white.withValues(alpha: 0.3),
                                     borderRadius: BorderRadius.circular(2),
                                   ),
                                 ),
@@ -249,7 +249,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             height: 1.6,
-                            color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.8),
+                            color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.8),
                           ),
                         ),
                         const SizedBox(height: 32),
@@ -316,7 +316,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 borderRadius: BorderRadius.circular(40),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -432,7 +432,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+            border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -490,7 +490,7 @@ class _LabeledRow extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: const Color(0xFFFF4D85).withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: const Color(0xFFFF4D85).withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8)),
             child: Icon(icon, size: 18, color: const Color(0xFFFF4D85)),
           ),
           const SizedBox(width: 14),
@@ -514,9 +514,9 @@ class _Chip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: c.withOpacity(0.1),
+        color: c.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: c.withOpacity(0.2)),
+        border: Border.all(color: c.withValues(alpha: 0.2)),
       ),
       child: Text(label, style: TextStyle(color: c, fontWeight: FontWeight.w700, fontSize: 14)),
     );
@@ -542,10 +542,11 @@ class _ActionButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Theme.of(context).cardColor,
-          border: Border.all(color: color.withOpacity(0.2), width: 2),
+          border: Border.all(color: color.withValues(alpha: 0.2), width: 2),
         ),
         child: Icon(icon, color: color, size: size * 0.45),
       ),
     );
   }
 }
+

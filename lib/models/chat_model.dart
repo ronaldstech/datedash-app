@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum MessageType { text, image, voice, gif, sticker, call, booking }
+enum MessageType { text, image, voice, gif, sticker, call, booking, gift }
 
 class ChatMessage {
   final String id;
@@ -14,6 +14,11 @@ class ChatMessage {
   final int? voiceDuration; // Duration in milliseconds for voice messages
   final bool isEdited;
   final bool isDeleted;
+  final String? giftType;
+  final int? giftValue;
+  final String? replyToId;
+  final String? replyToText;
+  final String? replyToSenderName;
 
   ChatMessage({
     required this.id,
@@ -27,6 +32,11 @@ class ChatMessage {
     this.voiceDuration,
     this.isEdited = false,
     this.isDeleted = false,
+    this.giftType,
+    this.giftValue,
+    this.replyToId,
+    this.replyToText,
+    this.replyToSenderName,
   });
 
   factory ChatMessage.fromDoc(DocumentSnapshot doc) {
@@ -43,6 +53,11 @@ class ChatMessage {
       voiceDuration: data['voiceDuration'],
       isEdited: data['isEdited'] ?? false,
       isDeleted: data['isDeleted'] ?? false,
+      giftType: data['giftType'],
+      giftValue: data['giftValue'],
+      replyToId: data['replyToId'],
+      replyToText: data['replyToText'],
+      replyToSenderName: data['replyToSenderName'],
     );
   }
 
@@ -62,6 +77,8 @@ class ChatMessage {
         return MessageType.call;
       case 'booking':
         return MessageType.booking;
+      case 'gift':
+        return MessageType.gift;
       default:
         return MessageType.text;
     }
@@ -78,6 +95,11 @@ class ChatMessage {
         'voiceDuration': voiceDuration,
         'isEdited': isEdited,
         'isDeleted': isDeleted,
+        'giftType': giftType,
+        'giftValue': giftValue,
+        'replyToId': replyToId,
+        'replyToText': replyToText,
+        'replyToSenderName': replyToSenderName,
       };
 }
 
@@ -88,6 +110,7 @@ class Chat {
   final DateTime? lastMessageTime;
   final String lastMessageSenderId;
   final Map<String, int> unreadCount;
+  final bool isSuperRequest;
 
   Chat({
     required this.id,
@@ -96,6 +119,7 @@ class Chat {
     this.lastMessageTime,
     this.lastMessageSenderId = '',
     this.unreadCount = const {},
+    this.isSuperRequest = false,
   });
 
   factory Chat.fromDoc(DocumentSnapshot doc) {
@@ -112,6 +136,7 @@ class Chat {
             ) ??
             {},
       ),
+      isSuperRequest: data['isSuperRequest'] ?? false,
     );
   }
 

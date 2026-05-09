@@ -12,21 +12,21 @@ class ConnectivityService {
 
   /// Stream of connectivity status
   Stream<bool> get isOnline {
-    return _connectivity.onConnectivityChanged.map((result) {
-      return result != ConnectivityResult.none;
+    return _connectivity.onConnectivityChanged.map((results) {
+      return !results.contains(ConnectivityResult.none);
     });
   }
 
   /// Check current connectivity status
   Future<bool> checkConnectivity() async {
-    final result = await _connectivity.checkConnectivity();
-    return result != ConnectivityResult.none;
+    final results = await _connectivity.checkConnectivity();
+    return !results.contains(ConnectivityResult.none);
   }
 
   /// Listen to connectivity changes
   void startListening(Function(bool) onStatusChanged) {
-    _connectivity.onConnectivityChanged.listen((result) {
-      onStatusChanged(result != ConnectivityResult.none);
+    _connectivity.onConnectivityChanged.listen((results) {
+      onStatusChanged(!results.contains(ConnectivityResult.none));
     });
   }
 }

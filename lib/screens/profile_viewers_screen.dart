@@ -91,7 +91,7 @@ class ProfileViewersScreen extends StatelessWidget {
                           color: Theme.of(context)
                               .iconTheme
                               .color
-                              ?.withOpacity(0.3),
+                              ?.withValues(alpha: 0.3),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -150,7 +150,7 @@ class ProfileViewersScreen extends StatelessWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -164,7 +164,7 @@ class ProfileViewersScreen extends StatelessWidget {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withOpacity(0.8),
+                        Colors.black.withValues(alpha: 0.8),
                       ],
                     ),
                   ),
@@ -190,7 +190,7 @@ class ProfileViewersScreen extends StatelessWidget {
                           Text(
                             _formatDateTime(timestamp, languageProvider),
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                             ),
@@ -209,7 +209,7 @@ class ProfileViewersScreen extends StatelessWidget {
                                 profile.getDistanceDisplay(
                                     profileProvider.userProfile),
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                   fontSize: 12,
                                 ),
                               ),
@@ -281,3 +281,4 @@ class ProfileViewersScreen extends StatelessWidget {
     );
   }
 }
+

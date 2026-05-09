@@ -112,13 +112,8 @@ class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
   int get currentTabIndex => _currentTabIndex;
   int get likesCount => _likesCount;
   
-  /// Returns the count for the Likes badge: 
-  /// - Full count if Premium
-  /// - Unlocked profiles count if not Premium
-  int get unlockedLikesCount {
-    if (_userProfile?.isPremium == true) return _likesCount;
-    return _userProfile?.unlockedLikes.length ?? 0;
-  }
+  /// Returns the count for the Likes badge: Total received likes.
+  int get unlockedLikesCount => _likesCount;
 
   int get visitorsCount => _visitorsCount;
   int get matchesCount => _matchesCount;

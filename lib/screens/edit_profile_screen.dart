@@ -136,7 +136,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _primaryColor.withOpacity(0.1),
+                  color: _primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -226,7 +226,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: _primaryColor.withOpacity(0.3),
+                              color: _primaryColor.withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             )
@@ -243,7 +243,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             : Theme.of(context)
                                 .iconTheme
                                 .color
-                                ?.withOpacity(0.7),
+                                ?.withValues(alpha: 0.7),
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -255,7 +255,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   .textTheme
                                   .bodyMedium
                                   ?.color
-                                  ?.withOpacity(0.8),
+                                  ?.withValues(alpha: 0.8),
                           fontWeight:
                               isSelected ? FontWeight.w800 : FontWeight.w600,
                           fontSize: 14,
@@ -607,7 +607,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   borderRadius: BorderRadius.circular(10),
                   child: LinearProgressIndicator(
                     value: _uploadProgress,
-                    backgroundColor: _primaryColor.withOpacity(0.1),
+                    backgroundColor: _primaryColor.withValues(alpha: 0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(_primaryColor),
                     minHeight: 6,
                   ),
@@ -673,7 +673,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: _profile.isVerified
-                  ? Colors.green.withOpacity(0.3)
+                  ? Colors.green.withValues(alpha: 0.3)
                   : Theme.of(context).dividerColor,
               width: 1.5,
             ),
@@ -684,7 +684,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: (_profile.isVerified ? Colors.green : _primaryColor)
-                      .withOpacity(0.1),
+                      .withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -786,13 +786,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: hasLocation
-                ? Colors.green.withOpacity(0.3)
+                ? Colors.green.withValues(alpha: 0.3)
                 : Theme.of(context).dividerColor,
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -804,7 +804,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: (hasLocation ? Colors.green : _primaryColor)
-                    .withOpacity(0.1),
+                    .withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -902,7 +902,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     try {
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
       setState(() {
@@ -945,9 +947,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: hasPhoto
-                    ? _primaryColor.withOpacity(0.5)
+                    ? _primaryColor.withValues(alpha: 0.5)
                     : isRequired
-                        ? Colors.orange.withOpacity(0.5)
+                        ? Colors.orange.withValues(alpha: 0.5)
                         : Theme.of(context).dividerColor,
                 width: 2,
                 style: hasPhoto ? BorderStyle.solid : BorderStyle.none,
@@ -994,8 +996,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         Icon(
                           Iconsax.add_square,
                           color: isRequired
-                              ? Colors.orange.withOpacity(0.5)
-                              : Colors.grey.withOpacity(0.3),
+                              ? Colors.orange.withValues(alpha: 0.5)
+                              : Colors.grey.withValues(alpha: 0.3),
                           size: 32,
                         ),
                         if (isRequired)
@@ -1043,7 +1045,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -1250,12 +1252,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide:
-                    BorderSide(color: _primaryColor.withOpacity(0.6), width: 2),
+                    BorderSide(color: _primaryColor.withValues(alpha: 0.6), width: 2),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(
-                    color: Theme.of(context).dividerColor.withOpacity(0.5),
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
                     width: 1.5),
               ),
             ),
@@ -1306,7 +1308,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           .textTheme
                           .bodyMedium
                           ?.color
-                          ?.withOpacity(0.7),
+                          ?.withValues(alpha: 0.7),
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                   fontSize: 14,
                 ),
@@ -1374,7 +1376,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           .textTheme
                           .bodyMedium
                           ?.color
-                          ?.withOpacity(0.7),
+                          ?.withValues(alpha: 0.7),
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                   fontSize: 14,
                 ),
@@ -1430,8 +1432,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
           value: value,
-          activeColor: _primaryColor,
-          activeTrackColor: _primaryColor.withOpacity(0.3),
+          activeThumbColor: _primaryColor,
+          activeTrackColor: _primaryColor.withValues(alpha: 0.3),
           inactiveThumbColor: Theme.of(context).disabledColor,
           inactiveTrackColor: Theme.of(context).dividerColor,
           contentPadding: EdgeInsets.zero,
@@ -1516,7 +1518,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   Icon(Iconsax.calendar_1,
                       color:
-                          Theme.of(context).iconTheme.color?.withOpacity(0.5),
+                          Theme.of(context).iconTheme.color?.withValues(alpha: 0.5),
                       size: 20),
                 ],
               ),
@@ -1527,3 +1529,4 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 }
+

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'screens/auth/sign_in_screen.dart';
@@ -11,6 +12,7 @@ import 'providers/profile_provider.dart';
 import 'services/chat_service.dart';
 import 'widgets/call_listener_wrapper.dart';
 import 'providers/language_provider.dart';
+import 'widgets/match_notification_wrapper.dart';
 import 'services/update_service.dart';
 import 'screens/update_screen.dart';
 
@@ -19,6 +21,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await GoogleSignIn.instance.initialize();
 
   runApp(
     MultiProvider(
@@ -84,9 +87,11 @@ class _DateDashAppState extends State<DateDashApp> with WidgetsBindingObserver {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeProvider.themeMode,
-      builder: (context, child) => CallListenerWrapper(
-        navigatorKey: _navigatorKey,
-        child: child!,
+      builder: (context, child) => AppNotificationWrapper(
+        child: CallListenerWrapper(
+          navigatorKey: _navigatorKey,
+          child: child!,
+        ),
       ),
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),

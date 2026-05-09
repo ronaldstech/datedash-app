@@ -7,10 +7,7 @@ import '../models/user_profile_model.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ProfileService _profileService = ProfileService();
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    serverClientId:
-        '409694106333-8703fkvopn9me0nauro1ki5frbbmamld.apps.googleusercontent.com',
-  );
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   // Get user state changes
   Stream<User?> get user => _auth.authStateChanges();
@@ -18,10 +15,9 @@ class AuthService {
   // Sign in with email & password
   Future<UserCredential?> signInWithEmail(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      UserCredential result = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
+      return result;
     } catch (e) {
       rethrow;
     }
@@ -60,11 +56,10 @@ class AuthService {
   // Sign in with Google
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
+      final googleUser = await _googleSignIn.authenticate();
+      // googleUser is non-nullable in this version
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
       );

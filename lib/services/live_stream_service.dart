@@ -1,0 +1,138 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/live_stream_model.dart';
+import '../services/profile_service.dart';
+import '../services/notification_service.dart';
+
+class LiveStreamService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ProfileService _profileService = ProfileService();
+  final NotificationService _notificationService = NotificationService();
+
+  CollectionReference get _liveStreamsCollection => _firestore.collection('live_streams');
+
+  /// Starts a new live stream
+  Future<String> startStream({
+    required String streamId,
+    required String userId,
+    required String userName,
+    required String userPhoto,
+    required String title,
+  }) async {
+    // 1. End any existing active streams for this user
+    final existingStreams = await _liveStreamsCollection
+        .where('broadcasterId', isEqualTo: userId)
+        .where('status', isEqualTo: 'active')
+        .get();
+
+    for (var doc in existingStreams.docs) {
+      await endStream(doc.id);
+    }
+
+    // 2. Start the new stream
+    final stream = LiveStream(
+      id: streamId,
+      broadcasterId: userId,
+      broadcasterName: userName,
+      broadcasterPhoto: userPhoto,
+      title: title,
+      startedAt: DateTime.now(),
+    );
+
+    await _liveStreamsCollection.doc(streamId).set(stream.toMap());
+    return streamId;
+  }
+
+  /// Ends an active live stream
+  Future<void> endStream(String streamId) async {
+    await _liveStreamsCollection.doc(streamId).update({'status': 'ended'});
+    // We can delete it later or keep it for history, but for now let's just delete
+    await _liveStreamsCollection.doc(streamId).delete();
+  }
+
+  /// Joins a live stream (increments viewer count)
+  Future<void> joinStream(String streamId) async {
+    await _liveStreamsCollection.doc(streamId).update({
+      'viewerCount': FieldValue.increment(1),
+    });
+  }
+
+  /// Leaves a live stream (decrements viewer count)
+  Future<void> leaveStream(String streamId) async {
+    await _liveStreamsCollection.doc(streamId).update({
+      'viewerCount': FieldValue.increment(-1),
+    });
+  }
+
+  /// Returns a stream of active live sessions
+  Stream<List<LiveStream>> getActiveStreamsStream() {
+    return _liveStreamsCollection
+        .where('status', isEqualTo: 'active')
+        .orderBy('startedAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return LiveStream.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
+    });
+  }
+
+  /// Sends a chat message or gift in a live stream
+  Future<void> sendMessage({
+    required String streamId,
+    required String senderId,
+    required String senderName,
+    required String senderPhoto,
+    required String message,
+    String? giftType,
+    int? giftValue,
+  }) async {
+    final chatMessage = LiveChatMessage(
+      id: '',
+      senderId: senderId,
+      senderName: senderName,
+      senderPhoto: senderPhoto,
+      message: message,
+      giftType: giftType,
+      giftValue: giftValue,
+      timestamp: DateTime.now(),
+    );
+
+    await _liveStreamsCollection.doc(streamId).collection('messages').add(chatMessage.toMap());
+
+    if (giftType != null && giftValue != null) {
+      // Handle gift transaction
+      await _profileService.deductCredits(senderId, giftValue);
+      
+      // Get broadcaster ID
+      final streamDoc = await _liveStreamsCollection.doc(streamId).get();
+      if (streamDoc.exists) {
+        final broadcasterId = streamDoc['broadcasterId'];
+        await _profileService.addCredits(broadcasterId, giftValue);
+        
+        // Notify broadcaster
+        await _notificationService.sendNotification(
+          recipientId: broadcasterId,
+          senderId: senderId,
+          senderName: senderName,
+          type: 'gift',
+          message: 'Sent you a $giftType worth $giftValue credits during your live!',
+        );
+      }
+    }
+  }
+
+  /// Returns a stream of messages for a specific live session
+  Stream<List<LiveChatMessage>> getMessagesStream(String streamId) {
+    return _liveStreamsCollection
+        .doc(streamId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return LiveChatMessage.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
+    });
+  }
+}

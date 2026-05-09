@@ -180,10 +180,11 @@ class ProfileService {
     }
   }
 
-  /// Records a swipe (like/dislike) in Firestore
-  Future<void> swipeUser(String fromId, String toId, String type,
+  /// Records a swipe (like/dislike) in Firestore. Returns true if it results in a new MATCH.
+  Future<bool> swipeUser(String fromId, String toId, String type,
       {String? senderName}) async {
     try {
+      bool isNewMatch = false;
       final swipeId = '${fromId}_$toId';
       await _firestore.collection('swipes').doc(swipeId).set({
         'fromId': fromId,
@@ -226,6 +227,7 @@ class ProfileService {
               senderName: senderName ?? 'Someone',
               type: 'match',
             );
+            isNewMatch = true;
           }
         } else {
           // Regular like notification
@@ -240,8 +242,10 @@ class ProfileService {
           );
         }
       }
+      return isNewMatch;
     } catch (e) {
       debugPrint('Error recording swipe: $e');
+      return false;
     }
   }
 
@@ -273,22 +277,32 @@ class ProfileService {
     return _firestore
         .collection('matches')
         .where('uids', arrayContains: userId)
-        .orderBy('timestamp', descending: true)
+        // Note: orderBy('timestamp') here requires a composite index. 
+        // We'll sort in memory to avoid index requirements for now.
         .snapshots()
         .asyncMap((snapshot) async {
-      List<UserProfile> profiles = [];
+      List<Map<String, dynamic>> matchData = [];
+      
       for (var doc in snapshot.docs) {
-        final List<dynamic> uids = doc['uids'];
-        final otherId =
-            uids.firstWhere((id) => id != userId, orElse: () => null);
+        final data = doc.data();
+        final List<dynamic> uids = data['uids'] ?? [];
+        final otherId = uids.firstWhere((id) => id != userId, orElse: () => null);
+        
         if (otherId != null) {
           final profile = await getUserProfile(otherId);
           if (profile != null) {
-            profiles.add(profile);
+            matchData.add({
+              'profile': profile,
+              'timestamp': (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+            });
           }
         }
       }
-      return profiles;
+      
+      // Sort in memory by timestamp descending
+      matchData.sort((a, b) => (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
+      
+      return matchData.map((m) => m['profile'] as UserProfile).toList();
     });
   }
 

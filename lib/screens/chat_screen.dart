@@ -53,6 +53,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _chatReady = false;
   bool _showEmojiPicker = false;
   ChatMessage? _editingMessage;
+  ChatMessage? _replyingMessage;
   bool _isSending = false;
 
   // Search
@@ -106,6 +107,10 @@ class _ChatScreenState extends State<ChatScreen> {
           senderId: _myUid,
           receiverId: widget.otherUserId,
           text: text,
+          replyToId: _replyingMessage?.id,
+          replyToText: _replyingMessage?.text,
+          replyToSenderName:
+              _replyingMessage?.senderId == _myUid ? 'You' : widget.otherUserName,
         );
       }
     } catch (e) {
@@ -117,8 +122,81 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       }
     } finally {
-      if (mounted) setState(() => _isSending = false);
+      if (mounted) {
+        setState(() {
+          _isSending = false;
+          _replyingMessage = null;
+        });
+      }
       _scrollToBottom();
+    }
+  }
+
+  void _sendSuperRequest() async {
+    final text = _messageController.text.trim();
+    final lp = context.read<LanguageProvider>();
+
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Type a message first for the Super Request')),
+      );
+      return;
+    }
+
+    final profileProvider = context.read<ProfileProvider>();
+    final user = profileProvider.userProfile;
+
+    if (user == null) return;
+
+    if (user.credits < 20) {
+      _showInsufficientCreditsDialog(lp);
+      return;
+    }
+
+    bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Send Super Request?',
+            style: TextStyle(fontWeight: FontWeight.w800)),
+        content: const Text(
+            'This will cost 20 credits and move your chat to the top of their list with a special highlight.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange, foregroundColor: Colors.white),
+            child: const Text('Send (20 Credits)'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isSending = true);
+    try {
+      await profileProvider.useCredits(20);
+      await _chatService.sendSuperRequest(
+        chatId: _chatId,
+        senderId: _myUid,
+        receiverId: widget.otherUserId,
+        text: text,
+      );
+      _messageController.clear();
+      _scrollToBottom();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error sending Super Request: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSending = false);
     }
   }
 
@@ -363,6 +441,10 @@ class _ChatScreenState extends State<ChatScreen> {
           text: caption,
           messageType: MessageType.image,
           mediaUrl: mediaUrl,
+          replyToId: _replyingMessage?.id,
+          replyToText: _replyingMessage?.text,
+          replyToSenderName:
+              _replyingMessage?.senderId == _myUid ? 'You' : widget.otherUserName,
         );
 
         _scrollToBottom();
@@ -375,7 +457,10 @@ class _ChatScreenState extends State<ChatScreen> {
           );
         }
       } finally {
-        setState(() => _isSending = false);
+        setState(() {
+          _isSending = false;
+          _replyingMessage = null;
+        });
       }
     } // closes: if (await _checkAndConsumeCredits())
   }
@@ -395,7 +480,16 @@ class _ChatScreenState extends State<ChatScreen> {
   // ─── Call Handlers
 
   void _showCallLockedSnack() {
-    final remaining = 6 - _messageCount;
+    String msg = '';
+    if (_messageCount < 6) {
+      final remaining = 6 - _messageCount;
+      msg = 'Send ${remaining > 1 ? '$remaining more messages' : '1 more message'} to unlock calls!';
+    } else if (_messagesFromMeCount == 0) {
+      msg = 'Send a message first to unlock calls!';
+    } else if (!_hasReply) {
+      msg = 'Wait for a reply to unlock calls!';
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -404,7 +498,7 @@ class _ChatScreenState extends State<ChatScreen> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Send ${remaining > 1 ? '$remaining more messages' : '1 more message'} to unlock voice & video calls!',
+                msg,
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
@@ -539,7 +633,7 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 CircleAvatar(
                   radius: 16,
-                  backgroundColor: const Color(0xFFFF4D85).withOpacity(0.2),
+                  backgroundColor: const Color(0xFFFF4D85).withValues(alpha: 0.2),
                   backgroundImage: widget.otherUserPhoto != null
                       ? NetworkImage(widget.otherUserPhoto!)
                       : null,
@@ -595,8 +689,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 tooltip: _messageCount >= 6
                     ? languageProvider.getString('voice_call_tooltip')
                     : 'Exchange at least 6 messages to unlock calls',
-                onPressed:
-                    _messageCount >= 6 ? _showVoiceCall : _showCallLockedSnack,
+                onPressed: (_messageCount >= 6 && _messagesFromMeCount > 0 && _hasReply)
+                    ? _showVoiceCall
+                    : _showCallLockedSnack,
                 iconSize: 17,
               ),
               IconButton(
@@ -609,8 +704,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 tooltip: _messageCount >= 6
                     ? languageProvider.getString('video_call_tooltip')
                     : 'Exchange at least 6 messages to unlock calls',
-                onPressed:
-                    _messageCount >= 6 ? _showVideoCall : _showCallLockedSnack,
+                onPressed: (_messageCount >= 6 && _messagesFromMeCount > 0 && _hasReply)
+                    ? _showVideoCall
+                    : _showCallLockedSnack,
                 iconSize: 17,
               ),
               IconButton(
@@ -640,6 +736,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   switch (value) {
                     case 'clear':
                       _clearChatConfirm();
+                      break;
+                    case 'super':
+                      _sendSuperRequest();
                       break;
                     case 'profile':
                       final profile = await ProfileService()
@@ -684,6 +783,19 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                   ),
                   PopupMenuItem(
+                    value: 'super',
+                    child: Row(
+                      children: [
+                        const Icon(Iconsax.flash, color: Colors.orange, size: 20),
+                        const SizedBox(width: 12),
+                        const Text('Super Request',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.orange)),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
                     value: 'profile',
                     child: Row(
                       children: [
@@ -719,7 +831,7 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               Divider(
                 height: 1,
-                color: Theme.of(context).dividerColor.withOpacity(0.3),
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
               ),
               // Search bar
               if (_showSearch)
@@ -761,7 +873,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   width: double.infinity,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  color: Colors.amber.withOpacity(0.12),
+                  color: Colors.amber.withValues(alpha: 0.12),
                   child: Row(
                     children: [
                       const Icon(Icons.info_outline,
@@ -846,7 +958,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                     padding: const EdgeInsets.all(20),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFFFF4D85)
-                                          .withOpacity(0.1),
+                                          .withValues(alpha: 0.1),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
@@ -927,7 +1039,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                           decoration: BoxDecoration(
                                             color: Theme.of(context)
                                                 .dividerColor
-                                                .withOpacity(0.05),
+                                                .withValues(alpha: 0.05),
                                             borderRadius:
                                                 BorderRadius.circular(12),
                                           ),
@@ -965,6 +1077,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     },
                   ),
                 ),
+              if (_replyingMessage != null) _buildReplyPreview(),
               _buildMessageInput(languageProvider),
             ],
           ),
@@ -980,7 +1093,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: const Color(0xFFFF4D85).withOpacity(0.05),
+      color: const Color(0xFFFF4D85).withValues(alpha: 0.05),
       child: Row(
         children: [
           const Icon(Icons.circle, color: Color(0xFFFF4D85), size: 10),
@@ -1016,7 +1129,7 @@ class _ChatScreenState extends State<ChatScreen> {
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: Theme.of(context).dividerColor.withOpacity(0.1),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
           ),
         ),
       ),
@@ -1031,6 +1144,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 onPressed: isRestricted ? null : _pickImage,
                 color: isRestricted ? Colors.grey : const Color(0xFFFF4D85),
               ),
+              IconButton(
+                icon: const Icon(Iconsax.gift, color: Colors.orange),
+                onPressed: isRestricted ? null : () => _showGiftPicker(languageProvider),
+              ),
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1043,7 +1160,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       IconButton(
                         icon: Icon(Icons.emoji_emotions_outlined,
                             color: isRestricted
-                                ? Colors.grey.withOpacity(0.3)
+                                ? Colors.grey.withValues(alpha: 0.3)
                                 : Colors.grey.shade400,
                             size: 22),
                         onPressed: isRestricted
@@ -1113,7 +1230,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.2),
+                    color: Colors.grey.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child:
@@ -1144,7 +1261,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 height: 4,
                 width: 40,
                 decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
+                  color: Colors.grey.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1170,6 +1287,17 @@ class _ChatScreenState extends State<ChatScreen> {
                 onTap: () {
                   Navigator.pop(context);
                   _confirmDelete(msg, lp);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.reply_outlined, color: Colors.blue),
+                title: const Text('Reply'),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    _replyingMessage = msg;
+                    _editingMessage = null;
+                  });
                 },
               ),
               const SizedBox(height: 20),
@@ -1205,53 +1333,179 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Widget _buildReplyPreview() {
+    if (_replyingMessage == null) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        border: Border(top: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1))),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 32,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF4D85),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _replyingMessage!.senderId == _myUid ? 'Replying to yourself' : 'Replying to ${widget.otherUserName}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFFF4D85),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _replyingMessage!.text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 20),
+            onPressed: () => setState(() => _replyingMessage = null),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMessageBubble(ChatMessage msg, bool isMe, bool isRecipientOnline,
       LanguageProvider languageProvider) {
+    // Check if it's a super request from the chat model if available, 
+    // or from the message itself (if we added the field).
+    // For now, let's assume Super Request messages are highlighted.
+    // final bool isSuper = msg.text.startsWith('🔥 Super Request:') || (msg.isRead == false && msg.text.contains('Super Request'));
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
-      child: Column(
-        crossAxisAlignment:
-            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      child: Dismissible(
+        key: Key(msg.id),
+        direction: DismissDirection.startToEnd,
+        confirmDismiss: (direction) async {
+          setState(() {
+            _replyingMessage = msg;
+            _editingMessage = null;
+          });
+          return false; // Prevent actual dismissal
+        },
+        background: Container(
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.only(left: 16),
+          child: const Icon(Icons.reply, color: Color(0xFFFF4D85), size: 24),
+        ),
+        child: Column(
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment:
+                  isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (!isMe) ...[
+                  CircleAvatar(
+                    radius: 12,
+                    backgroundColor: const Color(0xFFFF4D85).withValues(alpha: 0.15),
+                    backgroundImage: widget.otherUserPhoto != null
+                        ? NetworkImage(widget.otherUserPhoto!)
+                        : null,
+                    onBackgroundImageError: (exception, stackTrace) {
+                      debugPrint('Error loading chat profile image: $exception');
+                    },
+                    child: widget.otherUserPhoto == null
+                        ? const Icon(Iconsax.user,
+                            size: 10, color: Color(0xFFFF4D85))
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Flexible(
+                  child: GestureDetector(
+                    onLongPress: isMe && !msg.isDeleted
+                        ? () => _showActionMenu(msg, languageProvider)
+                        : () => _showActionMenu(msg, languageProvider), // Allow replying to others
+                    child: Column(
+                      crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                      children: [
+                        if (msg.replyToId != null)
+                          _buildReplyContext(msg, isMe),
+                        _buildMessageContent(
+                            msg, isMe, isRecipientOnline, languageProvider),
+                      ],
+                    ),
+                  ),
+                ),
+                if (isMe) ...[
+                  const SizedBox(width: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: _buildTickMarks(msg, isRecipientOnline),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReplyContext(ChatMessage msg, bool isMe) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisAlignment:
-                isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if (!isMe) ...[
-                CircleAvatar(
-                  radius: 12,
-                  backgroundColor: const Color(0xFFFF4D85).withOpacity(0.15),
-                  backgroundImage: widget.otherUserPhoto != null
-                      ? NetworkImage(widget.otherUserPhoto!)
-                      : null,
-                  onBackgroundImageError: (exception, stackTrace) {
-                    debugPrint('Error loading chat profile image: $exception');
-                  },
-                  child: widget.otherUserPhoto == null
-                      ? const Icon(Iconsax.user,
-                          size: 10, color: Color(0xFFFF4D85))
-                      : null,
+          Container(
+            width: 2,
+            height: 20,
+            color: const Color(0xFFFF4D85),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  msg.replyToSenderName ?? '',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFFF4D85),
+                  ),
                 ),
-                const SizedBox(width: 8),
-              ],
-              Flexible(
-                child: GestureDetector(
-                  onLongPress: isMe && !msg.isDeleted
-                      ? () => _showActionMenu(msg, languageProvider)
-                      : null,
-                  child: _buildMessageContent(
-                      msg, isMe, isRecipientOnline, languageProvider),
-                ),
-              ),
-              if (isMe) ...[
-                const SizedBox(width: 6),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: _buildTickMarks(msg, isRecipientOnline),
+                Text(
+                  msg.replyToText ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
                 ),
               ],
-            ],
+            ),
           ),
         ],
       ),
@@ -1265,7 +1519,7 @@ class _ChatScreenState extends State<ChatScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isMe
-              ? const Color(0xFFFF4D85).withOpacity(0.4)
+              ? const Color(0xFFFF4D85).withValues(alpha: 0.4)
               : Theme.of(context).cardColor,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
@@ -1273,7 +1527,7 @@ class _ChatScreenState extends State<ChatScreen> {
             bottomLeft: Radius.circular(isMe ? 20 : 4),
             bottomRight: Radius.circular(isMe ? 4 : 20),
           ),
-          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1294,6 +1548,10 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
+    if (msg.messageType == MessageType.gift) {
+      return _buildGiftBubble(msg, isMe);
+    }
+
     if (msg.messageType == MessageType.image && msg.mediaUrl != null) {
       return Container(
         constraints:
@@ -1309,7 +1567,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 5,
               offset: const Offset(0, 2),
             ),
@@ -1329,7 +1587,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   return Container(
                     height: 200,
                     width: double.infinity,
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1),
                     child: const Center(
                         child: CircularProgressIndicator(strokeWidth: 2)),
                   );
@@ -1338,7 +1596,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   return Container(
                     height: 150,
                     width: double.infinity,
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -1398,7 +1656,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -1434,10 +1692,212 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildTickMarks(ChatMessage msg, bool isRecipientOnline) {
-    if (msg.isRead) {
-      return const Icon(Icons.done_all, color: Colors.blue, size: 14);
-    }
     return const Icon(Icons.done, color: Colors.grey, size: 14);
+  }
+
+  Widget _buildGiftBubble(ChatMessage msg, bool isMe) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isMe
+              ? [const Color(0xFFFF4D85), const Color(0xFFFF85B3)]
+              : [const Color(0xFF2D2D35), const Color(0xFF1A1A1E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(24),
+          topRight: const Radius.circular(24),
+          bottomLeft: Radius.circular(isMe ? 24 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 24),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withValues(alpha: 0.2),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              _getGiftIcon(msg.giftType),
+              style: const TextStyle(fontSize: 40),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            isMe ? 'You sent a ${msg.giftType}!' : 'Sent you a ${msg.giftType}!',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.orange.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              '${msg.giftValue} credits',
+              style: const TextStyle(
+                color: Colors.orangeAccent,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getGiftIcon(String? type) {
+    switch (type) {
+      case 'Rose': return '🌹';
+      case 'Heart': return '❤️';
+      case 'Diamond': return '💎';
+      case 'Crown': return '👑';
+      case 'Car': return '🚗';
+      case 'Castle': return '🏰';
+      default: return '🎁';
+    }
+  }
+
+  void _showGiftPicker(LanguageProvider lp) {
+    final gifts = [
+      {'name': 'Rose', 'value': 10, 'icon': '🌹'},
+      {'name': 'Heart', 'value': 50, 'icon': '❤️'},
+      {'name': 'Diamond', 'value': 100, 'icon': '💎'},
+      {'name': 'Crown', 'value': 500, 'icon': '👑'},
+      {'name': 'Car', 'value': 1000, 'icon': '🚗'},
+      {'name': 'Castle', 'value': 5000, 'icon': '🏰'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final profileProvider = context.watch<ProfileProvider>();
+        final userCredits = profileProvider.userProfile?.credits ?? 0;
+
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Send a Gift',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.stars, color: Colors.orange, size: 16),
+                        const SizedBox(width: 6),
+                        Text('$userCredits',
+                            style: const TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 0.85,
+                ),
+                itemCount: gifts.length,
+                itemBuilder: (context, index) {
+                  final gift = gifts[index];
+                  final name = gift['name'] as String;
+                  final value = gift['value'] as int;
+                  final icon = gift['icon'] as String;
+                  final canAfford = userCredits >= value;
+
+                  return GestureDetector(
+                    onTap: () {
+                      if (!canAfford) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Not enough credits!')),
+                        );
+                        return;
+                      }
+                      Navigator.pop(context);
+                      _chatService.sendGift(
+                        chatId: _chatId,
+                        senderId: _myUid,
+                        receiverId: widget.otherUserId,
+                        giftType: name,
+                        giftValue: value,
+                      );
+                    },
+                    child: Opacity(
+                      opacity: canAfford ? 1.0 : 0.4,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.orange.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(icon, style: const TextStyle(fontSize: 32)),
+                            const SizedBox(height: 6),
+                            Text(name,
+                                style: const TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 2),
+                            Text('$value',
+                                style: const TextStyle(
+                                    color: Colors.orange,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -1512,7 +1972,7 @@ class _CallSheet extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-                color: color.withOpacity(0.1), shape: BoxShape.circle),
+                color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, color: color, size: 28),
           ),
         ),
@@ -1599,7 +2059,7 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble> {
         widget.isMe ? const Color(0xFFFF4D85) : Theme.of(context).cardColor;
     final contentColor = widget.isMe ? Colors.white : const Color(0xFFFF4D85);
     final textColor = widget.isMe
-        ? Colors.white.withOpacity(0.85)
+        ? Colors.white.withValues(alpha: 0.85)
         : Theme.of(context).textTheme.bodySmall?.color;
 
     return Container(
@@ -1615,7 +2075,7 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1631,7 +2091,7 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble> {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: contentColor.withOpacity(0.15),
+                color: contentColor.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -1654,7 +2114,7 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble> {
                         const RoundSliderThumbShape(enabledThumbRadius: 5),
                     overlayShape: SliderComponentShape.noOverlay,
                     activeTrackColor: contentColor,
-                    inactiveTrackColor: contentColor.withOpacity(0.25),
+                    inactiveTrackColor: contentColor.withValues(alpha: 0.25),
                     thumbColor: contentColor,
                   ),
                   child: Slider(
@@ -1689,3 +2149,4 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble> {
     );
   }
 }
+

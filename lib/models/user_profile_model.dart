@@ -56,6 +56,7 @@ class UserProfile {
   // 📸 Media & Verification
   String? videoIntro;
   bool isVerified;
+  bool isOnline;
 
   // 💬 Prompts
   String? promptPerfectDate;
@@ -125,6 +126,7 @@ class UserProfile {
     this.coreValues,
     this.videoIntro,
     this.isVerified = false,
+    this.isOnline = false,
     this.promptPerfectDate,
     this.promptFallForYou,
     this.promptGreenFlag,
@@ -266,6 +268,7 @@ class UserProfile {
         coreValues: map['coreValues']?.toString(),
         videoIntro: map['videoIntro']?.toString(),
         isVerified: map['isVerified'] == true,
+        isOnline: map['isOnline'] == true,
         promptPerfectDate: map['promptPerfectDate']?.toString(),
         promptFallForYou: map['promptFallForYou']?.toString(),
         promptGreenFlag: map['promptGreenFlag']?.toString(),
@@ -360,6 +363,7 @@ class UserProfile {
       'coreValues': coreValues,
       'videoIntro': videoIntro,
       'isVerified': isVerified,
+      'isOnline': isOnline,
       'promptPerfectDate': promptPerfectDate,
       'promptFallForYou': promptFallForYou,
       'promptGreenFlag': promptGreenFlag,

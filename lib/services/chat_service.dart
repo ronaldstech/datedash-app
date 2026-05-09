@@ -48,6 +48,9 @@ class ChatService {
     required String receiverId,
     required String text,
     MessageType messageType = MessageType.text,
+    String? replyToId,
+    String? replyToText,
+    String? replyToSenderName,
   }) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
@@ -64,6 +67,9 @@ class ChatService {
       isRead: false,
       isDelivered: true,
       messageType: messageType,
+      replyToId: replyToId,
+      replyToText: replyToText,
+      replyToSenderName: replyToSenderName,
     );
 
     try {
@@ -77,6 +83,9 @@ class ChatService {
         'isRead': false,
         'isDelivered': true,
         'messageType': messageType.toString().split('.').last,
+        'replyToId': replyToId,
+        'replyToText': replyToText,
+        'replyToSenderName': replyToSenderName,
       });
 
       // Update chat metadata + increment receiver unread count
@@ -109,6 +118,9 @@ class ChatService {
     required MessageType messageType,
     required String mediaUrl,
     int? voiceDuration,
+    String? replyToId,
+    String? replyToText,
+    String? replyToSenderName,
   }) async {
     final msgRef =
         _firestore.collection('chats').doc(chatId).collection('messages').doc();
@@ -124,6 +136,9 @@ class ChatService {
       messageType: messageType,
       mediaUrl: mediaUrl,
       voiceDuration: voiceDuration,
+      replyToId: replyToId,
+      replyToText: replyToText,
+      replyToSenderName: replyToSenderName,
     );
 
     try {
@@ -139,6 +154,9 @@ class ChatService {
         'messageType': messageType.toString().split('.').last,
         'mediaUrl': mediaUrl,
         'voiceDuration': voiceDuration,
+        'replyToId': replyToId,
+        'replyToText': replyToText,
+        'replyToSenderName': replyToSenderName,
       });
 
       // Update chat metadata
@@ -220,6 +238,114 @@ class ChatService {
       await _localDb.insertMessage(localMessage, chatId);
       rethrow;
     }
+  }
+
+  /// Sends a Super Request (priority chat) for 20 credits
+  Future<void> sendSuperRequest({
+    required String chatId,
+    required String senderId,
+    required String receiverId,
+    required String text,
+  }) async {
+    final batch = _firestore.batch();
+    final chatRef = _firestore.collection('chats').doc(chatId);
+    final msgRef = chatRef.collection('messages').doc();
+
+    // 1. Mark chat as Super Request
+    batch.update(chatRef, {
+      'isSuperRequest': true,
+      'lastMessage': '🔥 Super Request: $text',
+      'lastMessageTime': FieldValue.serverTimestamp(),
+      'lastMessageSenderId': senderId,
+      'unreadCount.$receiverId': FieldValue.increment(1),
+    });
+
+    // 2. Add the message
+    batch.set(msgRef, {
+      'senderId': senderId,
+      'text': text,
+      'timestamp': FieldValue.serverTimestamp(),
+      'isRead': false,
+      'isDelivered': true,
+      'messageType': 'text',
+      'isSuperRequest': true, // Optional: flag the message too
+    });
+
+    await batch.commit();
+
+    // Cache locally
+    final localChat = await _localDb.getChatById(chatId);
+    if (localChat != null) {
+      await _localDb.insertOrUpdateChat(Chat(
+        id: localChat.id,
+        participants: localChat.participants,
+        lastMessage: '🔥 Super Request: $text',
+        lastMessageTime: DateTime.now(),
+        lastMessageSenderId: senderId,
+        unreadCount: localChat.unreadCount,
+        isSuperRequest: true,
+      ));
+    }
+  }
+
+  /// Sends a gift in chat, deducting credits from sender
+  Future<void> sendGift({
+    required String chatId,
+    required String senderId,
+    required String receiverId,
+    required String giftType,
+    required int giftValue,
+  }) async {
+    final batch = _firestore.batch();
+    final chatRef = _firestore.collection('chats').doc(chatId);
+    final msgRef = chatRef.collection('messages').doc();
+    final senderRef = _firestore.collection('users').doc(senderId);
+    final receiverRef = _firestore.collection('users').doc(receiverId);
+
+    // 1. Deduct credits from sender
+    batch.update(senderRef, {
+      'credits': FieldValue.increment(-giftValue),
+    });
+
+    // 2. Add credits to receiver
+    batch.update(receiverRef, {
+      'credits': FieldValue.increment(giftValue),
+    });
+
+    // 3. Add gift message
+    final text = 'sent you a $giftType!';
+    batch.set(msgRef, {
+      'senderId': senderId,
+      'text': text,
+      'timestamp': FieldValue.serverTimestamp(),
+      'isRead': false,
+      'isDelivered': true,
+      'messageType': 'gift',
+      'giftType': giftType,
+      'giftValue': giftValue,
+    });
+
+    // 3. Update chat meta
+    batch.update(chatRef, {
+      'lastMessage': '🎁 $giftType',
+      'lastMessageTime': FieldValue.serverTimestamp(),
+      'lastMessageSenderId': senderId,
+      'unreadCount.$receiverId': FieldValue.increment(1),
+    });
+
+    await batch.commit();
+
+    // Cache locally
+    final localMessage = ChatMessage(
+      id: msgRef.id,
+      senderId: senderId,
+      text: text,
+      timestamp: DateTime.now(),
+      messageType: MessageType.gift,
+      giftType: giftType,
+      giftValue: giftValue,
+    );
+    await _localDb.insertMessage(localMessage, chatId);
   }
 
   /// Upload a file to PHP backend server
@@ -471,8 +597,11 @@ class ChatService {
       for (final chat in chats) {
         _localDb.insertOrUpdateChat(chat);
       }
-      // Sort on client side
+      // Sort on client side: Super Requests first, then by time
       chats.sort((a, b) {
+        if (a.isSuperRequest && !b.isSuperRequest) return -1;
+        if (!a.isSuperRequest && b.isSuperRequest) return 1;
+
         final aTime =
             a.lastMessageTime ?? DateTime.fromMillisecondsSinceEpoch(0);
         final bTime =

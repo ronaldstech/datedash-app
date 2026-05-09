@@ -73,13 +73,13 @@ class _ActionButtonState extends State<ActionButton> with SingleTickerProviderSt
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: widget.color.withOpacity(0.35),
+                    color: widget.color.withValues(alpha: 0.35),
                     blurRadius: 24,
                     spreadRadius: 2,
                     offset: const Offset(0, 8),
                   ),
                   BoxShadow(
-                    color: widget.color.withOpacity(0.12),
+                    color: widget.color.withValues(alpha: 0.12),
                     blurRadius: 6,
                     spreadRadius: 0,
                     offset: const Offset(0, 2),
@@ -119,3 +119,4 @@ class _ActionButtonState extends State<ActionButton> with SingleTickerProviderSt
     );
   }
 }
+

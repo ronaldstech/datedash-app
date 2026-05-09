@@ -63,7 +63,7 @@ class GiftSelectionSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
+                color: Colors.grey.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -83,9 +83,9 @@ class GiftSelectionSheet extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.1),
+                  color: Colors.amber.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                  border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -138,13 +138,13 @@ class GiftSelectionSheet extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: canAfford 
-                          ? gift.color.withOpacity(0.2) 
-                          : Colors.grey.withOpacity(0.2),
+                          ? gift.color.withValues(alpha: 0.2) 
+                          : Colors.grey.withValues(alpha: 0.2),
                         width: 1.5,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -210,10 +210,10 @@ class GiftSelectionSheet extends StatelessWidget {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: gift.color.withOpacity(0.1), width: 1),
+            border: Border.all(color: gift.color.withValues(alpha: 0.1), width: 1),
             boxShadow: [
               BoxShadow(
-                color: gift.color.withOpacity(0.15),
+                color: gift.color.withValues(alpha: 0.15),
                 blurRadius: 24,
                 spreadRadius: 0,
                 offset: const Offset(0, 12),
@@ -232,8 +232,8 @@ class GiftSelectionSheet extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      gift.color.withOpacity(0.2),
-                      gift.color.withOpacity(0.02),
+                      gift.color.withValues(alpha: 0.2),
+                      gift.color.withValues(alpha: 0.02),
                     ],
                   ),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -250,7 +250,7 @@ class GiftSelectionSheet extends StatelessWidget {
                         height: 100,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: gift.color.withOpacity(0.05),
+                          color: gift.color.withValues(alpha: 0.05),
                         ),
                       ),
                     ),
@@ -314,7 +314,7 @@ class GiftSelectionSheet extends StatelessWidget {
                           backgroundColor: gift.color,
                           foregroundColor: Colors.white,
                           elevation: 8,
-                          shadowColor: gift.color.withOpacity(0.4),
+                          shadowColor: gift.color.withValues(alpha: 0.4),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -394,3 +394,4 @@ class GiftSelectionSheet extends StatelessWidget {
     }
   }
 }
+

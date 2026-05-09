@@ -36,14 +36,34 @@ class _PremiumScreenState extends State<PremiumScreen>
   ];
 
   final List<String> premiumFeatures = [
-    'All Pro features',
+    'Meet new friends',
+    'Extended Filter',
+    'Looking For',
+    'See everyone\'s online status',
+    'Rewind',
+    '2x more profile views',
+    'Unlimited likes',
+    'See all your matches',
+    'Unlimited messages',
+    'Unlimited voice calls',
     'Unlimited video calls',
     'See missed matches',
     '1 free profile boost per week',
   ];
 
   final List<String> eliteFeatures = [
-    'All Pro and Premium features',
+    'Meet new friends',
+    'Extended Filter',
+    'Looking For',
+    'See everyone\'s online status',
+    'Rewind',
+    '2x more profile views',
+    'Unlimited likes',
+    'See all your matches',
+    'Unlimited messages',
+    'Unlimited voice calls',
+    'Unlimited video calls',
+    'See missed matches',
     '2 free profile boosts',
     'Get 2000 free credits',
     'Hide your age on profile',
@@ -124,8 +144,8 @@ class _PremiumScreenState extends State<PremiumScreen>
             height: 38,
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.black.withOpacity(0.03),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(19),
               border:
                   Border.all(color: isDark ? Colors.white12 : Colors.black12),
@@ -135,13 +155,13 @@ class _PremiumScreenState extends State<PremiumScreen>
               controller: _tabController,
               indicatorSize: TabBarIndicatorSize.tab,
               indicator: BoxDecoration(
-                  color: isDark ? Colors.white.withOpacity(0.1) : Colors.white,
+                  color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: isDark
                       ? []
                       : [
                           BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 4,
                               offset: const Offset(0, 2))
                         ]),
@@ -248,7 +268,7 @@ class _PremiumScreenState extends State<PremiumScreen>
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                      color: const Color(0xFFFF4D85).withOpacity(0.3),
+                      color: const Color(0xFFFF4D85).withValues(alpha: 0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4))
                 ]
@@ -303,6 +323,224 @@ class _PremiumScreenState extends State<PremiumScreen>
     }
   }
 
+  void _showFeaturesSheet(BuildContext context, String title,
+      List<String> features, Color accentColor, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark
+                  ? [const Color(0xFF1A1A22), const Color(0xFF0D0D11)]
+                  : [Colors.white, const Color(0xFFF7F7F9)],
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withValues(alpha: 0.15),
+                blurRadius: 40,
+                offset: const Offset(0, -10),
+              )
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Decorative background element
+              Positioned(
+                top: -50,
+                right: -50,
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: accentColor.withValues(alpha: 0.05),
+                  ),
+                ),
+              ),
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 12),
+                      Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white24 : Colors.black12,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Plan Icon/Badge (Reduced size)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: accentColor.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: accentColor.withValues(alpha: 0.2),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Icon(
+                          title == 'PRO'
+                              ? Iconsax.flash5
+                              : (title == 'PREMIUM'
+                                  ? Iconsax.star5
+                                  : Iconsax.crown5),
+                          color: accentColor,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '$title BENEFITS',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : Colors.black87,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Expanded(
+                        child: ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: features.length,
+                          itemBuilder: (context, index) {
+                            return _buildPremiumFeatureItem(
+                                features[index], accentColor, isDark);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Action Button
+                      Container(
+                        width: double.infinity,
+                        height: 54,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              accentColor,
+                              accentColor.withValues(alpha: 0.8)
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: accentColor.withValues(alpha: 0.3),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            )
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          child: const Text(
+                            'BACK TO PLANS',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPremiumFeatureItem(
+      String feature, Color accentColor, bool isDark) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.03)
+            : Colors.black.withValues(alpha: 0.02),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Iconsax.tick_circle5,
+            color: accentColor,
+            size: 18,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              feature,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureRow(
+      String feature, bool isPopular, Color accentColor, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(
+            Iconsax.tick_circle,
+            color: isPopular ? Colors.white : accentColor,
+            size: 18,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              feature,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: isPopular
+                    ? Colors.white.withValues(alpha: 0.9)
+                    : (isDark ? Colors.white70 : Colors.black87),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPremiumGlassCard({
     required String title,
     required String weeklyPrice,
@@ -326,32 +564,32 @@ class _PremiumScreenState extends State<PremiumScreen>
             ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [themePink, themePink.withOpacity(0.8)],
+                colors: [themePink, themePink.withValues(alpha: 0.8)],
               )
             : LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: isDark
                     ? [
-                        Colors.white.withOpacity(0.12),
-                        Colors.white.withOpacity(0.05),
+                        Colors.white.withValues(alpha: 0.12),
+                        Colors.white.withValues(alpha: 0.05),
                       ]
                     : [
                         Colors.white,
-                        Colors.white.withOpacity(0.9),
+                        Colors.white.withValues(alpha: 0.9),
                       ],
               ),
         border: Border.all(
           color: isPopular
-              ? Colors.white.withOpacity(0.3)
+              ? Colors.white.withValues(alpha: 0.3)
               : (isDark ? Colors.white12 : Colors.black12),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isPopular
-                ? themePink.withOpacity(0.4)
-                : (isDark ? Colors.black45 : Colors.black.withOpacity(0.05)),
+                ? themePink.withValues(alpha: 0.4)
+                : (isDark ? Colors.black45 : Colors.black.withValues(alpha: 0.05)),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -373,7 +611,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        themePinkLight.withOpacity(0.4),
+                        themePinkLight.withValues(alpha: 0.4),
                         Colors.transparent,
                       ],
                     ),
@@ -393,8 +631,8 @@ class _PremiumScreenState extends State<PremiumScreen>
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isPopular
-                              ? Colors.white.withOpacity(0.2)
-                              : accentColor.withOpacity(0.1),
+                              ? Colors.white.withValues(alpha: 0.2)
+                              : accentColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
@@ -463,42 +701,55 @@ class _PremiumScreenState extends State<PremiumScreen>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  Expanded(
-                    child: ListView(
-                      padding: EdgeInsets.zero,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: features.map((feature) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Iconsax.tick_circle,
-                                color: isPopular ? Colors.white : accentColor,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  feature,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: isPopular
-                                        ? Colors.white.withOpacity(0.9)
-                                        : (isDark
-                                            ? Colors.white70
-                                            : Colors.black87),
-                                  ),
-                                ),
-                              ),
-                            ],
+                  const SizedBox(height: 12),
+                  // Feature Summary List (limit to 3)
+                  Column(
+                    children: features.take(3).map((feature) {
+                      return _buildFeatureRow(
+                          feature, isPopular, accentColor, isDark);
+                    }).toList(),
+                  ),
+                  // See all features button
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Center(
+                      child: TextButton(
+                        onPressed: () => _showFeaturesSheet(
+                            context, title, features, accentColor, isDark),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          backgroundColor: isPopular
+                              ? Colors.white.withValues(alpha: 0.15)
+                              : accentColor.withValues(alpha: 0.05),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        );
-                      }).toList(),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'View all ${features.length} benefits',
+                              style: TextStyle(
+                                color: isPopular ? Colors.white : accentColor,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 12,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Icon(
+                              Iconsax.arrow_right_3,
+                              size: 14,
+                              color: isPopular ? Colors.white : accentColor,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
+                  const Spacer(),
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
@@ -514,7 +765,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                         backgroundColor: isPopular
                             ? Colors.white
                             : (isDark
-                                ? Colors.white.withOpacity(0.1)
+                                ? Colors.white.withValues(alpha: 0.1)
                                 : Colors.black87),
                         foregroundColor: isPopular ? themePink : Colors.white,
                         elevation: 0,
@@ -557,19 +808,19 @@ class _PremiumScreenState extends State<PremiumScreen>
                     gradient: LinearGradient(
                       colors: isDark
                           ? [
-                              Colors.white.withOpacity(0.08),
-                              Colors.white.withOpacity(0.02)
+                              Colors.white.withValues(alpha: 0.08),
+                              Colors.white.withValues(alpha: 0.02)
                             ]
                           : [
-                              const Color(0xFFFFB300).withOpacity(0.1),
-                              const Color(0xFFFFB300).withOpacity(0.05)
+                              const Color(0xFFFFB300).withValues(alpha: 0.1),
+                              const Color(0xFFFFB300).withValues(alpha: 0.05)
                             ],
                     ),
                     borderRadius: BorderRadius.circular(32),
                     border: Border.all(
                       color: isDark
                           ? Colors.white12
-                          : const Color(0xFFFFB300).withOpacity(0.2),
+                          : const Color(0xFFFFB300).withValues(alpha: 0.2),
                     ),
                   ),
                   child: Column(
@@ -577,7 +828,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFB300).withOpacity(0.15),
+                          color: const Color(0xFFFFB300).withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Iconsax.wallet_3,
@@ -627,6 +878,30 @@ class _PremiumScreenState extends State<PremiumScreen>
                         ],
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Withdrawal Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showWithdrawalSheet(context, isDark),
+                    icon: const Icon(Iconsax.export_1, size: 20),
+                    label: const Text(
+                      'Withdraw Funds',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFFFB300),
+                      side: BorderSide(
+                        color: const Color(0xFFFFB300).withValues(alpha: 0.5),
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -681,19 +956,19 @@ class _PremiumScreenState extends State<PremiumScreen>
       decoration: BoxDecoration(
         color: isPopular
             ? themePink
-            : (isDark ? Colors.white.withOpacity(0.05) : Colors.white),
+            : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white),
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
           color: isPopular
-              ? Colors.white.withOpacity(0.3)
-              : (isDark ? Colors.white12 : Colors.black.withOpacity(0.05)),
+              ? Colors.white.withValues(alpha: 0.3)
+              : (isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isPopular
-                ? themePink.withOpacity(0.3)
-                : (isDark ? Colors.black45 : Colors.black.withOpacity(0.05)),
+                ? themePink.withValues(alpha: 0.3)
+                : (isDark ? Colors.black45 : Colors.black.withValues(alpha: 0.05)),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -712,8 +987,8 @@ class _PremiumScreenState extends State<PremiumScreen>
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: isPopular
-                          ? Colors.white.withOpacity(0.2)
-                          : const Color(0xFFFFB300).withOpacity(0.1),
+                          ? Colors.white.withValues(alpha: 0.2)
+                          : const Color(0xFFFFB300).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -752,7 +1027,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                       color: isPopular
                           ? Colors.white
                           : (isDark
-                              ? Colors.white.withOpacity(0.1)
+                              ? Colors.white.withValues(alpha: 0.1)
                               : Colors.black87),
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -860,6 +1135,379 @@ class _PremiumScreenState extends State<PremiumScreen>
           isMonthly: _isMonthly,
         );
       },
+    );
+  }
+
+  void _showWithdrawalSheet(BuildContext context, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return _WithdrawalSheet(isDark: isDark);
+      },
+    );
+  }
+}
+
+class _WithdrawalSheet extends StatefulWidget {
+  final bool isDark;
+  const _WithdrawalSheet({required this.isDark});
+
+  @override
+  State<_WithdrawalSheet> createState() => _WithdrawalSheetState();
+}
+
+class _WithdrawalSheetState extends State<_WithdrawalSheet> {
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  PaymentOperator? _selectedOperator;
+  bool _isProcessing = false;
+
+  // 1 Credit = 1 MWK (example conversion)
+  // Fees: 20% Service, 5% Gateway = 25% total
+  double get _serviceFeePercent => 0.20;
+  double get _gatewayFeePercent => 0.05;
+  double get _totalFeePercent => _serviceFeePercent + _gatewayFeePercent;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profileProvider = Provider.of<ProfileProvider>(context);
+    final balance = profileProvider.userProfile?.credits ?? 0;
+
+    int amount = int.tryParse(_amountController.text) ?? 0;
+    double fee = amount * _totalFeePercent;
+    double payout = amount - fee;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      decoration: BoxDecoration(
+        color: widget.isDark ? const Color(0xFF1A1A22) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: widget.isDark ? Colors.white12 : Colors.black12,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Withdraw Funds',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Convert your credits to MWK and withdraw to your mobile wallet.',
+              style: TextStyle(
+                color: widget.isDark ? Colors.white60 : Colors.black54,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Amount Input
+            Text(
+              'AMOUNT TO WITHDRAW (Available: $balance)',
+              style: const TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _amountController,
+              keyboardType: TextInputType.number,
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                hintText: 'Minimum 5,000 Credits',
+                prefixIcon: const Icon(Iconsax.coin),
+                filled: true,
+                fillColor: widget.isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.03),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Operator Selection
+            const Text(
+              'SELECT OPERATOR',
+              style: TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _buildOperatorOption(
+                    'Airtel Money', 'airtel', 'assets/images/airtel_logo.png'),
+                const SizedBox(width: 12),
+                _buildOperatorOption(
+                    'TNM Mpamba', 'tnm', 'assets/images/tnm_logo.png'),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // Phone Number
+            const Text(
+              'MOBILE WALLET NUMBER',
+              style: TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                hintText: '09xxxxxxx or 08xxxxxxx',
+                prefixIcon: const Icon(Iconsax.mobile),
+                filled: true,
+                fillColor: widget.isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.03),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Fee Breakdown Card
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFB300).withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                    color: const Color(0xFFFFB300).withValues(alpha: 0.1)),
+              ),
+              child: Column(
+                children: [
+                  _buildFeeRow(
+                      'Gross Amount', 'MK ${amount.toStringAsFixed(0)}'),
+                  const Divider(height: 24),
+                  _buildFeeRow('Service Fee (20%)',
+                      '- MK ${(amount * _serviceFeePercent).toStringAsFixed(0)}'),
+                  _buildFeeRow('Payment Gateway (5%)',
+                      '- MK ${(amount * _gatewayFeePercent).toStringAsFixed(0)}'),
+                  const Divider(height: 24),
+                  _buildFeeRow('Total Payout', 'MK ${payout.toStringAsFixed(0)}',
+                      isTotal: true),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Note: Withdrawals are processed within 24-48 hours.',
+              style: TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey),
+            ),
+            const SizedBox(height: 32),
+
+            // Submit Button
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _isProcessing ? null : _submitWithdrawal,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFB300),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18)),
+                  elevation: 0,
+                ),
+                child: _isProcessing
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Confirm Withdrawal',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w900)),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOperatorOption(String name, String id, String asset) {
+    bool isSelected = _selectedOperator?.name == name;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedOperator = PaymentOperator(
+              id: 0,
+              name: name,
+              refId: id,
+              shortCode: id,
+              logo: asset,
+              supportsWithdrawals: true,
+            );
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? const Color(0xFFFFB300).withValues(alpha: 0.1)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? const Color(0xFFFFB300)
+                  : (widget.isDark ? Colors.white12 : Colors.black12),
+              width: 2,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(id == 'airtel' ? Icons.phone_android : Icons.mobile_friendly,
+                  color: isSelected ? const Color(0xFFFFB300) : Colors.grey),
+              const SizedBox(height: 8),
+              Text(
+                name,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                  color: isSelected ? const Color(0xFFFFB300) : Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeeRow(String label, String value, {bool isTotal = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: isTotal ? 16 : 14,
+            fontWeight: isTotal ? FontWeight.w900 : FontWeight.w500,
+            color: isTotal
+                ? (widget.isDark ? Colors.white : Colors.black87)
+                : Colors.grey,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: isTotal ? 20 : 14,
+            fontWeight: isTotal ? FontWeight.w900 : FontWeight.w700,
+            color: isTotal
+                ? const Color(0xFFFFB300)
+                : (widget.isDark ? Colors.white : Colors.black87),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _submitWithdrawal() async {
+    final amountText = _amountController.text.trim();
+    final amount = int.tryParse(amountText) ?? 0;
+    final phone = _phoneController.text.trim();
+
+    if (amount < 5000) {
+      _showError('Minimum withdrawal is 5,000 Credits');
+      return;
+    }
+
+    if (_selectedOperator == null) {
+      _showError('Please select a mobile operator');
+      return;
+    }
+
+    if (phone.length < 9) {
+      _showError('Please enter a valid mobile number');
+      return;
+    }
+
+    final lp = Provider.of<ProfileProvider>(context, listen: false);
+    if ((lp.userProfile?.credits ?? 0) < amount) {
+      _showError('Insufficient balance');
+      return;
+    }
+
+    setState(() => _isProcessing = true);
+
+    try {
+      // Consume credits
+      await lp.useCredits(amount);
+
+      // Simulate API Call for withdrawal record
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        Navigator.pop(context);
+        _showSuccessDialog();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        _showError('Failed to process withdrawal: $e');
+      }
+    }
+  }
+
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Icon(Icons.check_circle, color: Colors.green, size: 64),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Withdrawal Submitted!',
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+            SizedBox(height: 8),
+            Text(
+                'Your request is being processed. You will receive MWK in your mobile wallet soon.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey)),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Got it!')),
+        ],
+      ),
     );
   }
 }
@@ -1046,7 +1694,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.5 : 0.1),
+            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.1),
             blurRadius: 20,
             spreadRadius: 5,
           )
@@ -1147,16 +1795,16 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.white.withOpacity(0.05)
+                            ? Colors.white.withValues(alpha: 0.05)
                             : Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                             color: isDark
-                                ? Colors.white.withOpacity(0.1)
-                                : Colors.black.withOpacity(0.05)),
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.black.withValues(alpha: 0.05)),
                         boxShadow: [
                           BoxShadow(
-                            color: opColor.withOpacity(0.1),
+                            color: opColor.withValues(alpha: 0.1),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           )
@@ -1174,13 +1822,13 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   )
                                 ],
                                 border: Border.all(
-                                    color: opColor.withOpacity(0.2), width: 2),
+                                    color: opColor.withValues(alpha: 0.2), width: 2),
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(18),
@@ -1220,7 +1868,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: opColor.withOpacity(0.1),
+                                color: opColor.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Iconsax.arrow_right_3,
@@ -1260,13 +1908,13 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: isDark
-                ? Colors.white.withOpacity(0.05)
-                : Colors.black.withOpacity(0.03),
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
                 color: isDark
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.05)),
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05)),
           ),
           child: Column(
             children: [
@@ -1280,7 +1928,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
                       borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                         )
                       ],
@@ -1376,7 +2024,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFF4D85).withOpacity(0.3),
+                color: const Color(0xFFFF4D85).withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -1452,7 +2100,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.greenAccent.withOpacity(0.1),
+              color: Colors.greenAccent.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(Iconsax.tick_circle5,
@@ -1485,7 +2133,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFF4D85).withOpacity(0.3),
+                  color: const Color(0xFFFF4D85).withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
@@ -1519,7 +2167,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.redAccent.withOpacity(0.1),
+              color: Colors.redAccent.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child:
@@ -1535,7 +2183,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
             _errorMsg,
             textAlign: TextAlign.center,
             style: TextStyle(
-                color: Colors.redAccent.withOpacity(0.8),
+                color: Colors.redAccent.withValues(alpha: 0.8),
                 fontSize: 16,
                 height: 1.5),
           ),
@@ -1547,7 +2195,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
               onPressed: () => setState(() => _step = 1),
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    isDark ? Colors.white.withOpacity(0.05) : Colors.black12,
+                    isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black12,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16)),
@@ -1606,7 +2254,7 @@ class _PulsingLogoState extends State<_PulsingLogo>
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF4D85).withOpacity(0.4),
+              color: const Color(0xFFFF4D85).withValues(alpha: 0.4),
               blurRadius: 30,
               spreadRadius: 10,
             ),
@@ -1617,3 +2265,4 @@ class _PulsingLogoState extends State<_PulsingLogo>
     );
   }
 }
+

@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../theme/theme_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/language_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/local_db_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -35,7 +38,7 @@ class SettingsScreen extends StatelessWidget {
             Iconsax.user_edit,
             languageProvider.getString('edit_profile'),
             languageProvider.getString('edit_profile_sub'),
-            onTap: () => Navigator.pop(context), 
+            onTap: () => Navigator.pop(context),
           ),
           _buildSettingTile(
             context,
@@ -79,7 +82,7 @@ class SettingsScreen extends StatelessWidget {
             languageProvider.getString('terms_of_service_sub'),
           ),
           const SizedBox(height: 30),
-          _buildDangerZoneTile(context),
+          _buildDangerZone(context),
           const SizedBox(height: 40),
         ],
       ),
@@ -115,7 +118,8 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
+            color: Colors.black.withValues(alpha: 
+                Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -126,7 +130,7 @@ class SettingsScreen extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF4D85).withOpacity(0.1),
+            color: const Color(0xFFFF4D85).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: const Color(0xFFFF4D85), size: 22),
@@ -156,16 +160,16 @@ class SettingsScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.06),
+        color: Colors.orange.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.orange.withOpacity(0.2)),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.orange.withOpacity(0.15),
+            color: Colors.orange.withValues(alpha: 0.15),
             shape: BoxShape.circle,
           ),
           child: const Icon(Iconsax.refresh, color: Colors.orange, size: 22),
@@ -182,8 +186,10 @@ class SettingsScreen extends StatelessWidget {
           context.read<LanguageProvider>().getString('reset_swipes_sub'),
           style: const TextStyle(color: Colors.orange, fontSize: 12),
         ),
-        trailing: const Icon(Iconsax.arrow_right_3, size: 18, color: Colors.orange),
-        onTap: () => _showResetSwipesDialog(context, context.read<LanguageProvider>()),
+        trailing:
+            const Icon(Iconsax.arrow_right_3, size: 18, color: Colors.orange),
+        onTap: () =>
+            _showResetSwipesDialog(context, context.read<LanguageProvider>()),
       ),
     );
   }
@@ -236,8 +242,8 @@ class SettingsScreen extends StatelessWidget {
                               child: Text(
                                 languageProvider
                                     .getString('swipes_reset_success'),
-                                style:
-                                    const TextStyle(fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600),
                               ),
                             ),
                           ],
@@ -312,7 +318,8 @@ class SettingsScreen extends StatelessWidget {
               Navigator.pop(ctx);
               if (credits < 50) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(languageProvider.getString('not_enough_credits')),
+                  content:
+                      Text(languageProvider.getString('not_enough_credits')),
                   backgroundColor: const Color(0xFFFF4D85),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
@@ -375,7 +382,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildThemeTile(BuildContext context, ThemeProvider themeProvider, LanguageProvider languageProvider) {
+  Widget _buildThemeTile(BuildContext context, ThemeProvider themeProvider,
+      LanguageProvider languageProvider) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -383,7 +391,8 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
+            color: Colors.black.withValues(alpha: 
+                Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -394,7 +403,7 @@ class SettingsScreen extends StatelessWidget {
         secondary: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.deepPurple.withOpacity(0.1),
+            color: Colors.deepPurple.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -408,8 +417,8 @@ class SettingsScreen extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
         ),
         subtitle: Text(
-          themeProvider.isDarkMode 
-              ? languageProvider.getString('night_mode_on') 
+          themeProvider.isDarkMode
+              ? languageProvider.getString('night_mode_on')
               : languageProvider.getString('night_mode_off'),
           style: TextStyle(
             color: Theme.of(context).hintColor,
@@ -417,48 +426,191 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
         value: themeProvider.isDarkMode,
-        activeColor: const Color(0xFFFF4D85),
+        activeThumbColor: const Color(0xFFFF4D85),
         onChanged: (_) => themeProvider.toggleTheme(),
       ),
     );
   }
 
-  Widget _buildDangerZoneTile(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.red.withOpacity(0.1)),
-      ),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: const BoxDecoration(
-            color: Colors.red,
-            shape: BoxShape.circle,
+  Widget _buildDangerZone(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
+    return Column(
+      children: [
+        // Wipe Data Tile
+        Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.orange.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.orange.withValues(alpha: 0.1)),
           ),
-          child: const Icon(Iconsax.trash, color: Colors.white, size: 20),
+          child: ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: const BoxDecoration(
+                color: Colors.orange,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Iconsax.refresh, color: Colors.white, size: 20),
+            ),
+            title: Text(
+              languageProvider.getString('wipe_local_data'),
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+            ),
+            subtitle: Text(
+              languageProvider.getString('wipe_local_data_sub'),
+              style: TextStyle(color: Theme.of(context).hintColor, fontSize: 12),
+            ),
+            onTap: () => _showWipeDataConfirmation(context),
+          ),
         ),
+        // Delete Account Tile
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.red.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.red.withValues(alpha: 0.1)),
+          ),
+          child: ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Iconsax.trash, color: Colors.white, size: 20),
+            ),
+            title: Text(
+              languageProvider.getString('delete_account'),
+              style: const TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+              ),
+            ),
+            subtitle: Text(
+              languageProvider.getString('delete_account_sub'),
+              style: const TextStyle(color: Colors.redAccent, fontSize: 11),
+            ),
+            onTap: () {
+              // Show confirmation dialog
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showWipeDataConfirmation(BuildContext context) {
+    final languageProvider = context.read<LanguageProvider>();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
-          context.read<LanguageProvider>().getString('delete_account'),
-          style: const TextStyle(
-            color: Colors.red,
-            fontWeight: FontWeight.w800,
-            fontSize: 15,
+          languageProvider.getString('wipe_confirm_title'),
+          style: const TextStyle(fontWeight: FontWeight.w900),
+        ),
+        content: Text(
+          languageProvider.getString('wipe_confirm_content'),
+          style: const TextStyle(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              languageProvider.getString('cancel'),
+              style: TextStyle(color: Theme.of(context).hintColor),
+            ),
           ),
-        ),
-        subtitle: Text(
-          context.read<LanguageProvider>().getString('delete_account_sub'),
-          style: const TextStyle(color: Colors.redAccent, fontSize: 11),
-        ),
-        onTap: () {
-          // Show confirmation dialog
-        },
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                // Show loading indicator
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                          ),
+                          const SizedBox(width: 16),
+                          Text(languageProvider.getString('saving_label')),
+                        ],
+                      ),
+                      backgroundColor: Colors.orange,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+
+                // 1. Clear Firestore Persistence
+                await FirebaseFirestore.instance.terminate();
+                await FirebaseFirestore.instance.clearPersistence();
+
+                // 2. Clear Local SQLite DB
+                await LocalDbService().clearAllData();
+
+                // 3. Clear SharedPreferences (preserve language)
+                final prefs = await SharedPreferences.getInstance();
+                final lang = prefs.getString('app_language_code');
+                await prefs.clear();
+                if (lang != null) {
+                  await prefs.setString('app_language_code', lang);
+                }
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(languageProvider.getString('wipe_success')),
+                      backgroundColor: Colors.green,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      margin: const EdgeInsets.all(16),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(languageProvider.getString('wipe_failed')),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      margin: const EdgeInsets.all(16),
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(
+              languageProvider.getString('confirm_button'),
+              style: const TextStyle(fontWeight: FontWeight.w900),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildPrivacySection(BuildContext context, LanguageProvider languageProvider) {
+  Widget _buildPrivacySection(
+      BuildContext context, LanguageProvider languageProvider) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -535,7 +687,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
+            color: Colors.black.withValues(alpha: 
                 Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -547,7 +699,7 @@ class SettingsScreen extends StatelessWidget {
         secondary: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF4D85).withOpacity(0.1),
+            color: const Color(0xFFFF4D85).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: const Color(0xFFFF4D85), size: 22),
@@ -564,7 +716,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
         value: value,
-        activeColor: const Color(0xFFFF4D85),
+        activeThumbColor: const Color(0xFFFF4D85),
         onChanged: onChanged,
       ),
     );
@@ -583,7 +735,7 @@ class SettingsScreen extends StatelessWidget {
 
   void _showLanguageSelector(BuildContext context) {
     final languageProvider = context.read<LanguageProvider>();
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -605,7 +757,8 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 Text(
                   languageProvider.getString('select_language'),
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.w800),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded),
@@ -619,31 +772,38 @@ class SettingsScreen extends StatelessWidget {
                 physics: const BouncingScrollPhysics(),
                 child: Column(
                   children: languageProvider.supportedLanguages.map((lang) {
-                    final isSelected = languageProvider.currentLanguageCode == lang['code'];
+                    final isSelected =
+                        languageProvider.currentLanguageCode == lang['code'];
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFFFF4D85).withOpacity(0.1) : Colors.transparent,
+                          color: isSelected
+                              ? const Color(0xFFFF4D85).withValues(alpha: 0.1)
+                              : Colors.transparent,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Iconsax.global,
                           size: 18,
-                          color: isSelected ? const Color(0xFFFF4D85) : Theme.of(context).hintColor,
+                          color: isSelected
+                              ? const Color(0xFFFF4D85)
+                              : Theme.of(context).hintColor,
                         ),
                       ),
                       title: Text(
                         lang['name']!,
                         style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
                           color: isSelected ? const Color(0xFFFF4D85) : null,
                         ),
                       ),
-                      trailing: isSelected 
-                        ? const Icon(Icons.check_circle_rounded, color: Color(0xFFFF4D85))
-                        : null,
+                      trailing: isSelected
+                          ? const Icon(Icons.check_circle_rounded,
+                              color: Color(0xFFFF4D85))
+                          : null,
                       onTap: () {
                         languageProvider.setLanguage(lang['code']!);
                         Navigator.pop(context);

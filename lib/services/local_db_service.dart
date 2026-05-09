@@ -23,7 +23,7 @@ class LocalDbService {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 6,
       onCreate: _createTables,
       onUpgrade: _upgradeDb,
     );
@@ -38,6 +38,14 @@ class LocalDbService {
     if (oldVersion < 3) {
       try { await db.execute('ALTER TABLE messages ADD COLUMN isEdited INTEGER DEFAULT 0'); } catch (_) {}
       try { await db.execute('ALTER TABLE messages ADD COLUMN isDeleted INTEGER DEFAULT 0'); } catch (_) {}
+    }
+    if (oldVersion < 4) {
+      try { await db.execute('ALTER TABLE chats ADD COLUMN isSuperRequest INTEGER DEFAULT 0'); } catch (_) {}
+    }
+    if (oldVersion < 6) {
+      try { await db.execute('ALTER TABLE messages ADD COLUMN replyToId TEXT'); } catch (_) {}
+      try { await db.execute('ALTER TABLE messages ADD COLUMN replyToText TEXT'); } catch (_) {}
+      try { await db.execute('ALTER TABLE messages ADD COLUMN replyToSenderName TEXT'); } catch (_) {}
     }
   }
 
@@ -57,6 +65,11 @@ class LocalDbService {
         voiceDuration INTEGER,
         isEdited INTEGER NOT NULL DEFAULT 0,
         isDeleted INTEGER NOT NULL DEFAULT 0,
+        giftType TEXT,
+        giftValue INTEGER,
+        replyToId TEXT,
+        replyToText TEXT,
+        replyToSenderName TEXT,
         createdAt INTEGER NOT NULL
       )
     ''');
@@ -70,6 +83,7 @@ class LocalDbService {
         lastMessageTime INTEGER,
         lastMessageSenderId TEXT,
         unreadCount TEXT,
+        isSuperRequest INTEGER DEFAULT 0,
         createdAt INTEGER
       )
     ''');
@@ -104,6 +118,11 @@ class LocalDbService {
         'voiceDuration': msg.voiceDuration,
         'isEdited': msg.isEdited ? 1 : 0,
         'isDeleted': msg.isDeleted ? 1 : 0,
+        'giftType': msg.giftType,
+        'giftValue': msg.giftValue,
+        'replyToId': msg.replyToId,
+        'replyToText': msg.replyToText,
+        'replyToSenderName': msg.replyToSenderName,
         'createdAt': DateTime.now().millisecondsSinceEpoch,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -128,6 +147,11 @@ class LocalDbService {
           'voiceDuration': msg.voiceDuration,
           'isEdited': msg.isEdited ? 1 : 0,
           'isDeleted': msg.isDeleted ? 1 : 0,
+          'giftType': msg.giftType,
+          'giftValue': msg.giftValue,
+          'replyToId': msg.replyToId,
+          'replyToText': msg.replyToText,
+          'replyToSenderName': msg.replyToSenderName,
           'createdAt': DateTime.now().millisecondsSinceEpoch,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
@@ -141,6 +165,7 @@ class LocalDbService {
     if (type == 'gif') return MessageType.gif;
     if (type == 'call') return MessageType.call;
     if (type == 'sticker') return MessageType.sticker;
+    if (type == 'gift') return MessageType.gift;
     return MessageType.text;
   }
 
@@ -166,6 +191,11 @@ class LocalDbService {
               voiceDuration: row['voiceDuration'] as int?,
               isEdited: (row['isEdited'] as int) == 1,
               isDeleted: (row['isDeleted'] as int) == 1,
+              giftType: row['giftType'] as String?,
+              giftValue: row['giftValue'] as int?,
+              replyToId: row['replyToId'] as String?,
+              replyToText: row['replyToText'] as String?,
+              replyToSenderName: row['replyToSenderName'] as String?,
             ))
         .toList();
   }
@@ -218,6 +248,7 @@ class LocalDbService {
         'lastMessageTime': chat.lastMessageTime?.millisecondsSinceEpoch,
         'lastMessageSenderId': chat.lastMessageSenderId,
         'unreadCount': _encodeUnreadCount(chat.unreadCount),
+        'isSuperRequest': chat.isSuperRequest ? 1 : 0,
         'createdAt': DateTime.now().millisecondsSinceEpoch,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -246,6 +277,7 @@ class LocalDbService {
                 : null,
             lastMessageSenderId: row['lastMessageSenderId'] as String? ?? '',
             unreadCount: _decodeUnreadCount(row['unreadCount'] as String?),
+            isSuperRequest: (row['isSuperRequest'] as int? ?? 0) == 1,
           );
         })
         .whereType<Chat>()
@@ -272,6 +304,7 @@ class LocalDbService {
           : null,
       lastMessageSenderId: row['lastMessageSenderId'] as String? ?? '',
       unreadCount: _decodeUnreadCount(row['unreadCount'] as String?),
+      isSuperRequest: (row['isSuperRequest'] as int? ?? 0) == 1,
     );
   }
 

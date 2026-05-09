@@ -147,17 +147,22 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     }
   }
 
-  void _onSwipeComplete(String direction) {
+  void _onSwipeComplete(String direction) async {
     if (_profiles.isEmpty) return;
-
+ 
     final targetProfile = _profiles[_currentIndex];
     final profileProvider = context.read<ProfileProvider>();
     final currentUserId = profileProvider.currentUser?.uid;
     final swipeType = direction == 'right' ? 'like' : 'dislike';
     if (currentUserId != null && targetProfile.uid != null) {
-      _profileService.swipeUser(currentUserId, targetProfile.uid!, swipeType,
+      final isMatch = await _profileService.swipeUser(
+          currentUserId, targetProfile.uid!, swipeType,
           senderName: profileProvider.displayName);
       profileProvider.setLastSwipedUserId(targetProfile.uid);
+ 
+      if (isMatch && mounted) {
+        _showMatchDialog(targetProfile);
+      }
     }
 
     setState(() {
@@ -266,7 +271,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
               child: CircularProgressIndicator(
                 color: const Color(0xFFFF4D85),
                 strokeWidth: 3,
-                backgroundColor: const Color(0xFFFF4D85).withOpacity(0.15),
+                backgroundColor: const Color(0xFFFF4D85).withValues(alpha: 0.15),
               ),
             ),
             const SizedBox(height: 24),
@@ -294,13 +299,13 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFFFF4D85).withOpacity(0.15),
+                      const Color(0xFFFF4D85).withValues(alpha: 0.15),
                       Colors.transparent
                     ],
                   ),
                 ),
                 child: Icon(Iconsax.user_search,
-                    size: 56, color: const Color(0xFFFF4D85).withOpacity(0.5)),
+                    size: 56, color: const Color(0xFFFF4D85).withValues(alpha: 0.5)),
               ),
               const SizedBox(height: 28),
               Text(languageProvider.getString('no_profiles_title'),
@@ -331,7 +336,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(32),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFF4D85).withOpacity(0.4),
+                        color: const Color(0xFFFF4D85).withValues(alpha: 0.4),
                         blurRadius: 24,
                         offset: const Offset(0, 10),
                       ),
@@ -387,10 +392,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF4D85).withOpacity(0.12),
+                color: const Color(0xFFFF4D85).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(16),
                 border:
-                    Border.all(color: const Color(0xFFFF4D85).withOpacity(0.2)),
+                    Border.all(color: const Color(0xFFFF4D85).withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
@@ -572,11 +577,11 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.35),
+              color: Colors.black.withValues(alpha: 0.35),
               blurRadius: 32,
               offset: const Offset(0, 16)),
           BoxShadow(
-              color: Colors.black.withOpacity(0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               blurRadius: 8,
               offset: const Offset(0, 4)),
         ],
@@ -675,12 +680,12 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                             decoration: BoxDecoration(
                               color: index == _currentPhotoIndex
                                   ? Colors.white
-                                  : Colors.white.withOpacity(0.4),
+                                  : Colors.white.withValues(alpha: 0.4),
                               borderRadius: BorderRadius.circular(4),
                               boxShadow: index == _currentPhotoIndex
                                   ? [
                                       BoxShadow(
-                                          color: Colors.white.withOpacity(0.5),
+                                          color: Colors.white.withValues(alpha: 0.5),
                                           blurRadius: 6)
                                     ]
                                   : [],
@@ -700,15 +705,15 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.55),
+                  color: Colors.black.withValues(alpha: 0.55),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: const Color(0xFFFF4D85).withOpacity(0.6),
+                    color: const Color(0xFFFF4D85).withValues(alpha: 0.6),
                     width: 1.2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFF4D85).withOpacity(0.25),
+                      color: const Color(0xFFFF4D85).withValues(alpha: 0.25),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -757,15 +762,15 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.55),
+                        color: Colors.black.withValues(alpha: 0.55),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.amber.withOpacity(0.6),
+                          color: Colors.amber.withValues(alpha: 0.6),
                           width: 1.2,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.amber.withOpacity(0.25),
+                            color: Colors.amber.withValues(alpha: 0.25),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -785,15 +790,15 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.55),
+                        color: Colors.black.withValues(alpha: 0.55),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.4),
+                          color: Colors.white.withValues(alpha: 0.4),
                           width: 1.2,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.25),
+                            color: Colors.black.withValues(alpha: 0.25),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -845,7 +850,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
             icon: Iconsax.refresh,
             color: canRewind
                 ? const Color(0xFF2196F3)
-                : Colors.grey.withOpacity(0.5),
+                : Colors.grey.withValues(alpha: 0.5),
             onTap: canRewind ? _handleRewind : () {},
             size: 48,
             label: languageProvider.getString('rewind'),
@@ -945,10 +950,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
             decoration: BoxDecoration(
               color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: const Color(0xFF2196F3).withOpacity(0.1), width: 1),
+              border: Border.all(color: const Color(0xFF2196F3).withValues(alpha: 0.1), width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF2196F3).withOpacity(0.15),
+                  color: const Color(0xFF2196F3).withValues(alpha: 0.15),
                   blurRadius: 24,
                   spreadRadius: 0,
                   offset: const Offset(0, 12),
@@ -967,8 +972,8 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFF2196F3).withOpacity(0.2),
-                        const Color(0xFF2196F3).withOpacity(0.02),
+                        const Color(0xFF2196F3).withValues(alpha: 0.2),
+                        const Color(0xFF2196F3).withValues(alpha: 0.02),
                       ],
                     ),
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -985,7 +990,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                           height: 100,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFF2196F3).withOpacity(0.05),
+                            color: const Color(0xFF2196F3).withValues(alpha: 0.05),
                           ),
                         ),
                       ),
@@ -1067,7 +1072,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                                 backgroundColor: const Color(0xFF2196F3),
                                 foregroundColor: Colors.white,
                                 elevation: 8,
-                                shadowColor: const Color(0xFF2196F3).withOpacity(0.4),
+                                shadowColor: const Color(0xFF2196F3).withValues(alpha: 0.4),
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
@@ -1142,10 +1147,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: const Color(0xFFFFB300).withOpacity(0.1), width: 1),
+            border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.1), width: 1),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFFB300).withOpacity(0.15),
+                color: const Color(0xFFFFB300).withValues(alpha: 0.15),
                 blurRadius: 24,
                 spreadRadius: 0,
                 offset: const Offset(0, 12),
@@ -1164,8 +1169,8 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color(0xFFFFB300).withOpacity(0.2),
-                      const Color(0xFFFFB300).withOpacity(0.02),
+                      const Color(0xFFFFB300).withValues(alpha: 0.2),
+                      const Color(0xFFFFB300).withValues(alpha: 0.02),
                     ],
                   ),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -1182,7 +1187,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                         height: 100,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFFFFB300).withOpacity(0.05),
+                          color: const Color(0xFFFFB300).withValues(alpha: 0.05),
                         ),
                       ),
                     ),
@@ -1252,7 +1257,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                               backgroundColor: const Color(0xFFFFB300),
                               foregroundColor: Colors.white,
                               elevation: 8,
-                              shadowColor: const Color(0xFFFFB300).withOpacity(0.4),
+                              shadowColor: const Color(0xFFFFB300).withValues(alpha: 0.4),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -1412,10 +1417,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF4D85).withOpacity(0.15),
+                    color: const Color(0xFFFF4D85).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                        color: const Color(0xFFFF4D85).withOpacity(0.3)),
+                        color: const Color(0xFFFF4D85).withValues(alpha: 0.3)),
                   ),
                   child: Text(
                     hobbies[index],
@@ -1437,9 +1442,9 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.15)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1471,7 +1476,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(32),
-            color: Colors.black.withOpacity(0.55),
+            color: Colors.black.withValues(alpha: 0.55),
           ),
           child: Center(
             child: Padding(
@@ -1482,10 +1487,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF4D85).withOpacity(0.15),
+                      color: const Color(0xFFFF4D85).withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFFFF4D85).withOpacity(0.5),
+                        color: const Color(0xFFFF4D85).withValues(alpha: 0.5),
                         width: 1.5,
                       ),
                     ),
@@ -1510,7 +1515,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   Text(
                     languageProvider.getString('upload_more_photos_sub'),
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.75),
+                      color: Colors.white.withValues(alpha: 0.75),
                       fontSize: 14,
                       height: 1.5,
                     ),
@@ -1536,7 +1541,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                         borderRadius: BorderRadius.circular(32),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFF4D85).withOpacity(0.4),
+                            color: const Color(0xFFFF4D85).withValues(alpha: 0.4),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -1567,8 +1572,8 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
       decoration: BoxDecoration(
         border: Border.all(color: color, width: 4),
         shape: BoxShape.circle,
-        color: color.withOpacity(0.12),
-        boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 16)],
+        color: color.withValues(alpha: 0.12),
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 16)],
       ),
       child: SvgPicture.asset(
         svgAsset,
@@ -1755,4 +1760,143 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
       ),
     );
   }
+ 
+  void _showMatchDialog(UserProfile otherProfile) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A2E),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(
+              color: const Color(0xFFFF4D85).withValues(alpha: 0.3),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF4D85).withValues(alpha: 0.15),
+                blurRadius: 40,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'IT\'S A MATCH!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFFFF4D85),
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'You and ${otherProfile.firstName} liked each other.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 40),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // My Avatar (Consumer to get current user photo)
+                  Consumer<ProfileProvider>(
+                    builder: (context, provider, _) {
+                      final myPhoto = provider.userProfile?.photos.isNotEmpty == true
+                          ? provider.userProfile!.photos.first
+                          : null;
+                      return Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          image: myPhoto != null
+                              ? DecorationImage(image: NetworkImage(myPhoto), fit: BoxFit.cover)
+                              : null,
+                        ),
+                        child: myPhoto == null ? const Icon(Icons.person, color: Colors.white, size: 50) : null,
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 16),
+                  const Icon(Iconsax.heart5, color: Color(0xFFFF4D85), size: 40),
+                  const SizedBox(width: 16),
+                  // Other User Avatar
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                      image: otherProfile.photos.isNotEmpty
+                          ? DecorationImage(image: NetworkImage(otherProfile.photos.first), fit: BoxFit.cover)
+                          : null,
+                    ),
+                    child: otherProfile.photos.isEmpty ? const Icon(Icons.person, color: Colors.white, size: 50) : null,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 50),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatScreen(
+                        otherUserId: otherProfile.uid!,
+                        otherUserName: otherProfile.firstName ?? 'User',
+                        otherUserPhoto: otherProfile.photos.isNotEmpty ? otherProfile.photos.first : null,
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF4D85),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                  elevation: 8,
+                  shadowColor: const Color(0xFFFF4D85).withValues(alpha: 0.4),
+                ),
+                child: const Text(
+                  'SEND A MESSAGE',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 1),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'KEEP SWIPING',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
+
