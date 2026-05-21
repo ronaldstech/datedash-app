@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.datedash"
-    compileSdk = 36
+    compileSdk = 35
     ndkVersion = "28.2.13676358"
 
     compileOptions {
@@ -24,8 +24,8 @@ android {
         applicationId = "com.example.datedash"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 26
-        targetSdk = 36
+        minSdk = 23
+        targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
     }
@@ -50,4 +50,3 @@ flutter {
 }
 
 apply(plugin = "com.google.gms.google-services")
-

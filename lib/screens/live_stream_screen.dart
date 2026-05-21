@@ -6,6 +6,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../models/live_stream_model.dart';
 import '../services/live_stream_service.dart';
 import '../providers/profile_provider.dart';
+import '../models/gift_model.dart';
 
 class LiveStreamScreen extends StatefulWidget {
   final String streamId;
@@ -117,10 +118,10 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withValues(alpha: 0.35),
+                      Colors.black.withOpacity(0.35),
                       Colors.transparent,
                       Colors.transparent,
-                      Colors.black.withValues(alpha: 0.80),
+                      Colors.black.withOpacity(0.80),
                     ],
                     stops: const [0, 0.2, 0.6, 1],
                   ),
@@ -166,7 +167,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
                 image: NetworkImage(photo),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
-                    Colors.black.withValues(alpha: 0.5), BlendMode.darken),
+                    Colors.black.withOpacity(0.5), BlendMode.darken),
               ),
             )
           : const BoxDecoration(color: Color(0xFF111111)),
@@ -249,7 +250,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.85),
+                color: Colors.red.withOpacity(0.85),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -314,8 +315,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: active
-              ? activeColor.withValues(alpha: 0.75)
-              : Colors.black.withValues(alpha: 0.45),
+              ? activeColor.withOpacity(0.75)
+              : Colors.black.withOpacity(0.45),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -366,10 +367,10 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
                   height: 44,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
+                    color: Colors.white.withOpacity(0.18),
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.25)),
+                        color: Colors.white.withOpacity(0.25)),
                   ),
                   child: TextField(
                     controller: _messageController,
@@ -431,7 +432,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
           CircleAvatar(
             radius: 12,
             backgroundColor:
-                const Color(0xFFFF4D85).withValues(alpha: 0.3),
+                const Color(0xFFFF4D85).withOpacity(0.3),
             backgroundImage: msg.senderPhoto.isNotEmpty
                 ? NetworkImage(msg.senderPhoto)
                 : null,
@@ -470,14 +471,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
   // ─────────────── Gift picker ──────────────────────────────────────────────────
 
   void _showGiftPicker(BuildContext context) {
-    const gifts = [
-      {'name': 'Rose', 'value': 10, 'icon': '🌹'},
-      {'name': 'Heart', 'value': 50, 'icon': '❤️'},
-      {'name': 'Diamond', 'value': 100, 'icon': '💎'},
-      {'name': 'Crown', 'value': 500, 'icon': '👑'},
-      {'name': 'Car', 'value': 1000, 'icon': '🚗'},
-      {'name': 'Castle', 'value': 5000, 'icon': '🏰'},
-    ];
+    final gifts = GiftData.gifts;
 
     showModalBottomSheet(
       context: context,
@@ -506,55 +500,58 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
                     fontSize: 18,
                     fontWeight: FontWeight.w900)),
             const SizedBox(height: 24),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 0.85,
+            SizedBox(
+              height: 280,
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const BouncingScrollPhysics(),
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 0.85,
+                ),
+                itemCount: gifts.length,
+                itemBuilder: (context, index) {
+                  final gift = gifts[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _sendMessage(
+                        giftType: gift.name,
+                        giftValue: gift.cost,
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: gift.color.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: gift.color.withOpacity(0.1)),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(gift.icon,
+                              style: const TextStyle(fontSize: 32)),
+                          const SizedBox(height: 4),
+                          Text(gift.name,
+                              style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 2),
+                          Text('${gift.cost} 🪙',
+                              style: TextStyle(
+                                  color: gift.color,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
-              itemCount: gifts.length,
-              itemBuilder: (context, index) {
-                final gift = gifts[index];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    _sendMessage(
-                      giftType: gift['name'] as String,
-                      giftValue: gift['value'] as int,
-                    );
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(gift['icon'] as String,
-                            style: const TextStyle(fontSize: 32)),
-                        const SizedBox(height: 4),
-                        Text(gift['name'] as String,
-                            style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 2),
-                        Text('${gift['value']} 🪙',
-                            style: const TextStyle(
-                                color: Color(0xFFFF4D85),
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ),
-                );
-              },
             ),
             const SizedBox(height: 16),
           ],

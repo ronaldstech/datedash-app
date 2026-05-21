@@ -92,7 +92,7 @@ class ExploreScreen extends StatelessWidget {
         'key': 'Short Term Relationship',
         'icon': Iconsax.calendar_1,
         'photo':
-            'https://images.unsplash.com/photo-1488116438332-b2bced9c1b4c?w=600&q=80',
+            'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=600&q=80',
         'accent': const Color(0xFFFF9A8B),
       },
       {
@@ -146,7 +146,7 @@ class ExploreScreen extends StatelessWidget {
         'key': 'Sponsor',
         'icon': Iconsax.money_2,
         'photo':
-            'https://images.unsplash.com/photo-1512358959174-688404bc0e0c?w=600&q=80',
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80',
         'accent': const Color(0xFFDAA520),
       },
       {
@@ -155,7 +155,7 @@ class ExploreScreen extends StatelessWidget {
         'key': 'Figuring Out',
         'icon': Iconsax.message_question,
         'photo':
-            'https://images.unsplash.com/photo-1499209974431-9dac36b44491?w=600&q=80',
+            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80',
         'accent': const Color(0xFF607D8B),
       },
     ];
@@ -191,7 +191,7 @@ class ExploreScreen extends StatelessWidget {
                       errorBuilder: (_, __, ___) => Container(color: accent),
                       loadingBuilder: (_, child, progress) {
                         if (progress == null) return child;
-                        return Container(color: accent.withValues(alpha: 0.6));
+                        return Container(color: accent.withOpacity(0.6));
                       },
                     ),
 
@@ -203,8 +203,8 @@ class ExploreScreen extends StatelessWidget {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withValues(alpha: 0.35),
-                            Colors.black.withValues(alpha: 0.82),
+                            Colors.black.withOpacity(0.35),
+                            Colors.black.withOpacity(0.82),
                           ],
                           stops: const [0.0, 0.45, 1.0],
                         ),
@@ -221,10 +221,10 @@ class ExploreScreen extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.35),
+                              color: Colors.black.withOpacity(0.35),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.15),
+                                  color: Colors.white.withOpacity(0.15),
                                   width: 0.5),
                             ),
                             child: Icon(
@@ -253,7 +253,7 @@ class ExploreScreen extends StatelessWidget {
                           Text(
                             cat['subtitle'] as String,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.72),
+                              color: Colors.white.withOpacity(0.72),
                               fontSize: 10,
                               fontWeight: FontWeight.w500,
                             ),
@@ -272,7 +272,7 @@ class ExploreScreen extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: accent.withValues(alpha: 0.75),
+                                  color: accent.withOpacity(0.75),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(

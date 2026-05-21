@@ -65,10 +65,111 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final lp = context.watch<LanguageProvider>();
+    final profileProvider = context.watch<ProfileProvider>();
+    final isPremium = profileProvider.userProfile?.isPremium ?? false;
 
     if (user == null) {
       return Scaffold(
         body: Center(child: Text(lp.getString('signin_to_view_messages'))),
+      );
+    }
+
+    if (!isPremium) {
+      return Scaffold(
+        body: Stack(
+          children: [
+            // Blurred background (optional, could just be a nice gradient)
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).scaffoldBackgroundColor,
+                    Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                  ],
+                ),
+              ),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF4D85).withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Iconsax.notification_bing,
+                        size: 64,
+                        color: Color(0xFFFF4D85),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Premium Feature',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Notifications are available to premium members only. Upgrade to see who is interacting with your profile!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).hintColor,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: () {
+                        profileProvider.navigateToPremium(0);
+                        Navigator.pop(context); // Go back to LandingScreen to see the Premium tab
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF4D85),
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Go Premium',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Lock icon overlay
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 20,
+              right: 20,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Iconsax.lock, size: 20, color: Colors.grey),
+              ),
+            ),
+          ],
+        ),
       );
     }
 
@@ -177,7 +278,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           Container(
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF4D85).withValues(alpha: 0.05),
+              color: const Color(0xFFFF4D85).withOpacity(0.05),
               shape: BoxShape.circle,
             ),
             child: const Icon(Iconsax.notification_bing,
@@ -255,12 +356,12 @@ class _NotificationCardState extends State<_NotificationCard> {
           decoration: BoxDecoration(
             color: widget.notification.isRead
                 ? Colors.transparent
-                : const Color(0xFFFF4D85).withValues(alpha: 0.03),
+                : const Color(0xFFFF4D85).withOpacity(0.03),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: widget.notification.isRead
-                  ? Colors.grey.withValues(alpha: 0.08)
-                  : const Color(0xFFFF4D85).withValues(alpha: 0.15),
+                  ? Colors.grey.withOpacity(0.08)
+                  : const Color(0xFFFF4D85).withOpacity(0.15),
               width: 1,
             ),
           ),
@@ -322,7 +423,7 @@ class _NotificationCardState extends State<_NotificationCard> {
                       _formatDateTime(widget.notification.timestamp, lp),
                       style: TextStyle(
                         color:
-                            Theme.of(context).hintColor.withValues(alpha: 0.6),
+                            Theme.of(context).hintColor.withOpacity(0.6),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -551,12 +652,12 @@ class _NotificationCardState extends State<_NotificationCard> {
             color: const Color(0xFF1A1A2E),
             borderRadius: BorderRadius.circular(32),
             border: Border.all(
-              color: const Color(0xFFFF4D85).withValues(alpha: 0.3),
+              color: const Color(0xFFFF4D85).withOpacity(0.3),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFF4D85).withValues(alpha: 0.15),
+                color: const Color(0xFFFF4D85).withOpacity(0.15),
                 blurRadius: 40,
                 spreadRadius: 5,
               ),
@@ -659,7 +760,7 @@ class _NotificationCardState extends State<_NotificationCard> {
                 child: Text(
                   'NOT NOW',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Colors.white.withOpacity(0.7),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),

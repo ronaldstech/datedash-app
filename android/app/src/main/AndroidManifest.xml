@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.example.datedash"
           xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
@@ -18,7 +19,7 @@
         android:requestLegacyExternalStorage="true"
         tools:replace="android:label">
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.datedash.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""

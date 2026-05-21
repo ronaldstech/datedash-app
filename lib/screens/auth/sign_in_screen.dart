@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../screens/landing_screen.dart';
 import 'sign_up_screen.dart';
+import 'phone_auth_screen.dart';
 import '../../widgets/social_login_button.dart';
 import '../../services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -119,6 +120,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 controller: _emailController,
                 hintText: languageProvider.getString('email'),
                 icon: Iconsax.sms,
+                keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
               _buildTextField(
@@ -151,7 +153,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   elevation: 5,
-                  shadowColor: const Color(0xFFFF4D85).withValues(alpha: 0.5),
+                  shadowColor: const Color(0xFFFF4D85).withOpacity(0.5),
                 ),
                 child: _isLoading
                     ? const SizedBox(
@@ -190,6 +192,17 @@ class _SignInScreenState extends State<SignInScreen> {
                 text: languageProvider.getString('google_signin'),
                 assetPath: 'assets/images/google_logo.png',
                 onPressed: _isLoading ? () {} : _handleGoogleSignIn,
+              ),
+              const SizedBox(height: 12),
+              SocialLoginButton(
+                text: 'Continue with Phone',
+                icon: Iconsax.mobile,
+                onPressed: _isLoading ? () {} : () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PhoneAuthScreen()),
+                  );
+                },
               ),
               const SizedBox(height: 8),
               Row(
@@ -230,18 +243,20 @@ class _SignInScreenState extends State<SignInScreen> {
     required String hintText,
     required IconData icon,
     bool isPassword = false,
+    TextInputType? keyboardType,
   }) {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withValues(alpha: 0.4),
+          color: Theme.of(context).dividerColor.withOpacity(0.4),
         ),
       ),
       child: TextField(
         controller: controller,
         obscureText: isPassword,
+        keyboardType: keyboardType,
         style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: hintText,

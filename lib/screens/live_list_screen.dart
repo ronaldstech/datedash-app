@@ -94,8 +94,8 @@ class _LiveListScreenState extends State<LiveListScreen> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withValues(alpha: 0.1),
-                Colors.black.withValues(alpha: 0.7),
+                Colors.black.withOpacity(0.1),
+                Colors.black.withOpacity(0.7),
               ],
             ),
           ),
@@ -127,7 +127,7 @@ class _LiveListScreenState extends State<LiveListScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.4),
+                        color: Colors.black.withOpacity(0.4),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -171,7 +171,7 @@ class _LiveListScreenState extends State<LiveListScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+              color: isDark ? Colors.white10 : Colors.black.withOpacity(0.03),
               shape: BoxShape.circle,
             ),
             child: const Icon(Iconsax.video_circle, size: 64, color: Color(0xFFFF4D85)),

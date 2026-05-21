@@ -58,6 +58,34 @@ class ChatService {
     final msgRef =
         _firestore.collection('chats').doc(chatId).collection('messages').doc();
 
+    // --- Daily Free Message Limit Check ---
+    final senderRef = _firestore.collection('users').doc(senderId);
+    final senderDoc = await senderRef.get();
+    if (senderDoc.exists) {
+      final data = senderDoc.data() as Map<String, dynamic>;
+      final bool isPremium = data['isPremium'] == true;
+      
+      if (!isPremium) {
+        final String today = DateTime.now().toIso8601String().split('T')[0];
+        final String? lastReset = data['lastMessageResetDate']?.toString();
+        int dailyCount = (data['dailyMessageCount'] as num?)?.toInt() ?? 0;
+        
+        if (lastReset != today) {
+          dailyCount = 0;
+        }
+        
+        if (dailyCount >= 5) {
+          throw Exception('Daily free message limit reached. Upgrade to Premium for unlimited messages!');
+        }
+        
+        await senderRef.update({
+          'dailyMessageCount': dailyCount + 1,
+          'lastMessageResetDate': today,
+        });
+      }
+    }
+    // ----------------------------------------
+
     // Create a local message object for caching
     final localMessage = ChatMessage(
       id: msgRef.id,
@@ -124,6 +152,34 @@ class ChatService {
   }) async {
     final msgRef =
         _firestore.collection('chats').doc(chatId).collection('messages').doc();
+
+    // --- Daily Free Message Limit Check ---
+    final senderRef = _firestore.collection('users').doc(senderId);
+    final senderDoc = await senderRef.get();
+    if (senderDoc.exists) {
+      final data = senderDoc.data() as Map<String, dynamic>;
+      final bool isPremium = data['isPremium'] == true;
+      
+      if (!isPremium) {
+        final String today = DateTime.now().toIso8601String().split('T')[0];
+        final String? lastReset = data['lastMessageResetDate']?.toString();
+        int dailyCount = (data['dailyMessageCount'] as num?)?.toInt() ?? 0;
+        
+        if (lastReset != today) {
+          dailyCount = 0;
+        }
+        
+        if (dailyCount >= 5) {
+          throw Exception('Daily free message limit reached. Upgrade to Premium for unlimited messages!');
+        }
+        
+        await senderRef.update({
+          'dailyMessageCount': dailyCount + 1,
+          'lastMessageResetDate': today,
+        });
+      }
+    }
+    // ----------------------------------------
 
     // Create a local message object for caching
     final localMessage = ChatMessage(
@@ -198,6 +254,34 @@ class ChatService {
   }) async {
     final msgRef =
         _firestore.collection('chats').doc(chatId).collection('messages').doc();
+
+    // --- Daily Free Message Limit Check ---
+    final senderRef = _firestore.collection('users').doc(senderId);
+    final senderDoc = await senderRef.get();
+    if (senderDoc.exists) {
+      final data = senderDoc.data() as Map<String, dynamic>;
+      final bool isPremium = data['isPremium'] == true;
+      
+      if (!isPremium) {
+        final String today = DateTime.now().toIso8601String().split('T')[0];
+        final String? lastReset = data['lastMessageResetDate']?.toString();
+        int dailyCount = (data['dailyMessageCount'] as num?)?.toInt() ?? 0;
+        
+        if (lastReset != today) {
+          dailyCount = 0;
+        }
+        
+        if (dailyCount >= 5) {
+          throw Exception('Daily free message limit reached. Upgrade to Premium for unlimited messages!');
+        }
+        
+        await senderRef.update({
+          'dailyMessageCount': dailyCount + 1,
+          'lastMessageResetDate': today,
+        });
+      }
+    }
+    // ----------------------------------------
 
     final localMessage = ChatMessage(
       id: msgRef.id,
@@ -703,9 +787,25 @@ class ChatService {
   /// Marks all messages as read when opening a chat
   Future<void> markAsRead(String chatId, String myUid) async {
     try {
-      await _firestore.collection('chats').doc(chatId).update({
-        'unreadCount.$myUid': 0,
-      });
+      final chatRef = _firestore.collection('chats').doc(chatId);
+      final chatDoc = await chatRef.get();
+
+      if (chatDoc.exists) {
+        final data = chatDoc.data()!;
+        final lastSenderId = data['lastMessageSenderId'] as String?;
+        final isSuper = data['isSuperRequest'] as bool? ?? false;
+
+        Map<String, dynamic> updateData = {
+          'unreadCount.$myUid': 0,
+        };
+
+        // If the viewer is the recipient and it's a super request, clear the flag
+        if (isSuper && lastSenderId != myUid) {
+          updateData['isSuperRequest'] = false;
+        }
+
+        await chatRef.update(updateData);
+      }
 
       // Mark all unread messages as read
       final messagesRef = _firestore

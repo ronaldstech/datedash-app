@@ -14,6 +14,8 @@ import 'profile_detail_sheet.dart';
 import '../screens/edit_profile_screen.dart';
 import '../providers/language_provider.dart';
 import 'gift_selection_sheet.dart';
+import 'booking_sheet.dart';
+import '../services/chat_service.dart';
 
 class SwipeView extends StatefulWidget {
   final String? category;
@@ -149,7 +151,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
 
   void _onSwipeComplete(String direction) async {
     if (_profiles.isEmpty) return;
- 
+
     final targetProfile = _profiles[_currentIndex];
     final profileProvider = context.read<ProfileProvider>();
     final currentUserId = profileProvider.currentUser?.uid;
@@ -159,7 +161,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
           currentUserId, targetProfile.uid!, swipeType,
           senderName: profileProvider.displayName);
       profileProvider.setLastSwipedUserId(targetProfile.uid);
- 
+
       if (isMatch && mounted) {
         _showMatchDialog(targetProfile);
       }
@@ -271,7 +273,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
               child: CircularProgressIndicator(
                 color: const Color(0xFFFF4D85),
                 strokeWidth: 3,
-                backgroundColor: const Color(0xFFFF4D85).withValues(alpha: 0.15),
+                backgroundColor: const Color(0xFFFF4D85).withOpacity(0.15),
               ),
             ),
             const SizedBox(height: 24),
@@ -299,13 +301,13 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFFFF4D85).withValues(alpha: 0.15),
+                      const Color(0xFFFF4D85).withOpacity(0.15),
                       Colors.transparent
                     ],
                   ),
                 ),
                 child: Icon(Iconsax.user_search,
-                    size: 56, color: const Color(0xFFFF4D85).withValues(alpha: 0.5)),
+                    size: 56, color: const Color(0xFFFF4D85).withOpacity(0.5)),
               ),
               const SizedBox(height: 28),
               Text(languageProvider.getString('no_profiles_title'),
@@ -336,7 +338,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(32),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFF4D85).withValues(alpha: 0.4),
+                        color: const Color(0xFFFF4D85).withOpacity(0.4),
                         blurRadius: 24,
                         offset: const Offset(0, 10),
                       ),
@@ -392,10 +394,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF4D85).withValues(alpha: 0.12),
+                color: const Color(0xFFFF4D85).withOpacity(0.12),
                 borderRadius: BorderRadius.circular(16),
                 border:
-                    Border.all(color: const Color(0xFFFF4D85).withValues(alpha: 0.2)),
+                    Border.all(color: const Color(0xFFFF4D85).withOpacity(0.2)),
               ),
               child: Row(
                 children: [
@@ -558,7 +560,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
               },
             ),
           ),
-          SizedBox(height: 24 + MediaQuery.of(context).padding.bottom),
+          SizedBox(height: 16 + MediaQuery.of(context).padding.bottom),
         ],
       ),
     );
@@ -571,268 +573,281 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
       VoidCallback? onPrevPhoto,
       bool hasMinPhotos = true,
       required LanguageProvider languageProvider}) {
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.35),
-              blurRadius: 32,
-              offset: const Offset(0, 16)),
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.12),
-              blurRadius: 8,
-              offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Dark background – always visible, prevents back card bleed-through during photo loads
-          const ColoredBox(color: Color(0xFF1A1A2E)),
-
-          // Profile photo with crossfade transition between photos
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: Image.network(
-              photoUrl,
-              key: ValueKey(photoUrl),
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              errorBuilder: (_, __, ___) =>
-                  const ColoredBox(color: Color(0xFF1A1A2E)),
-              loadingBuilder: (_, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return const ColoredBox(color: Color(0xFF1A1A2E));
-              },
-            ),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // The actual card body with clipping
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.35),
+                  blurRadius: 32,
+                  offset: const Offset(0, 16)),
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4)),
+            ],
           ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Dark background – always visible, prevents back card bleed-through during photo loads
+                const ColoredBox(color: Color(0xFF1A1A2E)),
 
-          // Top gradient (dark fade for indicators)
-          IgnorePointer(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xCC000000), Colors.transparent],
-                  begin: Alignment.topCenter,
-                  end: Alignment.center,
-                  stops: [0.0, 1.0],
+                // Profile photo with crossfade transition between photos
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Image.network(
+                    photoUrl,
+                    key: ValueKey(photoUrl),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (_, __, ___) =>
+                        const ColoredBox(color: Color(0xFF1A1A2E)),
+                    loadingBuilder: (_, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const ColoredBox(color: Color(0xFF1A1A2E));
+                    },
+                  ),
                 ),
-              ),
-            ),
-          ),
 
-          // Bottom gradient (rich and deep)
-          IgnorePointer(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.transparent,
-                    Color(0xDD000000),
-                    Color(0xF5000000)
-                  ],
-                  begin: Alignment.center,
-                  end: Alignment.bottomCenter,
-                  stops: [0.0, 0.65, 1.0],
+                // Top gradient (dark fade for indicators)
+                IgnorePointer(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xCC000000), Colors.transparent],
+                        begin: Alignment.topCenter,
+                        end: Alignment.center,
+                        stops: [0.0, 1.0],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
 
-          // Photo tap areas (only front card)
-          if (!isBackCard && onNextPhoto != null && onPrevPhoto != null)
-            Positioned.fill(
-              child: Row(
-                children: [
-                  Expanded(
-                      child: GestureDetector(
-                          key: const ValueKey('prev_photo'),
-                          onTap: onPrevPhoto,
-                          behavior: HitTestBehavior.opaque,
-                          child: const SizedBox.expand())),
-                  Expanded(
-                      child: GestureDetector(
-                          key: const ValueKey('next_photo'),
-                          onTap: onNextPhoto,
-                          behavior: HitTestBehavior.opaque,
-                          child: const SizedBox.expand())),
-                ],
-              ),
-            ),
+                // Bottom gradient (rich and deep)
+                IgnorePointer(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Color(0xDD000000),
+                          Color(0xF5000000)
+                        ],
+                        begin: Alignment.center,
+                        end: Alignment.bottomCenter,
+                        stops: [0.0, 0.65, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
 
-          // Photo indicators — Positioned MUST be direct child of Stack
-          Positioned(
-            top: 14,
-            left: 14,
-            right: 14,
-            child: IgnorePointer(
-              child: Row(
-                children: List.generate(
-                    totalPhotos,
-                    (index) => Expanded(
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            height: index == _currentPhotoIndex ? 4 : 3,
-                            margin: const EdgeInsets.symmetric(horizontal: 2),
-                            decoration: BoxDecoration(
-                              color: index == _currentPhotoIndex
-                                  ? Colors.white
-                                  : Colors.white.withValues(alpha: 0.4),
-                              borderRadius: BorderRadius.circular(4),
-                              boxShadow: index == _currentPhotoIndex
-                                  ? [
-                                      BoxShadow(
-                                          color: Colors.white.withValues(alpha: 0.5),
-                                          blurRadius: 6)
-                                    ]
-                                  : [],
+                // Photo tap areas (only front card)
+                if (!isBackCard && onNextPhoto != null && onPrevPhoto != null)
+                  Positioned.fill(
+                    child: Row(
+                      children: [
+                        Expanded(
+                            child: GestureDetector(
+                                key: const ValueKey('prev_photo'),
+                                onTap: onPrevPhoto,
+                                behavior: HitTestBehavior.opaque,
+                                child: const SizedBox.expand())),
+                        Expanded(
+                            child: GestureDetector(
+                                key: const ValueKey('next_photo'),
+                                onTap: onNextPhoto,
+                                behavior: HitTestBehavior.opaque,
+                                child: const SizedBox.expand())),
+                      ],
+                    ),
+                  ),
+
+                // Photo indicators — Positioned MUST be direct child of Stack
+                Positioned(
+                  top: 14,
+                  left: 14,
+                  right: 14,
+                  child: IgnorePointer(
+                    child: Row(
+                      children: List.generate(
+                          totalPhotos,
+                          (index) => Expanded(
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  height: index == _currentPhotoIndex ? 4 : 3,
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 2),
+                                  decoration: BoxDecoration(
+                                    color: index == _currentPhotoIndex
+                                        ? Colors.white
+                                        : Colors.white.withOpacity(0.4),
+                                    borderRadius: BorderRadius.circular(4),
+                                    boxShadow: index == _currentPhotoIndex
+                                        ? [
+                                            BoxShadow(
+                                                color: Colors.white
+                                                    .withOpacity(0.5),
+                                                blurRadius: 6)
+                                          ]
+                                        : [],
+                                  ),
+                                ),
+                              )),
+                    ),
+                  ),
+                ),
+
+                // "Looking For" goal tag — replaces common interests for clarity
+                if (profile.lookingFor.isNotEmpty)
+                  Positioned(
+                    top: 32,
+                    left: 14,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.55),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFFFF4D85).withOpacity(0.6),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFF4D85).withOpacity(0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Iconsax.cup,
+                              color: Color(0xFFFF4D85), size: 14),
+                          const SizedBox(width: 8),
+                          Text(
+                            profile.lookingFor.first,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.2,
                             ),
                           ),
-                        )),
-              ),
-            ),
-          ),
-
-          // "Looking For" goal tag — replaces common interests for clarity
-          if (profile.lookingFor.isNotEmpty)
-            Positioned(
-              top: 32,
-              left: 14,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.55),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: const Color(0xFFFF4D85).withValues(alpha: 0.6),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFFF4D85).withValues(alpha: 0.25),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Iconsax.cup, color: Color(0xFFFF4D85), size: 14),
-                    const SizedBox(width: 8),
-                    Text(
-                      profile.lookingFor.first,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-          // Top Right Buttons (Gift & Info)
-          if (!isBackCard)
-            Positioned(
-              top: 32,
-              right: 14,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Gift Button
-                  GestureDetector(
-                    onTap: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (context) => GiftSelectionSheet(
-                          targetUserId: profile.uid!,
-                          targetUserName: profile.firstName ?? 'Someone',
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.55),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.amber.withValues(alpha: 0.6),
-                          width: 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.amber.withValues(alpha: 0.25),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
                         ],
                       ),
-                      child: const Icon(
-                        Iconsax.gift,
-                        color: Colors.amber,
-                        size: 20,
-                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  // Info/Details Button
-                  GestureDetector(
-                    onTap: () => _showProfileDetails(profile),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.55),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.4),
-                          width: 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.25),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Iconsax.user,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
 
-          // Bottom info panel + action buttons
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildProfileInfo(context, profile,
-                    hasMinPhotos: hasMinPhotos && !isBackCard,
-                    languageProvider: languageProvider),
-                if (!isBackCard) _buildActionRow(languageProvider),
-                if (isBackCard) const SizedBox(height: 16),
+                // Top Right Buttons (Gift & Info)
+                if (!isBackCard)
+                  Positioned(
+                    top: 32,
+                    right: 14,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Gift Button
+                        GestureDetector(
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) => GiftSelectionSheet(
+                                targetUserId: profile.uid!,
+                                targetUserName: profile.firstName ?? 'Someone',
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.55),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.amber.withOpacity(0.6),
+                                width: 1.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.amber.withOpacity(0.25),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Iconsax.gift,
+                              color: Colors.amber,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        // Info/Details Button
+                        GestureDetector(
+                          onTap: () => _showProfileDetails(profile),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.55),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.4),
+                                width: 1.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.25),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Iconsax.user,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+
+        // Bottom info panel (Inside card)
+        Positioned(
+          bottom: 96,
+          left: 0,
+          right: 0,
+          child: _buildProfileInfo(context, profile,
+              hasMinPhotos: hasMinPhotos && !isBackCard,
+              languageProvider: languageProvider),
+        ),
+
+        // Action buttons (inside card, at the bottom)
+        if (!isBackCard)
+          Positioned(
+            bottom: 16,
+            left: 0,
+            right: 0,
+            child: _buildActionRow(languageProvider),
+          ),
+      ],
     );
   }
 
@@ -840,42 +855,77 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     final profileProvider = context.watch<ProfileProvider>();
     final canRewind =
         profileProvider.lastSwipedUserId != null && _currentIndex > 0;
+    final currentProfile =
+        _profiles.isNotEmpty ? _profiles[_currentIndex] : null;
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20, top: 4, left: 24, right: 24),
+      padding: const EdgeInsets.only(bottom: 0, top: 4, left: 16, right: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
+          // 1. Rewind
           ActionButton(
             icon: Iconsax.refresh,
             color: canRewind
                 ? const Color(0xFF2196F3)
-                : Colors.grey.withValues(alpha: 0.5),
+                : Colors.grey.withOpacity(0.5),
             onTap: canRewind ? _handleRewind : () {},
-            size: 48,
+            size: 36,
             label: languageProvider.getString('rewind'),
           ),
+          // 2. Pass
           ActionButton(
             svgAsset: 'assets/images/pass.svg',
             color: const Color(0xFFFF5E5E),
             onTap: () => _runSwipeAnimation('left'),
-            size: 64,
+            size: 48,
             label: languageProvider.getString('pass'),
           ),
+          // 3. Book (center)
+          if (currentProfile != null &&
+              currentProfile.uid != null &&
+              myUid != null)
+            ActionButton(
+              icon: Iconsax.calendar_add,
+              color: const Color(0xFFFFA000),
+              size: 36,
+              label: 'Book',
+              disabled: !currentProfile.allowBookingRequests,
+              onTap: () {
+                final chatId = ChatService()
+                    .getChatId(myUid, currentProfile.uid!);
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => BookingSheet(
+                    otherUserId: currentProfile.uid!,
+                    otherUserName:
+                        currentProfile.firstName ?? 'Someone',
+                    chatId: chatId,
+                    myUid: myUid,
+                  ),
+                );
+              },
+            ),
+          // 4. Like
           ActionButton(
             svgAsset: 'assets/images/like.svg',
             color: const Color(0xFF00C853),
             onTap: () => _runSwipeAnimation('right'),
-            size: 64,
+            size: 48,
             label: languageProvider.getString('like'),
           ),
+          // 5. Message (conditional, disabled if user disallows messages)
           if (profileProvider.sentLikesCount >= 5)
             ActionButton(
               icon: Iconsax.message_text_1,
               color: const Color(0xFFFF4D85),
               onTap: () => _handleDirectMessage(languageProvider),
-              size: 54, // Slightly smaller than Like/Pass
+              size: 40,
               label: languageProvider.getString('message'),
+              disabled: currentProfile != null && !currentProfile.allowMessages,
             ),
         ],
       ),
@@ -950,10 +1000,11 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
             decoration: BoxDecoration(
               color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: const Color(0xFF2196F3).withValues(alpha: 0.1), width: 1),
+              border: Border.all(
+                  color: const Color(0xFF2196F3).withOpacity(0.1), width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF2196F3).withValues(alpha: 0.15),
+                  color: const Color(0xFF2196F3).withOpacity(0.15),
                   blurRadius: 24,
                   spreadRadius: 0,
                   offset: const Offset(0, 12),
@@ -972,11 +1023,12 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFF2196F3).withValues(alpha: 0.2),
-                        const Color(0xFF2196F3).withValues(alpha: 0.02),
+                        const Color(0xFF2196F3).withOpacity(0.2),
+                        const Color(0xFF2196F3).withOpacity(0.02),
                       ],
                     ),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(28)),
                   ),
                   child: Stack(
                     alignment: Alignment.center,
@@ -990,7 +1042,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                           height: 100,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFF2196F3).withValues(alpha: 0.05),
+                            color: const Color(0xFF2196F3).withOpacity(0.05),
                           ),
                         ),
                       ),
@@ -1033,9 +1085,12 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                         children: [
                           Expanded(
                             child: TextButton(
-                              onPressed: isRewinding ? null : () => Navigator.pop(context),
+                              onPressed: isRewinding
+                                  ? null
+                                  : () => Navigator.pop(context),
                               style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
@@ -1058,12 +1113,16 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                                       setDialogState(() => isRewinding = true);
                                       try {
                                         await _executeRewind(useCredits: 100);
-                                        if (context.mounted) Navigator.pop(context);
+                                        if (context.mounted)
+                                          Navigator.pop(context);
                                       } catch (e) {
                                         if (context.mounted) {
-                                          setDialogState(() => isRewinding = false);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('Error: $e')),
+                                          setDialogState(
+                                              () => isRewinding = false);
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content: Text('Error: $e')),
                                           );
                                         }
                                       }
@@ -1072,8 +1131,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                                 backgroundColor: const Color(0xFF2196F3),
                                 foregroundColor: Colors.white,
                                 elevation: 8,
-                                shadowColor: const Color(0xFF2196F3).withValues(alpha: 0.4),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shadowColor:
+                                    const Color(0xFF2196F3).withOpacity(0.4),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
@@ -1088,7 +1149,8 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                                       ),
                                     )
                                   : Text(
-                                      languageProvider.getString('confirm_button'),
+                                      languageProvider
+                                          .getString('confirm_button'),
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w900,
                                         letterSpacing: 0.5,
@@ -1110,7 +1172,8 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                                 },
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: const BorderSide(color: Color(0xFFFF4D85), width: 1.5),
+                            side: const BorderSide(
+                                color: Color(0xFFFF4D85), width: 1.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -1147,10 +1210,11 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.1), width: 1),
+            border: Border.all(
+                color: const Color(0xFFFFB300).withOpacity(0.1), width: 1),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFFB300).withValues(alpha: 0.15),
+                color: const Color(0xFFFFB300).withOpacity(0.15),
                 blurRadius: 24,
                 spreadRadius: 0,
                 offset: const Offset(0, 12),
@@ -1169,11 +1233,12 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color(0xFFFFB300).withValues(alpha: 0.2),
-                      const Color(0xFFFFB300).withValues(alpha: 0.02),
+                      const Color(0xFFFFB300).withOpacity(0.2),
+                      const Color(0xFFFFB300).withOpacity(0.02),
                     ],
                   ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(28)),
                 ),
                 child: Stack(
                   alignment: Alignment.center,
@@ -1187,7 +1252,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                         height: 100,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFFFFB300).withValues(alpha: 0.05),
+                          color: const Color(0xFFFFB300).withOpacity(0.05),
                         ),
                       ),
                     ),
@@ -1251,13 +1316,16 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                           child: ElevatedButton(
                             onPressed: () {
                               Navigator.pop(context);
-                              context.read<ProfileProvider>().navigateToPremium(1);
+                              context
+                                  .read<ProfileProvider>()
+                                  .navigateToPremium(1);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFFFB300),
                               foregroundColor: Colors.white,
                               elevation: 8,
-                              shadowColor: const Color(0xFFFFB300).withValues(alpha: 0.4),
+                              shadowColor:
+                                  const Color(0xFFFFB300).withOpacity(0.4),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -1284,7 +1352,8 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                         },
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          side: const BorderSide(color: Color(0xFFFF4D85), width: 1.5),
+                          side: const BorderSide(
+                              color: Color(0xFFFF4D85), width: 1.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -1417,10 +1486,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF4D85).withValues(alpha: 0.15),
+                    color: const Color(0xFFFF4D85).withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                        color: const Color(0xFFFF4D85).withValues(alpha: 0.3)),
+                        color: const Color(0xFFFF4D85).withOpacity(0.3)),
                   ),
                   child: Text(
                     hobbies[index],
@@ -1442,9 +1511,9 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.4),
+        color: Colors.black.withOpacity(0.4),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1476,7 +1545,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(32),
-            color: Colors.black.withValues(alpha: 0.55),
+            color: Colors.black.withOpacity(0.55),
           ),
           child: Center(
             child: Padding(
@@ -1487,10 +1556,10 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF4D85).withValues(alpha: 0.15),
+                      color: const Color(0xFFFF4D85).withOpacity(0.15),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFFFF4D85).withValues(alpha: 0.5),
+                        color: const Color(0xFFFF4D85).withOpacity(0.5),
                         width: 1.5,
                       ),
                     ),
@@ -1515,7 +1584,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   Text(
                     languageProvider.getString('upload_more_photos_sub'),
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.75),
+                      color: Colors.white.withOpacity(0.75),
                       fontSize: 14,
                       height: 1.5,
                     ),
@@ -1541,7 +1610,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                         borderRadius: BorderRadius.circular(32),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFF4D85).withValues(alpha: 0.4),
+                            color: const Color(0xFFFF4D85).withOpacity(0.4),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -1572,8 +1641,8 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
       decoration: BoxDecoration(
         border: Border.all(color: color, width: 4),
         shape: BoxShape.circle,
-        color: color.withValues(alpha: 0.12),
-        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 16)],
+        color: color.withOpacity(0.12),
+        boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 16)],
       ),
       child: SvgPicture.asset(
         svgAsset,
@@ -1760,7 +1829,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
       ),
     );
   }
- 
+
   void _showMatchDialog(UserProfile otherProfile) {
     showDialog(
       context: context,
@@ -1775,12 +1844,12 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
             color: const Color(0xFF1A1A2E),
             borderRadius: BorderRadius.circular(32),
             border: Border.all(
-              color: const Color(0xFFFF4D85).withValues(alpha: 0.3),
+              color: const Color(0xFFFF4D85).withOpacity(0.3),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFF4D85).withValues(alpha: 0.15),
+                color: const Color(0xFFFF4D85).withOpacity(0.15),
                 blurRadius: 40,
                 spreadRadius: 5,
               ),
@@ -1816,38 +1885,50 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   // My Avatar (Consumer to get current user photo)
                   Consumer<ProfileProvider>(
                     builder: (context, provider, _) {
-                      final myPhoto = provider.userProfile?.photos.isNotEmpty == true
-                          ? provider.userProfile!.photos.first
-                          : null;
+                      final myPhoto =
+                          provider.userProfile?.photos.isNotEmpty == true
+                              ? provider.userProfile!.photos.first
+                              : null;
                       return Container(
-                        width: 100,
-                        height: 100,
+                        width: 80,
+                        height: 80,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 3),
                           image: myPhoto != null
-                              ? DecorationImage(image: NetworkImage(myPhoto), fit: BoxFit.cover)
+                              ? DecorationImage(
+                                  image: NetworkImage(myPhoto),
+                                  fit: BoxFit.cover)
                               : null,
                         ),
-                        child: myPhoto == null ? const Icon(Icons.person, color: Colors.white, size: 50) : null,
+                        child: myPhoto == null
+                            ? const Icon(Icons.person,
+                                color: Colors.white, size: 40)
+                            : null,
                       );
                     },
                   ),
-                  const SizedBox(width: 16),
-                  const Icon(Iconsax.heart5, color: Color(0xFFFF4D85), size: 40),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
+                  const Icon(Iconsax.heart5,
+                      color: Color(0xFFFF4D85), size: 32),
+                  const SizedBox(width: 12),
                   // Other User Avatar
                   Container(
-                    width: 100,
-                    height: 100,
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 3),
                       image: otherProfile.photos.isNotEmpty
-                          ? DecorationImage(image: NetworkImage(otherProfile.photos.first), fit: BoxFit.cover)
+                          ? DecorationImage(
+                              image: NetworkImage(otherProfile.photos.first),
+                              fit: BoxFit.cover)
                           : null,
                     ),
-                    child: otherProfile.photos.isEmpty ? const Icon(Icons.person, color: Colors.white, size: 50) : null,
+                    child: otherProfile.photos.isEmpty
+                        ? const Icon(Icons.person,
+                            color: Colors.white, size: 40)
+                        : null,
                   ),
                 ],
               ),
@@ -1861,7 +1942,9 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                       builder: (context) => ChatScreen(
                         otherUserId: otherProfile.uid!,
                         otherUserName: otherProfile.firstName ?? 'User',
-                        otherUserPhoto: otherProfile.photos.isNotEmpty ? otherProfile.photos.first : null,
+                        otherUserPhoto: otherProfile.photos.isNotEmpty
+                            ? otherProfile.photos.first
+                            : null,
                       ),
                     ),
                   );
@@ -1870,13 +1953,17 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   backgroundColor: const Color(0xFFFF4D85),
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28)),
                   elevation: 8,
-                  shadowColor: const Color(0xFFFF4D85).withValues(alpha: 0.4),
+                  shadowColor: const Color(0xFFFF4D85).withOpacity(0.4),
                 ),
                 child: const Text(
                   'SEND A MESSAGE',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 1),
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1885,7 +1972,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                 child: Text(
                   'KEEP SWIPING',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Colors.white.withOpacity(0.7),
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1,
@@ -1899,4 +1986,3 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     );
   }
 }
-

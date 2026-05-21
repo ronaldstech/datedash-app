@@ -14,6 +14,8 @@ class UserProfile {
   String? bio;
   double? latitude;
   double? longitude;
+  String? phoneNumber;
+  String? countryCode;
 
   // ❤️ Personal Details
   String? height;
@@ -68,6 +70,11 @@ class UserProfile {
   bool showAge;
   bool showDistance;
   bool allowMessages;
+  bool allowBookingRequests;
+  // 📅 Booking Preferences (set by the user, shown to those who send requests)
+  String? bookingLocation;
+  String? bookingRate;
+  String? bookingNotes;
 
   // 🎛️ Swiping Filters
   int? filterMinAge;
@@ -83,12 +90,16 @@ class UserProfile {
   DateTime? premiumExpiry;
   int credits;
   List<String> unlockedLikes;
+  List<String> unlockedViewers;
 
   // 📈 Usage Tracking
   double dailyUsageDuration; // in seconds
   String? lastUsageResetDate; // YYYY-MM-DD
   String? lastDailyRewardDate; // YYYY-MM-DD
+  int dailyMessageCount;
+  String? lastMessageResetDate; // YYYY-MM-DD
   List<String> claimedRewards; // One-time reward IDs
+  int lastSeenLikesCount;
 
   UserProfile({
     this.firstName,
@@ -134,9 +145,15 @@ class UserProfile {
     this.showAge = true,
     this.showDistance = true,
     this.allowMessages = true,
+    this.allowBookingRequests = true,
+    this.bookingLocation,
+    this.bookingRate,
+    this.bookingNotes,
     this.latitude,
     this.longitude,
     this.uid,
+    this.phoneNumber,
+    this.countryCode,
     this.filterMinAge = 18,
     this.filterMaxAge = 60,
     this.filterMaxDistance = 50.0,
@@ -148,10 +165,14 @@ class UserProfile {
     this.premiumExpiry,
     this.credits = 0,
     this.unlockedLikes = const [],
+    this.unlockedViewers = const [],
     this.dailyUsageDuration = 0.0,
     this.lastUsageResetDate,
     this.lastDailyRewardDate,
+    this.dailyMessageCount = 0,
+    this.lastMessageResetDate,
     this.claimedRewards = const [],
+    this.lastSeenLikesCount = 0,
   });
 
   int? get age {
@@ -276,9 +297,15 @@ class UserProfile {
         showAge: map['showAge'] ?? true,
         showDistance: map['showDistance'] ?? true,
         allowMessages: map['allowMessages'] ?? true,
+        allowBookingRequests: map['allowBookingRequests'] ?? true,
+        bookingLocation: map['bookingLocation'],
+        bookingRate: map['bookingRate'],
+        bookingNotes: map['bookingNotes'],
         latitude: _parseDouble(map['latitude']),
         longitude: _parseDouble(map['longitude']),
         uid: map['uid']?.toString(),
+        phoneNumber: map['phoneNumber']?.toString(),
+        countryCode: map['countryCode']?.toString(),
         filterMinAge: map['filterMinAge'] ?? 18,
         filterMaxAge: map['filterMaxAge'] ?? 60,
         filterMaxDistance: _parseDouble(map['filterMaxDistance']) ?? 50.0,
@@ -290,10 +317,14 @@ class UserProfile {
         premiumExpiry: _parseDate(map['premiumExpiry']),
         credits: (map['credits'] as num?)?.toInt() ?? 0,
         unlockedLikes: _parseList(map['unlockedLikes']),
+        unlockedViewers: _parseList(map['unlockedViewers']),
         dailyUsageDuration: (map['dailyUsageDuration'] as num?)?.toDouble() ?? 0.0,
         lastUsageResetDate: map['lastUsageResetDate']?.toString(),
         lastDailyRewardDate: map['lastDailyRewardDate']?.toString(),
+        dailyMessageCount: (map['dailyMessageCount'] as num?)?.toInt() ?? 0,
+        lastMessageResetDate: map['lastMessageResetDate']?.toString(),
         claimedRewards: _parseList(map['claimedRewards']),
+        lastSeenLikesCount: (map['lastSeenLikesCount'] as num?)?.toInt() ?? 0,
       );
     } catch (e) {
       debugPrint('UserProfile error parsing map: $e');
@@ -371,9 +402,15 @@ class UserProfile {
       'showAge': showAge,
       'showDistance': showDistance,
       'allowMessages': allowMessages,
+      'allowBookingRequests': allowBookingRequests,
+      'bookingLocation': bookingLocation,
+      'bookingRate': bookingRate,
+      'bookingNotes': bookingNotes,
       'latitude': latitude,
       'longitude': longitude,
       'uid': uid,
+      'phoneNumber': phoneNumber,
+      'countryCode': countryCode,
       'filterMinAge': filterMinAge,
       'filterMaxAge': filterMaxAge,
       'filterMaxDistance': filterMaxDistance,
@@ -385,10 +422,14 @@ class UserProfile {
       'premiumExpiry': premiumExpiry != null ? Timestamp.fromDate(premiumExpiry!) : null,
       'credits': credits,
       'unlockedLikes': unlockedLikes,
+      'unlockedViewers': unlockedViewers,
       'dailyUsageDuration': dailyUsageDuration,
       'lastUsageResetDate': lastUsageResetDate,
       'lastDailyRewardDate': lastDailyRewardDate,
+      'dailyMessageCount': dailyMessageCount,
+      'lastMessageResetDate': lastMessageResetDate,
       'claimedRewards': claimedRewards,
+      'lastSeenLikesCount': lastSeenLikesCount,
       'lastUpdated': FieldValue.serverTimestamp(),
     };
   }

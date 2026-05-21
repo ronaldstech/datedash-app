@@ -145,7 +145,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen> {
                     children: [
                       CircleAvatar(
                         radius: 60,
-                        backgroundColor: const Color(0xFFFF4D85).withValues(alpha: 0.2),
+                        backgroundColor: const Color(0xFFFF4D85).withOpacity(0.2),
                         backgroundImage: widget.receiverPhoto.isNotEmpty
                             ? NetworkImage(widget.receiverPhoto)
                             : null,
@@ -207,7 +207,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: color.withValues(alpha: 0.4),
+                  color: color.withOpacity(0.4),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),

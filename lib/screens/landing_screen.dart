@@ -16,6 +16,8 @@ import '../screens/swipe_filters_screen.dart';
 import '../screens/premium_screen.dart';
 import '../services/auth_service.dart';
 import '../providers/language_provider.dart';
+import '../widgets/mandatory_phone_sheet.dart';
+import 'package:flutter/scheduler.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -25,6 +27,24 @@ class LandingScreen extends StatefulWidget {
 }
 
 class _LandingScreenState extends State<LandingScreen> {
+  bool _isPhoneSheetShowing = false;
+
+  void _showMandatoryPhoneSheet(BuildContext context) {
+    if (_isPhoneSheetShowing) return;
+    _isPhoneSheetShowing = true;
+
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const MandatoryPhoneSheet(),
+    ).then((_) {
+      _isPhoneSheetShowing = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final languageProvider = context.watch<LanguageProvider>();
@@ -37,6 +57,16 @@ class _LandingScreenState extends State<LandingScreen> {
               child: CircularProgressIndicator(color: Color(0xFFFF4D85)),
             ),
           );
+        }
+
+        // Check if phone number is missing
+        final isPhoneMissing = profileProvider.userProfile!.phoneNumber == null || 
+                              profileProvider.userProfile!.phoneNumber!.isEmpty;
+
+        if (isPhoneMissing) {
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            _showMandatoryPhoneSheet(context);
+          });
         }
 
         final completion = profileProvider.userProfile!.completionPercentage;
@@ -61,11 +91,14 @@ class _LandingScreenState extends State<LandingScreen> {
                     : null,
                 title: Text(
                   (currentIndex == 1 && selectedCategory != null)
-                      ? _getLocalizedCategoryName(selectedCategory, languageProvider)
+                      ? _getLocalizedCategoryName(
+                          selectedCategory, languageProvider)
                       : 'DateDash',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: (currentIndex == 1 && selectedCategory != null) ? 20 : 26,
+                    fontSize: (currentIndex == 1 && selectedCategory != null)
+                        ? 20
+                        : 26,
                     color: const Color(0xFFFF4D85),
                     letterSpacing: -0.5,
                   ),
@@ -73,9 +106,17 @@ class _LandingScreenState extends State<LandingScreen> {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 actions: [
-                  if (currentIndex == 0 || (currentIndex == 1 && selectedCategory != null)) // Show Filter icon on Swipe View OR Category Swipe
+                  if (currentIndex == 0 ||
+                      (currentIndex == 1 &&
+                          selectedCategory !=
+                              null)) // Show Filter icon on Swipe View OR Category Swipe
                     IconButton(
-                      icon: Icon(Iconsax.setting_4, color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.7), size: 22),
+                      icon: Icon(Iconsax.setting_4,
+                          color: Theme.of(context)
+                              .iconTheme
+                              .color
+                              ?.withOpacity(0.7),
+                          size: 22),
                       onPressed: () {
                         showModalBottomSheet(
                           context: context,
@@ -106,7 +147,7 @@ class _LandingScreenState extends State<LandingScreen> {
                               color: Theme.of(context)
                                   .iconTheme
                                   .color
-                                  ?.withValues(alpha: 0.7),
+                                  ?.withOpacity(0.7),
                               size: 20,
                             ),
                           ),
@@ -159,7 +200,7 @@ class _LandingScreenState extends State<LandingScreen> {
                                   decoration: BoxDecoration(
                                     color: Theme.of(context)
                                         .dividerColor
-                                        .withValues(alpha: 0.1),
+                                        .withOpacity(0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
@@ -167,7 +208,7 @@ class _LandingScreenState extends State<LandingScreen> {
                                     color: Theme.of(context)
                                         .iconTheme
                                         .color
-                                        ?.withValues(alpha: 0.7),
+                                        ?.withOpacity(0.7),
                                     size: 20,
                                   ),
                                 ),
@@ -199,17 +240,17 @@ class _LandingScreenState extends State<LandingScreen> {
                 height: 64,
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.black.withValues(alpha: 0.9)
-                      : Colors.white.withValues(alpha: 0.9),
+                      ? Colors.black.withOpacity(0.9)
+                      : Colors.white.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : Colors.black.withValues(alpha: 0.05),
+                        ? Colors.white.withOpacity(0.08)
+                        : Colors.black.withOpacity(0.05),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: Colors.black.withOpacity(0.1),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -222,15 +263,35 @@ class _LandingScreenState extends State<LandingScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildNavItem(0, Iconsax.flash, Iconsax.flash5, languageProvider.getString('nav_swipe'),
-                            currentIndex, profileProvider),
-                        _buildNavItem(1, Iconsax.discover, Iconsax.discover5,
-                            languageProvider.getString('nav_explore'), currentIndex, profileProvider),
-                        _buildNavItem(2, Iconsax.heart, Iconsax.heart5, languageProvider.getString('nav_likes'),
-                            currentIndex, profileProvider,
+                        _buildNavItem(
+                            0,
+                            Iconsax.flash,
+                            Iconsax.flash5,
+                            languageProvider.getString('nav_swipe'),
+                            currentIndex,
+                            profileProvider),
+                        _buildNavItem(
+                            1,
+                            Iconsax.discover,
+                            Iconsax.discover5,
+                            languageProvider.getString('nav_explore'),
+                            currentIndex,
+                            profileProvider),
+                        _buildNavItem(
+                            2,
+                            Iconsax.heart,
+                            Iconsax.heart5,
+                            languageProvider.getString('nav_likes'),
+                            currentIndex,
+                            profileProvider,
                             hasBadge: true),
-                        _buildNavItem(3, Iconsax.message, Iconsax.message5,
-                            languageProvider.getString('nav_chat'), currentIndex, profileProvider,
+                        _buildNavItem(
+                            3,
+                            Iconsax.message,
+                            Iconsax.message5,
+                            languageProvider.getString('nav_chat'),
+                            currentIndex,
+                            profileProvider,
                             hasBadge: true),
                         _buildNavItem(4, Iconsax.crown, Iconsax.crown5,
                             'Premium', currentIndex, profileProvider),
@@ -271,7 +332,7 @@ class _LandingScreenState extends State<LandingScreen> {
                       decoration: BoxDecoration(
                         border: Border.all(
                           color:
-                              borderColor.withValues(alpha: progress.clamp(0.3, 1.0)),
+                              borderColor.withOpacity(progress.clamp(0.3, 1.0)),
                           width: 5 + (progress * 3), // Grows from 5→8px
                           strokeAlign: BorderSide.strokeAlignInside,
                         ),
@@ -279,7 +340,7 @@ class _LandingScreenState extends State<LandingScreen> {
                           // Tight inner glow
                           BoxShadow(
                             color: glowInner
-                                .withValues(alpha: (progress * 0.9).clamp(0, 0.9)),
+                                .withOpacity((progress * 0.9).clamp(0, 0.9)),
                             blurRadius: 16,
                             spreadRadius: 2,
                             blurStyle: BlurStyle.outer,
@@ -287,7 +348,7 @@ class _LandingScreenState extends State<LandingScreen> {
                           // Mid halo
                           BoxShadow(
                             color: glowMid
-                                .withValues(alpha: (progress * 0.6).clamp(0, 0.6)),
+                                .withOpacity((progress * 0.6).clamp(0, 0.6)),
                             blurRadius: 40,
                             spreadRadius: 8,
                             blurStyle: BlurStyle.outer,
@@ -295,7 +356,7 @@ class _LandingScreenState extends State<LandingScreen> {
                           // Wide diffuse outer glow
                           BoxShadow(
                             color: glowOuter
-                                .withValues(alpha: (progress * 0.35).clamp(0, 0.35)),
+                                .withOpacity((progress * 0.35).clamp(0, 0.35)),
                             blurRadius: 80,
                             spreadRadius: 20,
                             blurStyle: BlurStyle.outer,
@@ -313,8 +374,9 @@ class _LandingScreenState extends State<LandingScreen> {
                   filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                   child: Container(
                     color:
-                        Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
-                    child: _buildIncompleteProfileScreen(context, completion, languageProvider),
+                        Theme.of(context).colorScheme.surface.withOpacity(0.3),
+                    child: _buildIncompleteProfileScreen(
+                        context, completion, languageProvider),
                   ),
                 ),
               ),
@@ -336,12 +398,12 @@ class _LandingScreenState extends State<LandingScreen> {
     final isSelected = currentIndex == index;
     final color = isSelected
         ? const Color(0xFFFF4D85)
-        : Theme.of(context).hintColor.withValues(alpha: 0.6);
+        : Theme.of(context).hintColor.withOpacity(0.6);
 
     int badgeCount = 0;
     if (hasBadge) {
       badgeCount = index == 2
-          ? profileProvider.unlockedLikesCount
+          ? profileProvider.newLikesCount
           : profileProvider.unreadMessageCount;
     }
 
@@ -410,7 +472,7 @@ class _LandingScreenState extends State<LandingScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFFF4D85).withValues(alpha: 0.08),
+                color: const Color(0xFFFF4D85).withOpacity(0.08),
               ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
@@ -426,7 +488,7 @@ class _LandingScreenState extends State<LandingScreen> {
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFFF4D85).withValues(alpha: 0.05),
+                color: const Color(0xFFFF4D85).withOpacity(0.05),
               ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
@@ -437,7 +499,8 @@ class _LandingScreenState extends State<LandingScreen> {
 
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -453,7 +516,7 @@ class _LandingScreenState extends State<LandingScreen> {
                         child: CircularProgressIndicator(
                           value: completion / 100,
                           strokeWidth: 4,
-                          backgroundColor: Colors.white.withValues(alpha: 0.05),
+                          backgroundColor: Colors.white.withOpacity(0.05),
                           valueColor: const AlwaysStoppedAnimation<Color>(
                               Color(0xFFFF4D85)),
                         ),
@@ -463,9 +526,9 @@ class _LandingScreenState extends State<LandingScreen> {
                         height: 180,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.03),
+                          color: Colors.white.withOpacity(0.03),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.05),
+                            color: Colors.white.withOpacity(0.05),
                             width: 1,
                           ),
                         ),
@@ -485,7 +548,7 @@ class _LandingScreenState extends State<LandingScreen> {
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFFF4D85).withValues(alpha: 0.4),
+                                color: const Color(0xFFFF4D85).withOpacity(0.4),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -520,11 +583,12 @@ class _LandingScreenState extends State<LandingScreen> {
                   const SizedBox(height: 16),
 
                   Text(
-                    languageProvider.getString('profile_completion_sub')
+                    languageProvider
+                        .getString('profile_completion_sub')
                         .replaceAll('{completion}', completion.toString()),
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: Colors.white.withOpacity(0.6),
                       height: 1.6,
                     ),
                     textAlign: TextAlign.center,
@@ -537,10 +601,10 @@ class _LandingScreenState extends State<LandingScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: Colors.white.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.08),
+                        color: Colors.white.withOpacity(0.08),
                         width: 1,
                       ),
                     ),
@@ -553,7 +617,7 @@ class _LandingScreenState extends State<LandingScreen> {
                         Text(
                           '40% required to start swiping',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
+                            color: Colors.white.withOpacity(0.8),
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -571,7 +635,7 @@ class _LandingScreenState extends State<LandingScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFF4D85).withValues(alpha: 0.3),
+                          color: const Color(0xFFFF4D85).withOpacity(0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -610,7 +674,7 @@ class _LandingScreenState extends State<LandingScreen> {
                   TextButton(
                     onPressed: () => AuthService().signOut(),
                     style: TextButton.styleFrom(
-                      foregroundColor: Colors.white.withValues(alpha: 0.5),
+                      foregroundColor: Colors.white.withOpacity(0.5),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(
@@ -659,4 +723,3 @@ class _LandingScreenState extends State<LandingScreen> {
     }
   }
 }
-

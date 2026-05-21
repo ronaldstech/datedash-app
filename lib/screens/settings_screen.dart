@@ -118,7 +118,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 
+            color: Colors.black.withOpacity(
                 Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -130,7 +130,7 @@ class SettingsScreen extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF4D85).withValues(alpha: 0.1),
+            color: const Color(0xFFFF4D85).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: const Color(0xFFFF4D85), size: 22),
@@ -160,16 +160,16 @@ class SettingsScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.06),
+        color: Colors.orange.withOpacity(0.06),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
+        border: Border.all(color: Colors.orange.withOpacity(0.2)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.orange.withValues(alpha: 0.15),
+            color: Colors.orange.withOpacity(0.15),
             shape: BoxShape.circle,
           ),
           child: const Icon(Iconsax.refresh, color: Colors.orange, size: 22),
@@ -391,7 +391,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 
+            color: Colors.black.withOpacity(
                 Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -403,7 +403,7 @@ class SettingsScreen extends StatelessWidget {
         secondary: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.deepPurple.withValues(alpha: 0.1),
+            color: Colors.deepPurple.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -426,7 +426,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
         value: themeProvider.isDarkMode,
-        activeThumbColor: const Color(0xFFFF4D85),
+        activeColor: const Color(0xFFFF4D85),
         onChanged: (_) => themeProvider.toggleTheme(),
       ),
     );
@@ -440,9 +440,9 @@ class SettingsScreen extends StatelessWidget {
         Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: Colors.orange.withValues(alpha: 0.05),
+            color: Colors.orange.withOpacity(0.05),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.orange.withValues(alpha: 0.1)),
+            border: Border.all(color: Colors.orange.withOpacity(0.1)),
           ),
           child: ListTile(
             leading: Container(
@@ -467,9 +467,9 @@ class SettingsScreen extends StatelessWidget {
         // Delete Account Tile
         Container(
           decoration: BoxDecoration(
-            color: Colors.red.withValues(alpha: 0.05),
+            color: Colors.red.withOpacity(0.05),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.red.withValues(alpha: 0.1)),
+            border: Border.all(color: Colors.red.withOpacity(0.1)),
           ),
           child: ListTile(
             leading: Container(
@@ -664,11 +664,180 @@ class SettingsScreen extends StatelessWidget {
                     }
                   },
                 ),
+                _buildPrivacyTile(
+                  context,
+                  Iconsax.calendar_tick,
+                  languageProvider.getString('allow_bookings_label'),
+                  languageProvider.getString('allow_bookings_sub'),
+                  profile.allowBookingRequests,
+                  (val) {
+                    profile.allowBookingRequests = val;
+                    final user = profileProvider.currentUser;
+                    if (user != null) {
+                      profileProvider.saveUserProfile(user.uid, profile);
+                    }
+                  },
+                ),
               ],
             );
           },
         ),
+        const SizedBox(height: 20),
+        _buildSectionHeader(languageProvider.getString('booking_preferences')),
+        _buildSettingTile(
+          context,
+          Iconsax.calendar_edit,
+          languageProvider.getString('booking_details'),
+          languageProvider.getString('booking_details_sub'),
+          onTap: () => _showBookingPreferencesSheet(context),
+        ),
       ],
+    );
+  }
+
+  void _showBookingPreferencesSheet(BuildContext context) {
+    final languageProvider = context.read<LanguageProvider>();
+    final profileProvider = context.read<ProfileProvider>();
+    final profile = profileProvider.userProfile;
+
+    if (profile == null) return;
+
+    final locationCtrl = TextEditingController(text: profile.bookingLocation);
+    final rateCtrl = TextEditingController(text: profile.bookingRate);
+    final notesCtrl = TextEditingController(text: profile.bookingNotes);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom +
+              MediaQuery.of(context).padding.bottom +
+              20,
+          top: 20,
+          left: 20,
+          right: 20,
+        ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  const Icon(Iconsax.calendar_edit, color: Color(0xFFFFA000), size: 28),
+                  const SizedBox(width: 12),
+                  Text(
+                    languageProvider.getString('booking_details'),
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                languageProvider.getString('booking_details_hint'),
+                style: TextStyle(color: Theme.of(context).hintColor, fontSize: 13),
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: locationCtrl,
+                decoration: InputDecoration(
+                  labelText: languageProvider.getString('booking_location_label'),
+                  hintText: 'e.g., Downtown, Starbucks, Central Park',
+                  prefixIcon: const Icon(Iconsax.location),
+                  filled: true,
+                  fillColor: Theme.of(context).cardColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: rateCtrl,
+                decoration: InputDecoration(
+                  labelText: languageProvider.getString('booking_rate_label'),
+                  hintText: 'e.g., \$50/hr, Drinks on you, Free',
+                  prefixIcon: const Icon(Iconsax.money),
+                  filled: true,
+                  fillColor: Theme.of(context).cardColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: notesCtrl,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: languageProvider.getString('booking_notes_label'),
+                  hintText: 'Any specific rules, preferences, or notes for your dates...',
+                  prefixIcon: const Padding(
+                    padding: EdgeInsets.only(bottom: 32.0),
+                    child: Icon(Iconsax.note_text),
+                  ),
+                  filled: true,
+                  fillColor: Theme.of(context).cardColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    profile.bookingLocation = locationCtrl.text.trim();
+                    profile.bookingRate = rateCtrl.text.trim();
+                    profile.bookingNotes = notesCtrl.text.trim();
+                    
+                    final user = profileProvider.currentUser;
+                    if (user != null) {
+                      profileProvider.saveUserProfile(user.uid, profile);
+                    }
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(languageProvider.getString('saving_label'))),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFA000),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    languageProvider.getString('save'),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -687,7 +856,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 
+            color: Colors.black.withOpacity(
                 Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -699,7 +868,7 @@ class SettingsScreen extends StatelessWidget {
         secondary: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF4D85).withValues(alpha: 0.1),
+            color: const Color(0xFFFF4D85).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: const Color(0xFFFF4D85), size: 22),
@@ -716,7 +885,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
         value: value,
-        activeThumbColor: const Color(0xFFFF4D85),
+        activeColor: const Color(0xFFFF4D85),
         onChanged: onChanged,
       ),
     );
@@ -780,7 +949,7 @@ class SettingsScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFFFF4D85).withValues(alpha: 0.1)
+                              ? const Color(0xFFFF4D85).withOpacity(0.1)
                               : Colors.transparent,
                           shape: BoxShape.circle,
                         ),

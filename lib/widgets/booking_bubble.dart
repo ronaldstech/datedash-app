@@ -52,14 +52,14 @@ class _BookingBubbleState extends State<BookingBubble> {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isAccepted
-                  ? Colors.green.withValues(alpha: 0.3)
+                  ? Colors.green.withOpacity(0.3)
                   : isRejected
-                      ? Colors.red.withValues(alpha: 0.3)
-                      : const Color(0xFFFF4D85).withValues(alpha: 0.3),
+                      ? Colors.red.withOpacity(0.3)
+                      : const Color(0xFFFF4D85).withOpacity(0.3),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Colors.black.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -74,10 +74,10 @@ class _BookingBubbleState extends State<BookingBubble> {
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: isAccepted
-                      ? Colors.green.withValues(alpha: 0.1)
+                      ? Colors.green.withOpacity(0.1)
                       : isRejected
-                          ? Colors.red.withValues(alpha: 0.1)
-                          : const Color(0xFFFF4D85).withValues(alpha: 0.1),
+                          ? Colors.red.withOpacity(0.1)
+                          : const Color(0xFFFF4D85).withOpacity(0.1),
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(20)),
                 ),

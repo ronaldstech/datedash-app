@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 class SocialLoginButton extends StatelessWidget {
   final String text;
   final String? assetPath;
+  final IconData? icon;
   final VoidCallback onPressed;
 
   const SocialLoginButton({
     super.key,
     required this.text,
     this.assetPath,
+    this.icon,
     required this.onPressed,
   });
 
@@ -20,7 +22,7 @@ class SocialLoginButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         backgroundColor: Theme.of(context).cardColor,
         side: BorderSide(
-          color: Theme.of(context).dividerColor.withValues(alpha: 0.4),
+          color: Theme.of(context).dividerColor.withOpacity(0.4),
           width: 1.5,
         ),
         surfaceTintColor: Theme.of(context).cardColor,
@@ -37,10 +39,10 @@ class SocialLoginButton extends StatelessWidget {
                   height: 24,
                   width: 24,
                 )
-              : const Icon(
-                  Icons.g_mobiledata_rounded,
+              : Icon(
+                  icon ?? Icons.g_mobiledata_rounded,
                   size: 24,
-                  color: Colors.blueAccent,
+                  color: icon != null ? const Color(0xFFFF4D85) : Colors.blueAccent,
                 ),
           const SizedBox(width: 12),
           Text(

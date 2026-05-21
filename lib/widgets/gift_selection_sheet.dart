@@ -6,21 +6,7 @@ import '../providers/language_provider.dart';
 import '../services/notification_service.dart';
 import '../services/profile_service.dart';
 
-class GiftItem {
-  final String id;
-  final String icon;
-  final String name;
-  final int cost;
-  final Color color;
-
-  GiftItem({
-    required this.id,
-    required this.icon,
-    required this.name,
-    required this.cost,
-    required this.color,
-  });
-}
+import '../models/gift_model.dart';
 
 class GiftSelectionSheet extends StatelessWidget {
   final String targetUserId;
@@ -32,14 +18,7 @@ class GiftSelectionSheet extends StatelessWidget {
     required this.targetUserName,
   });
 
-  static final List<GiftItem> gifts = [
-    GiftItem(id: 'rose', icon: '🌹', name: 'Rose', cost: 50, color: Colors.red),
-    GiftItem(id: 'chocolate', icon: '🍫', name: 'Chocolate', cost: 150, color: Colors.brown),
-    GiftItem(id: 'teddy', icon: '🧸', name: 'Teddy Bear', cost: 300, color: Colors.orange),
-    GiftItem(id: 'champagne', icon: '🥂', name: 'Champagne', cost: 500, color: Colors.amber),
-    GiftItem(id: 'diamond', icon: '💎', name: 'Diamond', cost: 1000, color: Colors.blueAccent),
-    GiftItem(id: 'ring', icon: '💍', name: 'Ring', cost: 5000, color: Colors.teal),
-  ];
+  static List<GiftItem> get gifts => GiftData.gifts;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +42,7 @@ class GiftSelectionSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.3),
+                color: Colors.grey.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -83,9 +62,9 @@ class GiftSelectionSheet extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.amber.withValues(alpha: 0.1),
+                  color: Colors.amber.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                  border: Border.all(color: Colors.amber.withOpacity(0.3)),
                 ),
                 child: Row(
                   children: [
@@ -118,9 +97,9 @@ class GiftSelectionSheet extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.85,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.75,
             ),
             itemCount: gifts.length,
             itemBuilder: (context, index) {
@@ -132,19 +111,19 @@ class GiftSelectionSheet extends StatelessWidget {
                 child: Opacity(
                   opacity: canAfford ? 1.0 : 0.5,
                   child: Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: canAfford 
-                          ? gift.color.withValues(alpha: 0.2) 
-                          : Colors.grey.withValues(alpha: 0.2),
+                          ? gift.color.withOpacity(0.2) 
+                          : Colors.grey.withOpacity(0.2),
                         width: 1.5,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withOpacity(0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -155,18 +134,20 @@ class GiftSelectionSheet extends StatelessWidget {
                       children: [
                         Text(
                           gift.icon,
-                          style: const TextStyle(fontSize: 32),
+                          style: const TextStyle(fontSize: 28),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Text(
                           gift.name,
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w700,
                           ),
                           textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -210,10 +191,10 @@ class GiftSelectionSheet extends StatelessWidget {
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: gift.color.withValues(alpha: 0.1), width: 1),
+            border: Border.all(color: gift.color.withOpacity(0.1), width: 1),
             boxShadow: [
               BoxShadow(
-                color: gift.color.withValues(alpha: 0.15),
+                color: gift.color.withOpacity(0.15),
                 blurRadius: 24,
                 spreadRadius: 0,
                 offset: const Offset(0, 12),
@@ -232,8 +213,8 @@ class GiftSelectionSheet extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      gift.color.withValues(alpha: 0.2),
-                      gift.color.withValues(alpha: 0.02),
+                      gift.color.withOpacity(0.2),
+                      gift.color.withOpacity(0.02),
                     ],
                   ),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -250,7 +231,7 @@ class GiftSelectionSheet extends StatelessWidget {
                         height: 100,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: gift.color.withValues(alpha: 0.05),
+                          color: gift.color.withOpacity(0.05),
                         ),
                       ),
                     ),
@@ -314,7 +295,7 @@ class GiftSelectionSheet extends StatelessWidget {
                           backgroundColor: gift.color,
                           foregroundColor: Colors.white,
                           elevation: 8,
-                          shadowColor: gift.color.withValues(alpha: 0.4),
+                          shadowColor: gift.color.withOpacity(0.4),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),

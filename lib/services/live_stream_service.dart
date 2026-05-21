@@ -131,7 +131,7 @@ class LiveStreamService {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) {
-        return LiveChatMessage.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+        return LiveChatMessage.fromMap(doc.data(), doc.id);
       }).toList();
     });
   }

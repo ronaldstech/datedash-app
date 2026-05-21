@@ -7,7 +7,7 @@ import '../models/user_profile_model.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ProfileService _profileService = ProfileService();
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // Get user state changes
   Stream<User?> get user => _auth.authStateChanges();
@@ -25,7 +25,7 @@ class AuthService {
 
   // Register with email & password
   Future<UserCredential?> signUpWithEmail(
-      String email, String password, String name) async {
+      String email, String password, String name, String phoneNumber) async {
     try {
       final cred = await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -33,9 +33,11 @@ class AuthService {
       );
 
       if (cred.user != null) {
-        // Initialize user document in Firestore with name and 50 signup credits
+        // Initialize user document in Firestore with name, phone and 50 signup credits
         await _profileService.saveUserProfile(
-            cred.user!.uid, UserProfile(firstName: name, credits: 50));
+            cred.user!.uid,
+            UserProfile(
+                firstName: name, phoneNumber: phoneNumber, credits: 50));
 
         // Log the signup reward
         await NotificationService().sendNotification(
@@ -56,10 +58,10 @@ class AuthService {
   // Sign in with Google
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      final googleUser = await _googleSignIn.authenticate();
-      // googleUser is non-nullable in this version
+      final googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return null;
 
-      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
       );
@@ -94,5 +96,54 @@ class AuthService {
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();
+  }
+
+  // Phone Authentication
+  Future<void> verifyPhone({
+    required String phoneNumber,
+    required Function(PhoneAuthCredential) verificationCompleted,
+    required Function(FirebaseAuthException) verificationFailed,
+    required Function(String, int?) codeSent,
+    required Function(String) codeAutoRetrievalTimeout,
+  }) async {
+    await _auth.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      verificationCompleted: verificationCompleted,
+      verificationFailed: verificationFailed,
+      codeSent: codeSent,
+      codeAutoRetrievalTimeout: codeAutoRetrievalTimeout,
+      timeout: const Duration(seconds: 60),
+    );
+  }
+
+  Future<UserCredential> signInWithPhone(String verificationId, String smsCode) async {
+    try {
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
+      final cred = await _auth.signInWithCredential(credential);
+
+      if (cred.user != null) {
+        // Check if profile exists, if not initialize it
+        final profile = await _profileService.getUserProfile(cred.user!.uid);
+        if (profile == null) {
+          await _profileService.saveUserProfile(cred.user!.uid,
+              UserProfile(firstName: 'User', phoneNumber: cred.user?.phoneNumber, credits: 50));
+
+          // Log the signup reward
+          await NotificationService().sendNotification(
+            recipientId: cred.user!.uid,
+            senderId: 'system',
+            senderName: 'Datedash',
+            type: 'reward',
+            message: '🎁 Welcome bonus: 50 free credits added!',
+          );
+        }
+      }
+      return cred;
+    } catch (e) {
+      rethrow;
+    }
   }
 }

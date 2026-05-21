@@ -112,6 +112,13 @@ class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
   int get currentTabIndex => _currentTabIndex;
   int get likesCount => _likesCount;
   
+  /// Returns the count for the Likes badge: New likes since last seen.
+  int get newLikesCount {
+    if (_userProfile == null) return 0;
+    final count = _likesCount - _userProfile!.lastSeenLikesCount;
+    return count > 0 ? count : 0;
+  }
+
   /// Returns the count for the Likes badge: Total received likes.
   int get unlockedLikesCount => _likesCount;
 
@@ -127,9 +134,27 @@ class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
 
   void setTabIndex(int index) {
     _currentTabIndex = index;
-    // Clear explore category when leaving Explore tab (optional, depends on UX choice)
-    // if (index != 1) _selectedExploreCategory = null; 
+    // If user visits the Likes screen (index 2), mark likes as seen
+    if (index == 2) {
+      markLikesAsSeen();
+    }
     notifyListeners();
+  }
+
+  Future<void> markLikesAsSeen() async {
+    final uid = _currentUser?.uid;
+    final profile = _userProfile;
+    if (uid == null || profile == null) return;
+
+    if (profile.lastSeenLikesCount != _likesCount) {
+      profile.lastSeenLikesCount = _likesCount;
+      notifyListeners();
+      try {
+        await _profileService.saveUserProfile(uid, profile);
+      } catch (e) {
+        debugPrint('ProfileProvider: Error marking likes as seen: $e');
+      }
+    }
   }
 
   void setExploreCategory(String? category) {
@@ -170,6 +195,24 @@ class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
       // Local profile is updated via the stream listener in constructor
     } catch (e) {
       debugPrint('ProfileProvider: Error saving profile: $e');
+      rethrow;
+    }
+  }
+
+  /// Updates a specific field in the user profile
+  Future<void> updateProfileField(String field, dynamic value) async {
+    final uid = _currentUser?.uid;
+    final profile = _userProfile;
+    if (uid == null || profile == null) return;
+
+    try {
+      final map = profile.toMap();
+      map[field] = value;
+      final updatedProfile = UserProfile.fromMap(map);
+      await saveUserProfile(uid, updatedProfile);
+      // Local state updates via stream
+    } catch (e) {
+      debugPrint('ProfileProvider: Error updating $field: $e');
       rethrow;
     }
   }
@@ -227,6 +270,26 @@ class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
       notifyListeners();
     } catch (e) {
       debugPrint('ProfileProvider: Error unlocking profile: $e');
+      rethrow;
+    }
+  }
+
+  /// Unlocks a specific viewer for 20 credits
+  Future<void> unlockViewer(String targetId) async {
+    final uid = _currentUser?.uid;
+    if (uid == null) return;
+    try {
+      // 1. Deduct 20 credits
+      await useCredits(20);
+      
+      // 2. Add to unlockedViewers in Firestore
+      await _profileService.unlockViewer(uid, targetId);
+      
+      // 3. Update local state
+      _userProfile?.unlockedViewers.add(targetId);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('ProfileProvider: Error unlocking viewer: $e');
       rethrow;
     }
   }
@@ -313,6 +376,10 @@ class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
     // Reset daily duration if it's a new day
     if (profile.lastUsageResetDate != today) {
       profile.dailyUsageDuration = 0.0;
+      profile.dailyMessageCount = 0;
+      profile.lastMessageResetDate = today;
+      // Clear daily rewards from claimed list
+      profile.claimedRewards.removeWhere((id) => id.startsWith('daily_'));
       profile.lastUsageResetDate = today;
     }
 
@@ -334,7 +401,7 @@ class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
     try {
       final now = DateTime.now();
       final today = now.toIso8601String().split('T')[0];
-      final isDaily = rewardId == 'daily_explorer';
+      final isDaily = rewardId == 'daily_explorer' || rewardId == 'daily_messenger';
 
       // 1. Unified Firestore Update via Service
       await _profileService.claimReward(

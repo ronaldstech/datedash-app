@@ -66,7 +66,7 @@ class RewardsScreen extends StatelessWidget {
                     child: Icon(
                       Iconsax.cup5,
                       size: 150,
-                      color: Colors.white.withValues(alpha: 0.15),
+                      color: Colors.white.withOpacity(0.15),
                     ),
                   ),
                 ],
@@ -86,6 +86,22 @@ class RewardsScreen extends StatelessWidget {
                   _buildSectionTitle('ACTIVE CHALLENGES'),
                   const SizedBox(height: 16),
 
+                  // Challenge 0: Daily Messenger (Allowance)
+                  _ChallengeCard(
+                    id: 'daily_messenger',
+                    title: 'Daily Messenger',
+                    description: 'Daily allowance of 5 free messages',
+                    reward: 0,
+                    progress: ((profile.dailyMessageCount) / 5).clamp(0.0, 1.0),
+                    progressLabel: '${profile.dailyMessageCount} / 5',
+                    isCompleted: profile.dailyMessageCount >= 5,
+                    isClaimed: false,
+                    icon: Iconsax.message_text,
+                    accentColor: Colors.orangeAccent,
+                  ),
+
+                  const SizedBox(height: 16),
+
                   // Challenge 1: Daily Explorer
                   _ChallengeCard(
                     id: 'daily_explorer',
@@ -97,7 +113,7 @@ class RewardsScreen extends StatelessWidget {
                     progressLabel:
                         '${(profile.dailyUsageDuration / 3600).toStringAsFixed(1)}h / 3h',
                     isCompleted: profile.dailyUsageDuration >= 10800,
-                    isClaimed: profile.lastDailyRewardDate == today,
+                    isClaimed: profile.claimedRewards.contains('daily_explorer'),
                     icon: Iconsax.timer_1,
                     accentColor: Colors.blueAccent,
                   ),
@@ -167,13 +183,13 @@ class RewardsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: isDark
             ? []
             : [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
+                  color: Colors.black.withOpacity(0.03),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 )
@@ -184,7 +200,7 @@ class RewardsScreen extends StatelessWidget {
         children: [
           _buildStatItem('Credits', profile.credits.toString(),
               Iconsax.wallet_3, Colors.orangeAccent),
-          Container(width: 1, height: 40, color: Colors.grey.withValues(alpha: 0.2)),
+          Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2)),
           _buildStatItem('Claimed', profile.claimedRewards.length.toString(),
               Iconsax.receipt_21, const Color(0xFFFF4D85)),
         ],
@@ -293,11 +309,11 @@ class _ChallengeCardState extends State<_ChallengeCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: canClaim
-              ? widget.accentColor.withValues(alpha: 0.5)
+              ? widget.accentColor.withOpacity(0.5)
               : Colors.transparent,
           width: 2,
         ),
@@ -311,7 +327,7 @@ class _ChallengeCardState extends State<_ChallengeCard> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: widget.accentColor.withValues(alpha: 0.1),
+                    color: widget.accentColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(widget.icon, color: widget.accentColor, size: 24),
@@ -334,20 +350,21 @@ class _ChallengeCardState extends State<_ChallengeCard> {
                     ],
                   ),
                 ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.orangeAccent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                if (widget.reward > 0)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.orangeAccent.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '+${widget.reward}',
+                      style: const TextStyle(
+                          color: Colors.orangeAccent,
+                          fontWeight: FontWeight.w900),
+                    ),
                   ),
-                  child: Text(
-                    '+${widget.reward}',
-                    style: const TextStyle(
-                        color: Colors.orangeAccent,
-                        fontWeight: FontWeight.w900),
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -358,7 +375,7 @@ class _ChallengeCardState extends State<_ChallengeCard> {
                     borderRadius: BorderRadius.circular(10),
                     child: LinearProgressIndicator(
                       value: widget.progress,
-                      backgroundColor: Colors.grey.withValues(alpha: 0.1),
+                      backgroundColor: Colors.grey.withOpacity(0.1),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         widget.isClaimed ? Colors.green : widget.accentColor,
                       ),
@@ -387,8 +404,8 @@ class _ChallengeCardState extends State<_ChallengeCard> {
                   backgroundColor: canClaim
                       ? widget.accentColor
                       : (widget.isClaimed
-                          ? Colors.green.withValues(alpha: 0.1)
-                          : Colors.grey.withValues(alpha: 0.1)),
+                          ? Colors.green.withOpacity(0.1)
+                          : Colors.grey.withOpacity(0.1)),
                   foregroundColor: canClaim
                       ? Colors.white
                       : (widget.isClaimed ? Colors.green : Colors.grey),
@@ -407,8 +424,8 @@ class _ChallengeCardState extends State<_ChallengeCard> {
                         widget.isClaimed
                             ? 'CLAIMED'
                             : (widget.isCompleted
-                                ? 'CLAIM REWARD'
-                                : 'IN PROGRESS'),
+                                ? (widget.reward > 0 ? 'CLAIM REWARD' : 'LIMIT REACHED')
+                                : (widget.reward > 0 ? 'IN PROGRESS' : 'FREE USAGE')),
                         style: const TextStyle(
                             fontWeight: FontWeight.w900, letterSpacing: 1),
                       ),

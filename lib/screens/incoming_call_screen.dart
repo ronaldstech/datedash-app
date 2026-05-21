@@ -107,7 +107,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
                       CircleAvatar(
                         radius: 60,
                         backgroundColor:
-                            const Color(0xFFFF4D85).withValues(alpha: 0.2),
+                            const Color(0xFFFF4D85).withOpacity(0.2),
                         backgroundImage: widget.callerPhoto.isNotEmpty
                             ? NetworkImage(widget.callerPhoto)
                             : null,
@@ -131,8 +131,8 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
                             horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: widget.isVideo
-                              ? const Color(0xFFFF4D85).withValues(alpha: 0.15)
-                              : Colors.blueAccent.withValues(alpha: 0.15),
+                              ? const Color(0xFFFF4D85).withOpacity(0.15)
+                              : Colors.blueAccent.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: widget.isVideo
@@ -216,7 +216,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: color.withValues(alpha: 0.4),
+                  color: color.withOpacity(0.4),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),

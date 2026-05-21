@@ -22,10 +22,10 @@ class BorderedSearchBar extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(21),
           border: Border.all(
-            color: Theme.of(context).dividerColor.withValues(alpha: isDark ? 0.3 : 0.1),
+            color: Theme.of(context).dividerColor.withOpacity(isDark ? 0.3 : 0.1),
             width: 1.5,
           ),
-          color: Theme.of(context).cardColor.withValues(alpha: 0.5),
+          color: Theme.of(context).cardColor.withOpacity(0.5),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

@@ -22,6 +22,147 @@ class _PremiumScreenState extends State<PremiumScreen>
   int _currentPlanIndex = 1; // Default to 'Premium' (Index 1)
   final PaymentService _paymentService = PaymentService();
 
+  final Map<String, Map<String, dynamic>> _countryData = {
+    'MW': {
+      'currency': 'MWK',
+      'pro_weekly': '5,000',
+      'pro_monthly': '10,000',
+      'premium_weekly': '7,000',
+      'premium_monthly': '15,000',
+      'elite_weekly': '10,000',
+      'elite_monthly': '30,000',
+      'credit_prefix': 'MK',
+      'credit_multiplier': 1,
+      'phone_prefix': '+265',
+    },
+    'ZA': {
+      'currency': 'ZAR',
+      'pro_weekly': '99',
+      'pro_monthly': '199',
+      'premium_weekly': '149',
+      'premium_monthly': '299',
+      'elite_weekly': '199',
+      'elite_monthly': '599',
+      'credit_prefix': 'R',
+      'credit_multiplier': 0.05,
+      'phone_prefix': '+27',
+    },
+    'ZM': {
+      'currency': 'ZMW',
+      'pro_weekly': '150',
+      'pro_monthly': '300',
+      'premium_weekly': '200',
+      'premium_monthly': '450',
+      'elite_weekly': '300',
+      'elite_monthly': '900',
+      'credit_prefix': 'K',
+      'credit_multiplier': 0.03,
+      'phone_prefix': '+260',
+    },
+    'TZ': {
+      'currency': 'TZS',
+      'pro_weekly': '15,000',
+      'pro_monthly': '30,000',
+      'premium_weekly': '20,000',
+      'premium_monthly': '45,000',
+      'elite_weekly': '30,000',
+      'elite_monthly': '90,000',
+      'credit_prefix': 'TSh',
+      'credit_multiplier': 3,
+      'phone_prefix': '+255',
+    },
+    'MZ': {
+      'currency': 'MZN',
+      'pro_weekly': '350',
+      'pro_monthly': '700',
+      'premium_weekly': '500',
+      'premium_monthly': '1,100',
+      'elite_weekly': '700',
+      'elite_monthly': '2,200',
+      'credit_prefix': 'MT',
+      'credit_multiplier': 0.06,
+      'phone_prefix': '+258',
+    },
+    'KE': {
+      'currency': 'KES',
+      'pro_weekly': '700',
+      'pro_monthly': '1,400',
+      'premium_weekly': '1,000',
+      'premium_monthly': '2,100',
+      'elite_weekly': '1,400',
+      'elite_monthly': '4,200',
+      'credit_prefix': 'KSh',
+      'credit_multiplier': 0.15,
+      'phone_prefix': '+254',
+    },
+    'UG': {
+      'currency': 'UGX',
+      'pro_weekly': '20,000',
+      'pro_monthly': '40,000',
+      'premium_weekly': '25,000',
+      'premium_monthly': '60,000',
+      'elite_weekly': '40,000',
+      'elite_monthly': '120,000',
+      'credit_prefix': 'USh',
+      'credit_multiplier': 4,
+      'phone_prefix': '+256',
+    },
+    'RW': {
+      'currency': 'RWF',
+      'pro_weekly': '6,500',
+      'pro_monthly': '13,000',
+      'premium_weekly': '9,000',
+      'premium_monthly': '19,000',
+      'elite_weekly': '13,000',
+      'elite_monthly': '39,000',
+      'credit_prefix': 'FRw',
+      'credit_multiplier': 1.3,
+      'phone_prefix': '+250',
+    },
+    'BW': {
+      'currency': 'BWP',
+      'pro_weekly': '70',
+      'pro_monthly': '140',
+      'premium_weekly': '100',
+      'premium_monthly': '210',
+      'elite_weekly': '140',
+      'elite_monthly': '420',
+      'credit_prefix': 'P',
+      'credit_multiplier': 0.014,
+      'phone_prefix': '+267',
+    },
+    'ZW': {
+      'currency': 'USD',
+      'pro_weekly': '4.99',
+      'pro_monthly': '9.99',
+      'premium_weekly': '6.99',
+      'premium_monthly': '14.99',
+      'elite_weekly': '9.99',
+      'elite_monthly': '29.99',
+      'credit_prefix': '\$',
+      'credit_multiplier': 0.001,
+      'phone_prefix': '+263',
+    },
+  };
+
+  Map<String, dynamic> _getPricing(String? countryCode) {
+    if (countryCode != null && _countryData.containsKey(countryCode)) {
+      return _countryData[countryCode]!;
+    }
+    // Default to USD
+    return {
+      'currency': 'USD',
+      'pro_weekly': '4.99',
+      'pro_monthly': '9.99',
+      'premium_weekly': '6.99',
+      'premium_monthly': '14.99',
+      'elite_weekly': '9.99',
+      'elite_monthly': '29.99',
+      'credit_prefix': '\$',
+      'credit_multiplier': 0.001,
+    };
+  }
+
   final List<String> proFeatures = [
     'Meet new friends',
     'Extended Filter',
@@ -144,8 +285,8 @@ class _PremiumScreenState extends State<PremiumScreen>
             height: 38,
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.black.withValues(alpha: 0.03),
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.03),
               borderRadius: BorderRadius.circular(19),
               border:
                   Border.all(color: isDark ? Colors.white12 : Colors.black12),
@@ -155,13 +296,13 @@ class _PremiumScreenState extends State<PremiumScreen>
               controller: _tabController,
               indicatorSize: TabBarIndicatorSize.tab,
               indicator: BoxDecoration(
-                  color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                  color: isDark ? Colors.white.withOpacity(0.1) : Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: isDark
                       ? []
                       : [
                           BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withOpacity(0.05),
                               blurRadius: 4,
                               offset: const Offset(0, 2))
                         ]),
@@ -268,7 +409,7 @@ class _PremiumScreenState extends State<PremiumScreen>
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                      color: const Color(0xFFFF4D85).withValues(alpha: 0.3),
+                      color: const Color(0xFFFF4D85).withOpacity(0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4))
                 ]
@@ -289,11 +430,30 @@ class _PremiumScreenState extends State<PremiumScreen>
   }
 
   Widget _getPlanCardForIndex(int index, bool isDark) {
+    final profileProvider = context.read<ProfileProvider>();
+    String? countryCode = profileProvider.userProfile?.countryCode;
+    
+    // Smart fallback: if countryCode is null but phone exists, try to detect from prefix
+    if (countryCode == null || countryCode.isEmpty) {
+      final phone = profileProvider.userProfile?.phoneNumber;
+      if (phone != null) {
+        for (var entry in _countryData.entries) {
+          if (phone.startsWith(entry.value['phone_prefix'])) {
+            countryCode = entry.key;
+            break;
+          }
+        }
+      }
+    }
+
+    final pricing = _getPricing(countryCode?.toUpperCase());
+
     if (index == 0) {
       return _buildPremiumGlassCard(
         title: 'PRO',
-        weeklyPrice: '5,000',
-        monthlyPrice: '10,000',
+        weeklyPrice: pricing['pro_weekly'],
+        monthlyPrice: pricing['pro_monthly'],
+        currency: pricing['currency'],
         features: proFeatures,
         accentColor: const Color(0xFF4FC3F7),
         icon: Iconsax.flash5,
@@ -302,8 +462,9 @@ class _PremiumScreenState extends State<PremiumScreen>
     } else if (index == 1) {
       return _buildPremiumGlassCard(
         title: 'PREMIUM',
-        weeklyPrice: '7,000',
-        monthlyPrice: '15,000',
+        weeklyPrice: pricing['premium_weekly'],
+        monthlyPrice: pricing['premium_monthly'],
+        currency: pricing['currency'],
         features: premiumFeatures,
         accentColor: const Color(0xFFFF4D85),
         icon: Iconsax.star5,
@@ -313,8 +474,9 @@ class _PremiumScreenState extends State<PremiumScreen>
     } else {
       return _buildPremiumGlassCard(
         title: 'ELITE',
-        weeklyPrice: '10,000',
-        monthlyPrice: '30,000',
+        weeklyPrice: pricing['elite_weekly'],
+        monthlyPrice: pricing['elite_monthly'],
+        currency: pricing['currency'],
         features: eliteFeatures,
         accentColor: const Color(0xFFB388FF),
         icon: Iconsax.crown5,
@@ -344,7 +506,7 @@ class _PremiumScreenState extends State<PremiumScreen>
             borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
             boxShadow: [
               BoxShadow(
-                color: accentColor.withValues(alpha: 0.15),
+                color: accentColor.withOpacity(0.15),
                 blurRadius: 40,
                 offset: const Offset(0, -10),
               )
@@ -361,7 +523,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                   height: 200,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: accentColor.withValues(alpha: 0.05),
+                    color: accentColor.withOpacity(0.05),
                   ),
                 ),
               ),
@@ -384,10 +546,10 @@ class _PremiumScreenState extends State<PremiumScreen>
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: accentColor.withValues(alpha: 0.1),
+                          color: accentColor.withOpacity(0.1),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: accentColor.withValues(alpha: 0.2),
+                            color: accentColor.withOpacity(0.2),
                             width: 1.5,
                           ),
                         ),
@@ -432,13 +594,13 @@ class _PremiumScreenState extends State<PremiumScreen>
                           gradient: LinearGradient(
                             colors: [
                               accentColor,
-                              accentColor.withValues(alpha: 0.8)
+                              accentColor.withOpacity(0.8)
                             ],
                           ),
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             BoxShadow(
-                              color: accentColor.withValues(alpha: 0.3),
+                              color: accentColor.withOpacity(0.3),
                               blurRadius: 15,
                               offset: const Offset(0, 8),
                             )
@@ -482,11 +644,11 @@ class _PremiumScreenState extends State<PremiumScreen>
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.white.withValues(alpha: 0.03)
-            : Colors.black.withValues(alpha: 0.02),
+            ? Colors.white.withOpacity(0.03)
+            : Colors.black.withOpacity(0.02),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
         ),
       ),
       child: Row(
@@ -531,7 +693,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: isPopular
-                    ? Colors.white.withValues(alpha: 0.9)
+                    ? Colors.white.withOpacity(0.9)
                     : (isDark ? Colors.white70 : Colors.black87),
               ),
             ),
@@ -545,6 +707,7 @@ class _PremiumScreenState extends State<PremiumScreen>
     required String title,
     required String weeklyPrice,
     required String monthlyPrice,
+    required String currency,
     required List<String> features,
     required Color accentColor,
     required IconData icon,
@@ -564,32 +727,32 @@ class _PremiumScreenState extends State<PremiumScreen>
             ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [themePink, themePink.withValues(alpha: 0.8)],
+                colors: [themePink, themePink.withOpacity(0.8)],
               )
             : LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: isDark
                     ? [
-                        Colors.white.withValues(alpha: 0.12),
-                        Colors.white.withValues(alpha: 0.05),
+                        Colors.white.withOpacity(0.12),
+                        Colors.white.withOpacity(0.05),
                       ]
                     : [
                         Colors.white,
-                        Colors.white.withValues(alpha: 0.9),
+                        Colors.white.withOpacity(0.9),
                       ],
               ),
         border: Border.all(
           color: isPopular
-              ? Colors.white.withValues(alpha: 0.3)
+              ? Colors.white.withOpacity(0.3)
               : (isDark ? Colors.white12 : Colors.black12),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isPopular
-                ? themePink.withValues(alpha: 0.4)
-                : (isDark ? Colors.black45 : Colors.black.withValues(alpha: 0.05)),
+                ? themePink.withOpacity(0.4)
+                : (isDark ? Colors.black45 : Colors.black.withOpacity(0.05)),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -611,7 +774,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        themePinkLight.withValues(alpha: 0.4),
+                        themePinkLight.withOpacity(0.4),
                         Colors.transparent,
                       ],
                     ),
@@ -631,8 +794,8 @@ class _PremiumScreenState extends State<PremiumScreen>
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isPopular
-                              ? Colors.white.withValues(alpha: 0.2)
-                              : accentColor.withValues(alpha: 0.1),
+                              ? Colors.white.withOpacity(0.2)
+                              : accentColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
@@ -690,7 +853,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'MWK/$period',
+                        '$currency/$period',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -720,8 +883,8 @@ class _PremiumScreenState extends State<PremiumScreen>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
                           backgroundColor: isPopular
-                              ? Colors.white.withValues(alpha: 0.15)
-                              : accentColor.withValues(alpha: 0.05),
+                              ? Colors.white.withOpacity(0.15)
+                              : accentColor.withOpacity(0.05),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -765,7 +928,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                         backgroundColor: isPopular
                             ? Colors.white
                             : (isDark
-                                ? Colors.white.withValues(alpha: 0.1)
+                                ? Colors.white.withOpacity(0.1)
                                 : Colors.black87),
                         foregroundColor: isPopular ? themePink : Colors.white,
                         elevation: 0,
@@ -808,19 +971,19 @@ class _PremiumScreenState extends State<PremiumScreen>
                     gradient: LinearGradient(
                       colors: isDark
                           ? [
-                              Colors.white.withValues(alpha: 0.08),
-                              Colors.white.withValues(alpha: 0.02)
+                              Colors.white.withOpacity(0.08),
+                              Colors.white.withOpacity(0.02)
                             ]
                           : [
-                              const Color(0xFFFFB300).withValues(alpha: 0.1),
-                              const Color(0xFFFFB300).withValues(alpha: 0.05)
+                              const Color(0xFFFFB300).withOpacity(0.1),
+                              const Color(0xFFFFB300).withOpacity(0.05)
                             ],
                     ),
                     borderRadius: BorderRadius.circular(32),
                     border: Border.all(
                       color: isDark
                           ? Colors.white12
-                          : const Color(0xFFFFB300).withValues(alpha: 0.2),
+                          : const Color(0xFFFFB300).withOpacity(0.2),
                     ),
                   ),
                   child: Column(
@@ -828,7 +991,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFB300).withValues(alpha: 0.15),
+                          color: const Color(0xFFFFB300).withOpacity(0.15),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Iconsax.wallet_3,
@@ -895,7 +1058,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFFFB300),
                       side: BorderSide(
-                        color: const Color(0xFFFFB300).withValues(alpha: 0.5),
+                        color: const Color(0xFFFFB300).withOpacity(0.5),
                         width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
@@ -951,24 +1114,44 @@ class _PremiumScreenState extends State<PremiumScreen>
   Widget _buildCreditGlassBundle(int amount, bool isDark,
       {bool isPopular = false, String? bonus}) {
     const themePink = Color(0xFFFF4D85);
+    final profileProvider = context.read<ProfileProvider>();
+    String? countryCode = profileProvider.userProfile?.countryCode;
+
+    // Smart fallback: if countryCode is null but phone exists, try to detect from prefix
+    if (countryCode == null || countryCode.isEmpty) {
+      final phone = profileProvider.userProfile?.phoneNumber;
+      if (phone != null) {
+        for (var entry in _countryData.entries) {
+          if (phone.startsWith(entry.value['phone_prefix'])) {
+            countryCode = entry.key;
+            break;
+          }
+        }
+      }
+    }
+
+    final pricing = _getPricing(countryCode?.toUpperCase());
+    final prefix = pricing['credit_prefix'];
+    final multiplier = pricing['credit_multiplier'] as num;
+    final priceValue = (amount * multiplier).toStringAsFixed(multiplier < 1 ? 2 : 0);
 
     return Container(
       decoration: BoxDecoration(
         color: isPopular
             ? themePink
-            : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white),
+            : (isDark ? Colors.white.withOpacity(0.05) : Colors.white),
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
           color: isPopular
-              ? Colors.white.withValues(alpha: 0.3)
-              : (isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
+              ? Colors.white.withOpacity(0.3)
+              : (isDark ? Colors.white12 : Colors.black.withOpacity(0.05)),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isPopular
-                ? themePink.withValues(alpha: 0.3)
-                : (isDark ? Colors.black45 : Colors.black.withValues(alpha: 0.05)),
+                ? themePink.withOpacity(0.3)
+                : (isDark ? Colors.black45 : Colors.black.withOpacity(0.05)),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -987,8 +1170,8 @@ class _PremiumScreenState extends State<PremiumScreen>
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: isPopular
-                          ? Colors.white.withValues(alpha: 0.2)
-                          : const Color(0xFFFFB300).withValues(alpha: 0.1),
+                          ? Colors.white.withOpacity(0.2)
+                          : const Color(0xFFFFB300).withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -1027,7 +1210,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                       color: isPopular
                           ? Colors.white
                           : (isDark
-                              ? Colors.white.withValues(alpha: 0.1)
+                              ? Colors.white.withOpacity(0.1)
                               : Colors.black87),
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -1035,7 +1218,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                       onPressed: () => _showPaymentSheet(
                         context,
                         title: '$amount Credits',
-                        price: amount.toDouble(),
+                        price: double.parse(priceValue.replaceAll(',', '')),
                         type: 'credits',
                       ),
                       style: ElevatedButton.styleFrom(
@@ -1046,7 +1229,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                             borderRadius: BorderRadius.circular(16)),
                       ),
                       child: Text(
-                        'MK $amount',
+                        '$prefix $priceValue',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
@@ -1241,8 +1424,8 @@ class _WithdrawalSheetState extends State<_WithdrawalSheet> {
                 prefixIcon: const Icon(Iconsax.coin),
                 filled: true,
                 fillColor: widget.isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.03),
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.black.withOpacity(0.03),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none),
@@ -1283,8 +1466,8 @@ class _WithdrawalSheetState extends State<_WithdrawalSheet> {
                 prefixIcon: const Icon(Iconsax.mobile),
                 filled: true,
                 fillColor: widget.isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.03),
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.black.withOpacity(0.03),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none),
@@ -1296,10 +1479,10 @@ class _WithdrawalSheetState extends State<_WithdrawalSheet> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFB300).withValues(alpha: 0.05),
+                color: const Color(0xFFFFB300).withOpacity(0.05),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                    color: const Color(0xFFFFB300).withValues(alpha: 0.1)),
+                    color: const Color(0xFFFFB300).withOpacity(0.1)),
               ),
               child: Column(
                 children: [
@@ -1373,7 +1556,7 @@ class _WithdrawalSheetState extends State<_WithdrawalSheet> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             color: isSelected
-                ? const Color(0xFFFFB300).withValues(alpha: 0.1)
+                ? const Color(0xFFFFB300).withOpacity(0.1)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
@@ -1694,7 +1877,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.1),
+            color: Colors.black.withOpacity(isDark ? 0.5 : 0.1),
             blurRadius: 20,
             spreadRadius: 5,
           )
@@ -1795,16 +1978,16 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.white.withValues(alpha: 0.05)
+                            ? Colors.white.withOpacity(0.05)
                             : Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                             color: isDark
-                                ? Colors.white.withValues(alpha: 0.1)
-                                : Colors.black.withValues(alpha: 0.05)),
+                                ? Colors.white.withOpacity(0.1)
+                                : Colors.black.withOpacity(0.05)),
                         boxShadow: [
                           BoxShadow(
-                            color: opColor.withValues(alpha: 0.1),
+                            color: opColor.withOpacity(0.1),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           )
@@ -1822,13 +2005,13 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
+                                    color: Colors.black.withOpacity(0.1),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   )
                                 ],
                                 border: Border.all(
-                                    color: opColor.withValues(alpha: 0.2), width: 2),
+                                    color: opColor.withOpacity(0.2), width: 2),
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(18),
@@ -1868,7 +2051,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: opColor.withValues(alpha: 0.1),
+                                color: opColor.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Iconsax.arrow_right_3,
@@ -1908,13 +2091,13 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: isDark
-                ? Colors.white.withValues(alpha: 0.05)
-                : Colors.black.withValues(alpha: 0.03),
+                ? Colors.white.withOpacity(0.05)
+                : Colors.black.withOpacity(0.03),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.05)),
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.05)),
           ),
           child: Column(
             children: [
@@ -1928,7 +2111,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
                       borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withOpacity(0.05),
                           blurRadius: 10,
                         )
                       ],
@@ -2024,7 +2207,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFF4D85).withValues(alpha: 0.3),
+                color: const Color(0xFFFF4D85).withOpacity(0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -2100,7 +2283,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.greenAccent.withValues(alpha: 0.1),
+              color: Colors.greenAccent.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(Iconsax.tick_circle5,
@@ -2133,7 +2316,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFF4D85).withValues(alpha: 0.3),
+                  color: const Color(0xFFFF4D85).withOpacity(0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
@@ -2167,7 +2350,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.redAccent.withValues(alpha: 0.1),
+              color: Colors.redAccent.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child:
@@ -2183,7 +2366,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
             _errorMsg,
             textAlign: TextAlign.center,
             style: TextStyle(
-                color: Colors.redAccent.withValues(alpha: 0.8),
+                color: Colors.redAccent.withOpacity(0.8),
                 fontSize: 16,
                 height: 1.5),
           ),
@@ -2195,7 +2378,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
               onPressed: () => setState(() => _step = 1),
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black12,
+                    isDark ? Colors.white.withOpacity(0.05) : Colors.black12,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16)),
@@ -2254,7 +2437,7 @@ class _PulsingLogoState extends State<_PulsingLogo>
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF4D85).withValues(alpha: 0.4),
+              color: const Color(0xFFFF4D85).withOpacity(0.4),
               blurRadius: 30,
               spreadRadius: 10,
             ),

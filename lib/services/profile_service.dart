@@ -611,6 +611,19 @@ class ProfileService {
     }
   }
 
+  /// Adds a target UID to the user's unlockedViewers list
+  Future<void> unlockViewer(String uid, String targetId) async {
+    try {
+      await _usersCollection.doc(uid).update({
+        'unlockedViewers': FieldValue.arrayUnion([targetId]),
+      });
+      debugPrint('ProfileService: Unlocked viewer $targetId for user $uid');
+    } catch (e) {
+      debugPrint('Error unlocking viewer: $e');
+      rethrow;
+    }
+  }
+
   /// Claims a specific reward atomically
   Future<void> claimReward({
     required String uid,
@@ -626,9 +639,8 @@ class ProfileService {
 
       if (isDaily) {
         updates['lastDailyRewardDate'] = todayDate;
-      } else {
-        updates['claimedRewards'] = FieldValue.arrayUnion([rewardId]);
       }
+      updates['claimedRewards'] = FieldValue.arrayUnion([rewardId]);
 
       await _usersCollection.doc(uid).update(updates);
       debugPrint('ProfileService: Claimed $rewardId for $uid (+$amount credits)');

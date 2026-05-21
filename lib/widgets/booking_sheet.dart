@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/booking_model.dart';
-import '../services/chat_service.dart';
-import '../utils/date_formatter.dart';
 import 'package:provider/provider.dart';
+import '../models/booking_model.dart';
+import '../models/user_profile_model.dart';
+import '../services/chat_service.dart';
+import '../services/profile_service.dart';
+import '../utils/date_formatter.dart';
 import '../providers/profile_provider.dart';
 
 class BookingSheet extends StatefulWidget {
@@ -28,9 +30,37 @@ class BookingSheet extends StatefulWidget {
 class _BookingSheetState extends State<BookingSheet> {
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 19, minute: 0);
-  final TextEditingController _noteController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _senderNoteController = TextEditingController();
   bool _isSubmitting = false;
+  bool _isLoadingProfile = true;
+  UserProfile? _recipientProfile;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecipientProfile();
+  }
+
+  @override
+  void dispose() {
+    _senderNoteController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadRecipientProfile() async {
+    final profile = await ProfileService().getUserProfile(widget.otherUserId);
+    if (mounted) {
+      setState(() {
+        _recipientProfile = profile;
+        _isLoadingProfile = false;
+      });
+    }
+  }
+
+  bool get _hasBookingPrefs =>
+      (_recipientProfile?.bookingLocation?.isNotEmpty ?? false) ||
+      (_recipientProfile?.bookingRate?.isNotEmpty ?? false) ||
+      (_recipientProfile?.bookingNotes?.isNotEmpty ?? false);
 
   Future<void> _selectDate() async {
     final picked = await showDatePicker(
@@ -38,52 +68,43 @@ class _BookingSheetState extends State<BookingSheet> {
       initialDate: _selectedDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 90)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFFFF4D85),
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Color(0xFFFF4D85),
+            onPrimary: Colors.white,
+            onSurface: Colors.black,
           ),
-          child: child!,
-        );
-      },
+        ),
+        child: child!,
+      ),
     );
-    if (picked != null) {
-      setState(() => _selectedDate = picked);
-    }
+    if (picked != null) setState(() => _selectedDate = picked);
   }
 
   Future<void> _selectTime() async {
     final picked = await showTimePicker(
       context: context,
       initialTime: _selectedTime,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFFFF4D85),
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Color(0xFFFF4D85),
+            onPrimary: Colors.white,
+            onSurface: Colors.black,
           ),
-          child: child!,
-        );
-      },
+        ),
+        child: child!,
+      ),
     );
-    if (picked != null) {
-      setState(() => _selectedTime = picked);
-    }
+    if (picked != null) setState(() => _selectedTime = picked);
   }
 
   void _confirmAndSubmit() async {
     if (_isSubmitting) return;
 
-    final lp = context.read<ProfileProvider>(); // We'll use this for credits
-    final userProfile = lp.userProfile;
-
+    final profileProvider = context.read<ProfileProvider>();
+    final userProfile = profileProvider.userProfile;
     if (userProfile == null) return;
 
     if (userProfile.credits < 100) {
@@ -95,8 +116,10 @@ class _BookingSheetState extends State<BookingSheet> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Confirm Date Proposal', style: TextStyle(fontWeight: FontWeight.w800)),
-        content: const Text('Sending a date proposal costs 100 credits. Do you want to proceed?'),
+        title: const Text('Confirm Booking Request',
+            style: TextStyle(fontWeight: FontWeight.w800)),
+        content: const Text(
+            'Sending a booking request costs 100 credits. Do you want to proceed?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -114,9 +137,7 @@ class _BookingSheetState extends State<BookingSheet> {
       ),
     );
 
-    if (confirm == true) {
-      _submitBooking();
-    }
+    if (confirm == true) _submitBooking();
   }
 
   void _showInsufficientCreditsDialog() {
@@ -125,7 +146,7 @@ class _BookingSheetState extends State<BookingSheet> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Insufficient Credits'),
-        content: const Text('You need 100 credits to send a date proposal.'),
+        content: const Text('You need 100 credits to send a booking request.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -138,8 +159,10 @@ class _BookingSheetState extends State<BookingSheet> {
 
   void _submitBooking() async {
     if (_isSubmitting) return;
-
     setState(() => _isSubmitting = true);
+
+    final profileProvider = context.read<ProfileProvider>();
+    final myProfile = profileProvider.userProfile;
 
     final finalDateTime = DateTime(
       _selectedDate.year,
@@ -149,55 +172,53 @@ class _BookingSheetState extends State<BookingSheet> {
       _selectedTime.minute,
     );
 
-    final booking = BookingModel(
-      id: '', // Will be set by Firestore
-      senderId: widget.myUid,
-      receiverId: widget.otherUserId,
-      dateTime: finalDateTime,
-      location: _locationController.text.trim().isNotEmpty ? _locationController.text.trim() : null,
-      timestamp: DateTime.now(),
-      note: _noteController.text.trim().isNotEmpty ? _noteController.text.trim() : null,
-    );
-
     try {
-      final lp = context.read<ProfileProvider>();
-      await lp.useCredits(100);
+      await profileProvider.useCredits(100);
 
-      // We need to get the booking ID after creation to send in chat
-      // Let's modify createBooking to return the ID or just use a manual ID
       final docRef = FirebaseFirestore.instance.collection('bookings').doc();
-      final bookingWithId = BookingModel(
+      final booking = BookingModel(
         id: docRef.id,
-        senderId: booking.senderId,
-        receiverId: booking.receiverId,
-        dateTime: booking.dateTime,
-        location: booking.location,
-        timestamp: booking.timestamp,
-        note: booking.note,
+        senderId: widget.myUid,
+        receiverId: widget.otherUserId,
+        senderName: myProfile?.firstName ?? 'Someone',
+        receiverName: widget.otherUserName,
+        senderPhoto: myProfile?.photos.isNotEmpty == true ? myProfile!.photos.first : null,
+        receiverPhoto: _recipientProfile?.photos.isNotEmpty == true ? _recipientProfile!.photos.first : null,
+        dateTime: finalDateTime,
+        location: _recipientProfile?.bookingLocation,
+        rate: _recipientProfile?.bookingRate,
+        note: _recipientProfile?.bookingNotes,
+        senderNote: _senderNoteController.text.trim().isNotEmpty
+            ? _senderNoteController.text.trim()
+            : null,
+        timestamp: DateTime.now(),
       );
 
-      await docRef.set(bookingWithId.toMap());
-      
-      // Send message in chat
+      await docRef.set(booking.toMap());
+
       final dateStr = DateFormatter.formatBookingDateTime(finalDateTime);
       await ChatService().sendBookingMessage(
         chatId: widget.chatId,
         senderId: widget.myUid,
         receiverId: widget.otherUserId,
         bookingId: docRef.id,
-        text: 'I\'d like to propose a date on $dateStr',
+        text: 'I\'d like to book a date on $dateStr',
       );
 
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Date proposal sent!')),
+          const SnackBar(
+            content: Text('Booking request sent! 🎉'),
+            backgroundColor: Color(0xFFFF4D85),
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error proposing date: $e')),
+          SnackBar(content: Text('Error sending request: $e')),
         );
       }
     } finally {
@@ -207,11 +228,11 @@ class _BookingSheetState extends State<BookingSheet> {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 
-                MediaQuery.of(context).padding.bottom + 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).padding.bottom +
+            20,
         top: 20,
         left: 20,
         right: 20,
@@ -220,109 +241,184 @@ class _BookingSheetState extends State<BookingSheet> {
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              const Icon(Iconsax.calendar_add, color: Color(0xFFFF4D85), size: 28),
-              const SizedBox(width: 12),
-              Text(
-                'Plan a Date with ${widget.otherUserName}',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          
-          // Date Selection
-          _buildSelectionRow(
-            icon: Iconsax.calendar,
-            label: 'Select Date',
-            value: '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-            onTap: _selectDate,
-          ),
-          const SizedBox(height: 16),
-          
-          // Time Selection
-          _buildSelectionRow(
-            icon: Iconsax.clock,
-            label: 'Select Time',
-            value: _selectedTime.format(context),
-            onTap: _selectTime,
-          ),
-          const SizedBox(height: 24),
-          
-          // Location
-          TextField(
-            controller: _locationController,
-            decoration: InputDecoration(
-              hintText: 'Where? (e.g. Starbucks, Central Park)',
-              prefixIcon: const Icon(Iconsax.location),
-              filled: true,
-              fillColor: Theme.of(context).cardColor,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          
-          // Note
-          TextField(
-            controller: _noteController,
-            maxLines: 2,
-            decoration: InputDecoration(
-              hintText: 'Add a sweet note...',
-              prefixIcon: const Icon(Iconsax.message_edit),
-              filled: true,
-              fillColor: Theme.of(context).cardColor,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-          
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: _isSubmitting ? null : _confirmAndSubmit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4D85),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                elevation: 0,
-              ),
-              child: _isSubmitting
-                  ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                    )
-                  : const Text(
-                      'Send Date Proposal',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+      child: _isLoadingProfile
+          ? const Padding(
+              padding: EdgeInsets.symmetric(vertical: 60),
+              child: Center(
+                  child: CircularProgressIndicator(color: Color(0xFFFF4D85))),
+            )
+          : SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Header
+                  Row(
+                    children: [
+                      const Icon(Iconsax.calendar_add,
+                          color: Color(0xFFFF4D85), size: 28),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Book with ${widget.otherUserName}',
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w800),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ── Recipient's booking preferences card ───────────
+                  if (_hasBookingPrefs) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF4D85).withOpacity(0.07),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: const Color(0xFFFF4D85).withOpacity(0.2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Iconsax.info_circle,
+                                  color: Color(0xFFFF4D85), size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${widget.otherUserName}\'s Booking Info',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFFFF4D85),
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (_recipientProfile?.bookingLocation?.isNotEmpty ??
+                              false) ...[
+                            const SizedBox(height: 10),
+                            _prefRow(Iconsax.location,
+                                _recipientProfile!.bookingLocation!),
+                          ],
+                          if (_recipientProfile?.bookingRate?.isNotEmpty ??
+                              false) ...[
+                            const SizedBox(height: 6),
+                            _prefRow(Iconsax.money,
+                                _recipientProfile!.bookingRate!),
+                          ],
+                          if (_recipientProfile?.bookingNotes?.isNotEmpty ??
+                              false) ...[
+                            const SizedBox(height: 6),
+                            _prefRow(Iconsax.note_text,
+                                _recipientProfile!.bookingNotes!),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // ── Date & Time ────────────────────────────────────
+                  _buildSelectionRow(
+                    icon: Iconsax.calendar,
+                    label: 'Date',
+                    value:
+                        '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                    onTap: _selectDate,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildSelectionRow(
+                    icon: Iconsax.clock,
+                    label: 'Time',
+                    value: _selectedTime.format(context),
+                    onTap: _selectTime,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // ── Personal note from sender ──────────────────────
+                  TextField(
+                    controller: _senderNoteController,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      hintText: 'Add a personal message (optional)...',
+                      prefixIcon: const Icon(Iconsax.message_edit),
+                      filled: true,
+                      fillColor: Theme.of(context).cardColor,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // ── Send button ────────────────────────────────────
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _confirmAndSubmit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF4D85),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                        elevation: 0,
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2),
+                            )
+                          : const Text(
+                              'Send Booking Request',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w700),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _prefRow(IconData icon, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: Colors.grey),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -362,4 +458,3 @@ class _BookingSheetState extends State<BookingSheet> {
     );
   }
 }
-

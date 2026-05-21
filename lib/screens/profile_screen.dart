@@ -110,7 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: _primaryColor.withValues(alpha: 0.2),
+                    color: _primaryColor.withOpacity(0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   )
@@ -121,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 child: CircleAvatar(
                   radius: 61,
-                  backgroundColor: _primaryColor.withValues(alpha: 0.1),
+                  backgroundColor: _primaryColor.withOpacity(0.1),
                   child: ClipOval(
                     child: (_profile.photos.isNotEmpty ||
                             _user?.photoURL != null)
@@ -201,7 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           boxShadow: [
             BoxShadow(
               color:
-                  (isComplete ? Colors.green : _primaryColor).withValues(alpha: 0.3),
+                  (isComplete ? Colors.green : _primaryColor).withOpacity(0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -218,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: CircularProgressIndicator(
                     value: _profile.completionPercentage / 100,
                     strokeWidth: 6,
-                    backgroundColor: Colors.white.withValues(alpha: 0.3),
+                    backgroundColor: Colors.white.withOpacity(0.3),
                     valueColor:
                         const AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
@@ -252,7 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ? languageProvider.getString('tap_update_details')
                         : languageProvider.getString('matches_3x_likely'),
                     style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: Colors.white.withOpacity(0.9),
                         fontSize: 14,
                         height: 1.3),
                   ),
@@ -262,7 +262,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Iconsax.arrow_right_3,
@@ -350,8 +350,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           boxShadow: [
             BoxShadow(
               color: Theme.of(context).brightness == Brightness.light
-                  ? Colors.black.withValues(alpha: 0.04)
-                  : Colors.black.withValues(alpha: 0.2),
+                  ? Colors.black.withOpacity(0.04)
+                  : Colors.black.withOpacity(0.2),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -362,7 +362,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: _primaryColor.withValues(alpha: 0.1),
+                color: _primaryColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: _primaryColor, size: 28),
