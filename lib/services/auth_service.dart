@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:datedash/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -94,7 +95,12 @@ class AuthService {
 
   // Sign out
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    try {
+      await _googleSignIn.signOut();
+    } catch (e) {
+      // Ignore errors from Google sign out (e.g. if not signed in with Google or config missing)
+      debugPrint('Google Sign-In signOut error: $e');
+    }
     await _auth.signOut();
   }
 

@@ -1346,6 +1346,7 @@ class _WithdrawalSheetState extends State<_WithdrawalSheet> {
   final TextEditingController _phoneController = TextEditingController();
   PaymentOperator? _selectedOperator;
   bool _isProcessing = false;
+  String? _errorMessage; // shown inline inside the sheet
 
   // 1 Credit = 1 MWK (example conversion)
   // Fees: 20% Service, 5% Gateway = 25% total
@@ -1406,7 +1407,42 @@ class _WithdrawalSheetState extends State<_WithdrawalSheet> {
                 fontSize: 14,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
+
+            // Inline error banner
+            if (_errorMessage != null)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline_rounded,
+                        color: Colors.red.shade700, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(
+                          color: Colors.red.shade800,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => setState(() => _errorMessage = null),
+                      child: Icon(Icons.close_rounded,
+                          color: Colors.red.shade400, size: 18),
+                    ),
+                  ],
+                ),
+              ),
 
             // Amount Input
             Text(
@@ -1663,8 +1699,7 @@ class _WithdrawalSheetState extends State<_WithdrawalSheet> {
   }
 
   void _showError(String msg) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
+    setState(() => _errorMessage = msg);
   }
 
   void _showSuccessDialog() {

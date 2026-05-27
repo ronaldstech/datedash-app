@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:convert';
 import '../models/chat_model.dart';
 import 'local_db_service.dart';
+import 'profile_service.dart';
 
 class ChatService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -27,6 +28,8 @@ class ChatService {
     final docRef = _firestore.collection('chats').doc(chatId);
     final doc = await docRef.get();
 
+    final isMatched = await ProfileService().checkMatchStatus(myUid, otherUid);
+
     if (!doc.exists) {
       await docRef.set({
         'participants': [myUid, otherUid],
@@ -35,7 +38,17 @@ class ChatService {
         'lastMessageSenderId': '',
         'unreadCount': {myUid: 0, otherUid: 0},
         'createdAt': FieldValue.serverTimestamp(),
+        'requestStatus': isMatched ? 'accepted' : 'pending',
+        'requestSenderId': isMatched ? null : myUid,
       });
+    } else {
+      final data = doc.data() as Map<String, dynamic>;
+      if (!isMatched && data['requestStatus'] == null) {
+        await docRef.update({
+          'requestStatus': 'pending',
+          'requestSenderId': myUid,
+        });
+      }
     }
 
     return chatId;
@@ -74,9 +87,8 @@ class ChatService {
           dailyCount = 0;
         }
         
-        if (dailyCount >= 5) {
-          throw Exception('Daily free message limit reached. Upgrade to Premium for unlimited messages!');
-        }
+        // We no longer throw an exception here. 
+        // The client-side handles charging credits after the 5 free messages are used up.
         
         await senderRef.update({
           'dailyMessageCount': dailyCount + 1,
@@ -169,9 +181,8 @@ class ChatService {
           dailyCount = 0;
         }
         
-        if (dailyCount >= 5) {
-          throw Exception('Daily free message limit reached. Upgrade to Premium for unlimited messages!');
-        }
+        // We no longer throw an exception here. 
+        // The client-side handles charging credits after the 5 free messages are used up.
         
         await senderRef.update({
           'dailyMessageCount': dailyCount + 1,
@@ -271,9 +282,8 @@ class ChatService {
           dailyCount = 0;
         }
         
-        if (dailyCount >= 5) {
-          throw Exception('Daily free message limit reached. Upgrade to Premium for unlimited messages!');
-        }
+        // We no longer throw an exception here. 
+        // The client-side handles charging credits after the 5 free messages are used up.
         
         await senderRef.update({
           'dailyMessageCount': dailyCount + 1,
@@ -977,6 +987,36 @@ class ChatService {
     } catch (e) {
       debugPrint('Error deleting message: $e');
       rethrow;
+    }
+  }
+
+  /// Stream of a single chat document
+  Stream<Chat?> getChatStream(String chatId) {
+    return _firestore.collection('chats').doc(chatId).snapshots().map((snap) {
+      if (!snap.exists || snap.data() == null) return null;
+      return Chat.fromDoc(snap);
+    });
+  }
+
+  /// Accept a message request
+  Future<void> acceptRequest(String chatId) async {
+    try {
+      await _firestore.collection('chats').doc(chatId).update({
+        'requestStatus': 'accepted',
+      });
+    } catch (e) {
+      debugPrint('Error accepting request: $e');
+    }
+  }
+
+  /// Decline a message request
+  Future<void> declineRequest(String chatId) async {
+    try {
+      await _firestore.collection('chats').doc(chatId).update({
+        'requestStatus': 'declined',
+      });
+    } catch (e) {
+      debugPrint('Error declining request: $e');
     }
   }
 }

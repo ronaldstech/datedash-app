@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
-import '../screens/auth/sign_in_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/likes_screen.dart';
@@ -22,12 +21,7 @@ class ProfileDrawer extends StatelessWidget {
 
   void _handleLogout(BuildContext context) async {
     await AuthService().signOut();
-    if (context.mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const SignInScreen()),
-        (route) => false,
-      );
-    }
+    // No manual navigation needed here as main.dart listens to auth state changes
   }
 
   @override

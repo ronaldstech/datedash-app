@@ -1456,9 +1456,14 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
               if (occupation != null && occupation.isNotEmpty)
                 _buildInfoChip(
                   icon: Iconsax.briefcase,
-                  label: school != null && school.isNotEmpty
-                      ? '$occupation at $school'
-                      : occupation,
+                  label: occupation,
+                ),
+
+              // School / Education
+              if (school != null && school.isNotEmpty)
+                _buildInfoChip(
+                  icon: Iconsax.book,
+                  label: school,
                 ),
 
               // Distance
@@ -1745,6 +1750,7 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
 
     if (isPremium) {
       await profileProvider.resetSwipes();
+      _reload();
       return;
     }
 
@@ -1800,15 +1806,15 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                       content: Text(lp.getString('swipes_reset_success')),
                       backgroundColor: Colors.green,
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15)),
                       margin: const EdgeInsets.all(16),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   );
                 }
+                _reload();
               } catch (e) {
                 if (mounted) {
-                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(lp.getString('swipes_reset_failed')),

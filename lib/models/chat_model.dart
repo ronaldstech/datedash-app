@@ -111,6 +111,8 @@ class Chat {
   final String lastMessageSenderId;
   final Map<String, int> unreadCount;
   final bool isSuperRequest;
+  final String? requestStatus;
+  final String? requestSenderId;
 
   Chat({
     required this.id,
@@ -120,6 +122,8 @@ class Chat {
     this.lastMessageSenderId = '',
     this.unreadCount = const {},
     this.isSuperRequest = false,
+    this.requestStatus,
+    this.requestSenderId,
   });
 
   factory Chat.fromDoc(DocumentSnapshot doc) {
@@ -137,6 +141,8 @@ class Chat {
             {},
       ),
       isSuperRequest: data['isSuperRequest'] ?? false,
+      requestStatus: data['requestStatus'],
+      requestSenderId: data['requestSenderId'],
     );
   }
 

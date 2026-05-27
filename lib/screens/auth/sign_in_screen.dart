@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import '../../screens/landing_screen.dart';
 import 'sign_up_screen.dart';
 import 'phone_auth_screen.dart';
 import '../../widgets/social_login_button.dart';
@@ -37,11 +36,6 @@ class _SignInScreenState extends State<SignInScreen> {
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const LandingScreen()),
-        );
-      }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -56,12 +50,7 @@ class _SignInScreenState extends State<SignInScreen> {
   Future<void> _handleGoogleSignIn() async {
     setState(() => _isLoading = true);
     try {
-      final user = await _authService.signInWithGoogle();
-      if (user != null && mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const LandingScreen()),
-        );
-      }
+      await _authService.signInWithGoogle();
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

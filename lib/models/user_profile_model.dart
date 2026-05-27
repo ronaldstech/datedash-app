@@ -71,6 +71,7 @@ class UserProfile {
   bool showDistance;
   bool allowMessages;
   bool allowBookingRequests;
+  bool hideProfile;
   // 📅 Booking Preferences (set by the user, shown to those who send requests)
   String? bookingLocation;
   String? bookingRate;
@@ -146,6 +147,7 @@ class UserProfile {
     this.showDistance = true,
     this.allowMessages = true,
     this.allowBookingRequests = true,
+    this.hideProfile = false,
     this.bookingLocation,
     this.bookingRate,
     this.bookingNotes,
@@ -298,6 +300,7 @@ class UserProfile {
         showDistance: map['showDistance'] ?? true,
         allowMessages: map['allowMessages'] ?? true,
         allowBookingRequests: map['allowBookingRequests'] ?? true,
+        hideProfile: map['hideProfile'] ?? false,
         bookingLocation: map['bookingLocation'],
         bookingRate: map['bookingRate'],
         bookingNotes: map['bookingNotes'],
@@ -403,6 +406,7 @@ class UserProfile {
       'showDistance': showDistance,
       'allowMessages': allowMessages,
       'allowBookingRequests': allowBookingRequests,
+      'hideProfile': hideProfile,
       'bookingLocation': bookingLocation,
       'bookingRate': bookingRate,
       'bookingNotes': bookingNotes,

@@ -7,6 +7,7 @@ import '../providers/language_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/local_db_service.dart';
+import 'premium_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -620,6 +621,8 @@ class SettingsScreen extends StatelessWidget {
             final profile = profileProvider.userProfile;
             if (profile == null) return const SizedBox.shrink();
 
+            final isPremium = profileProvider.userProfile?.isPremium ?? false;
+
             return Column(
               children: [
                 _buildPrivacyTile(
@@ -629,12 +632,17 @@ class SettingsScreen extends StatelessWidget {
                   languageProvider.getString('show_age_sub'),
                   profile.showAge,
                   (val) {
+                    if (!isPremium) {
+                      _showPremiumDialog(context, languageProvider);
+                      return;
+                    }
                     profile.showAge = val;
                     final user = profileProvider.currentUser;
                     if (user != null) {
                       profileProvider.saveUserProfile(user.uid, profile);
                     }
                   },
+                  isPremiumLocked: !isPremium,
                 ),
                 _buildPrivacyTile(
                   context,
@@ -643,12 +651,36 @@ class SettingsScreen extends StatelessWidget {
                   languageProvider.getString('show_distance_sub'),
                   profile.showDistance,
                   (val) {
+                    if (!isPremium) {
+                      _showPremiumDialog(context, languageProvider);
+                      return;
+                    }
                     profile.showDistance = val;
                     final user = profileProvider.currentUser;
                     if (user != null) {
                       profileProvider.saveUserProfile(user.uid, profile);
                     }
                   },
+                  isPremiumLocked: !isPremium,
+                ),
+                _buildPrivacyTile(
+                  context,
+                  Iconsax.eye_slash,
+                  languageProvider.getString('hide_profile'),
+                  languageProvider.getString('hide_profile_sub'),
+                  profile.hideProfile,
+                  (val) {
+                    if (!isPremium) {
+                      _showPremiumDialog(context, languageProvider);
+                      return;
+                    }
+                    profile.hideProfile = val;
+                    final user = profileProvider.currentUser;
+                    if (user != null) {
+                      profileProvider.saveUserProfile(user.uid, profile);
+                    }
+                  },
+                  isPremiumLocked: !isPremium,
                 ),
                 _buildPrivacyTile(
                   context,
@@ -841,14 +873,69 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  void _showPremiumDialog(BuildContext context, LanguageProvider languageProvider) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            const Icon(Iconsax.crown5, color: Colors.amber, size: 28),
+            const SizedBox(width: 12),
+            Text(
+              languageProvider.currentLanguageCode == 'sw' ? 'Kipengele cha Premium' : 'Premium Feature',
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ],
+        ),
+        content: Text(
+          languageProvider.currentLanguageCode == 'sw'
+              ? 'Kuficha umri, umbali, au wasifu wako ni kipengele cha Premium. Boresha mpango wako ili kupata udhibiti kamili!'
+              : 'Hiding your age, distance, or profile is a Premium feature. Upgrade your plan to gain full control over your privacy!',
+          style: const TextStyle(height: 1.5, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              languageProvider.getString('cancel'),
+              style: TextStyle(color: Theme.of(context).hintColor, fontWeight: FontWeight.w600),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PremiumScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4D85),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(
+              languageProvider.currentLanguageCode == 'sw' ? 'Pata Premium' : 'Upgrade Now',
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPrivacyTile(
     BuildContext context,
     IconData icon,
     String title,
     String subtitle,
     bool value,
-    Function(bool) onChanged,
-  ) {
+    Function(bool) onChanged, {
+    bool isPremiumLocked = false,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -868,14 +955,52 @@ class SettingsScreen extends StatelessWidget {
         secondary: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF4D85).withOpacity(0.1),
+            color: isPremiumLocked 
+                ? Colors.amber.withOpacity(0.1)
+                : const Color(0xFFFF4D85).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: const Color(0xFFFF4D85), size: 22),
+          child: Icon(
+            icon,
+            color: isPremiumLocked ? Colors.amber : const Color(0xFFFF4D85),
+            size: 22,
+          ),
         ),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+              ),
+            ),
+            if (isPremiumLocked) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.amber.withOpacity(0.3), width: 0.5),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Iconsax.crown, color: Colors.amber, size: 10),
+                    SizedBox(width: 2),
+                    Text(
+                      'PRO',
+                      style: TextStyle(
+                        color: Colors.amber,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
         subtitle: Text(
           subtitle,
@@ -885,7 +1010,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
         value: value,
-        activeColor: const Color(0xFFFF4D85),
+        activeColor: isPremiumLocked ? Colors.amber : const Color(0xFFFF4D85),
         onChanged: onChanged,
       ),
     );

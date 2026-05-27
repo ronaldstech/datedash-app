@@ -4,7 +4,6 @@ import 'package:intl_phone_field/country_picker_dialog.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../screens/landing_screen.dart';
 import '../../widgets/social_login_button.dart';
 import '../../services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -92,13 +91,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _nameController.text.trim(),
         _phoneNumber,
       );
-      // Optional: You could update the user profile with the name here
-      if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LandingScreen()),
-          (route) => false,
-        );
-      }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -113,13 +105,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _handleGoogleSignIn() async {
     setState(() => _isLoading = true);
     try {
-      final user = await _authService.signInWithGoogle();
-      if (user != null && mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LandingScreen()),
-          (route) => false,
-        );
-      }
+      await _authService.signInWithGoogle();
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

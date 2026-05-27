@@ -106,6 +106,9 @@ class ProfileService {
           data['uid'] = doc.id;
           final profile = UserProfile.fromMap(data);
 
+          // Skip users who have hidden their profile
+          if (profile.hideProfile == true) continue;
+
           if (profile.firstName == null) {
             debugPrint('Warning: User ${doc.id} has no firstName');
           }
@@ -384,11 +387,15 @@ class ProfileService {
         .where('lookingFor', arrayContains: category)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.where((doc) => doc.id != currentUserId).map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        data['uid'] = doc.id;
-        return UserProfile.fromMap(data);
-      }).toList();
+      return snapshot.docs
+          .where((doc) => doc.id != currentUserId)
+          .map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            data['uid'] = doc.id;
+            return UserProfile.fromMap(data);
+          })
+          .where((profile) => profile.hideProfile != true)
+          .toList();
     });
   }
 
@@ -414,7 +421,9 @@ class ProfileService {
         try {
           final data = doc.data() as Map<String, dynamic>;
           data['uid'] = doc.id;
-          profiles.add(UserProfile.fromMap(data));
+          final profile = UserProfile.fromMap(data);
+          if (profile.hideProfile == true) continue;
+          profiles.add(profile);
         } catch (e) {
           debugPrint('Error parsing profile ${doc.id}: $e');
         }

@@ -211,7 +211,19 @@ class _ChatScreenState extends State<ChatScreen> {
     // Premium users have unlimited messages
     if (user.isPremium) return true;
 
-    // Check balance
+    // Check if user has free daily messages left
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    int dailyCount = user.dailyMessageCount;
+    if (user.lastMessageResetDate != today) {
+      dailyCount = 0;
+    }
+
+    if (dailyCount < 5) {
+      // It's a free message, no credits needed!
+      return true;
+    }
+
+    // Daily limit reached, they must use credits
     if (user.credits >= 10) {
       try {
         await profileProvider.useCredits(10);
@@ -621,468 +633,499 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (context, onlineSnapshot) {
         final isRecipientOnline = onlineSnapshot.data ?? false;
 
-        return Scaffold(
-          appBar: AppBar(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            elevation: 0,
-            surfaceTintColor: Colors.transparent,
-            leading: IconButton(
-              icon: const Icon(Iconsax.arrow_left_2),
-              onPressed: () => Navigator.pop(context, true),
+        if (!_chatReady) {
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Iconsax.arrow_left_2),
+                onPressed: () => Navigator.pop(context, true),
+              ),
+              title: Text(widget.otherUserName),
             ),
-            title: Row(
-              children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: const Color(0xFFFF4D85).withOpacity(0.2),
-                  backgroundImage: widget.otherUserPhoto != null
-                      ? NetworkImage(widget.otherUserPhoto!)
-                      : null,
-                  onBackgroundImageError: (exception, stackTrace) {
-                    debugPrint(
-                        'Error loading app bar profile image: $exception');
-                  },
-                  child: widget.otherUserPhoto == null
-                      ? const Icon(Iconsax.user,
-                          size: 16, color: Color(0xFFFF4D85))
-                      : null,
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        return StreamBuilder<Chat?>(
+          stream: _chatService.getChatStream(_chatId),
+          builder: (context, chatSnapshot) {
+            final chat = chatSnapshot.data;
+
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                elevation: 0,
+                surfaceTintColor: Colors.transparent,
+                leading: IconButton(
+                  icon: const Icon(Iconsax.arrow_left_2),
+                  onPressed: () => Navigator.pop(context, true),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        widget.otherUserName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                title: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: const Color(0xFFFF4D85).withOpacity(0.2),
+                      backgroundImage: widget.otherUserPhoto != null
+                          ? NetworkImage(widget.otherUserPhoto!)
+                          : null,
+                      onBackgroundImageError: (exception, stackTrace) {
+                        debugPrint(
+                            'Error loading app bar profile image: $exception');
+                      },
+                      child: widget.otherUserPhoto == null
+                          ? const Icon(Iconsax.user,
+                              size: 16, color: Color(0xFFFF4D85))
+                          : null,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            widget.otherUserName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          Text(
+                            isRecipientOnline
+                                ? languageProvider.getString('active_now')
+                                : languageProvider.getString('offline'),
+                            style: TextStyle(
+                              color: isRecipientOnline ? Colors.green : Colors.grey,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ],
                       ),
-                      Text(
-                        isRecipientOnline
-                            ? languageProvider.getString('active_now')
-                            : languageProvider.getString('offline'),
-                        style: TextStyle(
-                          color: isRecipientOnline ? Colors.green : Colors.grey,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ],
+                    ),
+                  ],
+                ),
+                actions: [
+                  IconButton(
+                    icon: Icon(
+                      Iconsax.call,
+                      color: _messageCount >= 6
+                          ? null
+                          : Theme.of(context).disabledColor,
+                    ),
+                    tooltip: _messageCount >= 6
+                        ? languageProvider.getString('voice_call_tooltip')
+                        : 'Exchange at least 6 messages to unlock calls',
+                    onPressed: (_messageCount >= 6 && _messagesFromMeCount > 0 && _hasReply)
+                        ? _showVoiceCall
+                        : _showCallLockedSnack,
+                    iconSize: 17,
                   ),
-                ),
-              ],
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  Iconsax.call,
-                  color: _messageCount >= 6
-                      ? null
-                      : Theme.of(context).disabledColor,
-                ),
-                tooltip: _messageCount >= 6
-                    ? languageProvider.getString('voice_call_tooltip')
-                    : 'Exchange at least 6 messages to unlock calls',
-                onPressed: (_messageCount >= 6 && _messagesFromMeCount > 0 && _hasReply)
-                    ? _showVoiceCall
-                    : _showCallLockedSnack,
-                iconSize: 17,
-              ),
-              IconButton(
-                icon: Icon(
-                  Iconsax.video,
-                  color: _messageCount >= 6
-                      ? null
-                      : Theme.of(context).disabledColor,
-                ),
-                tooltip: _messageCount >= 6
-                    ? languageProvider.getString('video_call_tooltip')
-                    : 'Exchange at least 6 messages to unlock calls',
-                onPressed: (_messageCount >= 6 && _messagesFromMeCount > 0 && _hasReply)
-                    ? _showVideoCall
-                    : _showCallLockedSnack,
-                iconSize: 17,
-              ),
-              if (_otherUserAllowsBooking)
-                IconButton(
-                  icon: const Icon(Iconsax.calendar_add, color: Color(0xFFFF4D85)),
-                  tooltip: 'Plan a Date',
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => BookingSheet(
-                        otherUserId: widget.otherUserId,
-                        otherUserName: widget.otherUserName,
-                        chatId: _chatId,
-                        myUid: _myUid,
-                      ),
-                    );
-                  },
-                  iconSize: 17,
-                ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                onSelected: (value) async {
-                  switch (value) {
-                    case 'clear':
-                      _clearChatConfirm();
-                      break;
-                    case 'super':
-                      _sendSuperRequest();
-                      break;
-                    case 'profile':
-                      final profile = await ProfileService()
-                          .getUserProfile(widget.otherUserId);
-                      if (profile != null && mounted) {
+                  IconButton(
+                    icon: Icon(
+                      Iconsax.video,
+                      color: _messageCount >= 6
+                          ? null
+                          : Theme.of(context).disabledColor,
+                    ),
+                    tooltip: _messageCount >= 6
+                        ? languageProvider.getString('video_call_tooltip')
+                        : 'Exchange at least 6 messages to unlock calls',
+                    onPressed: (_messageCount >= 6 && _messagesFromMeCount > 0 && _hasReply)
+                        ? _showVideoCall
+                        : _showCallLockedSnack,
+                    iconSize: 17,
+                  ),
+                  if (_otherUserAllowsBooking)
+                    IconButton(
+                      icon: const Icon(Iconsax.calendar_add, color: Color(0xFFFF4D85)),
+                      tooltip: 'Plan a Date',
+                      onPressed: () {
                         showModalBottomSheet(
-                          // ignore: use_build_context_synchronously
                           context: context,
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
-                          builder: (context) => ProfileDetailSheet(
-                            profile: profile,
-                            onLike: () {},
-                            onDislike: () {},
-                            onMessage: () => Navigator.pop(context),
+                          builder: (context) => BookingSheet(
+                            otherUserId: widget.otherUserId,
+                            otherUserName: widget.otherUserName,
+                            chatId: _chatId,
+                            myUid: _myUid,
                           ),
                         );
+                      },
+                      iconSize: 17,
+                    ),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    onSelected: (value) async {
+                      switch (value) {
+                        case 'clear':
+                          _clearChatConfirm();
+                          break;
+                        case 'super':
+                          _sendSuperRequest();
+                          break;
+                        case 'profile':
+                          final profile = await ProfileService()
+                              .getUserProfile(widget.otherUserId);
+                          if (profile != null && mounted) {
+                            showModalBottomSheet(
+                              // ignore: use_build_context_synchronously
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) => ProfileDetailSheet(
+                                profile: profile,
+                                onLike: () {},
+                                onDislike: () {},
+                                onMessage: () => Navigator.pop(context),
+                              ),
+                            );
+                          }
+                          break;
+                        case 'search':
+                          setState(() {
+                            _showSearch = !_showSearch;
+                            if (!_showSearch) {
+                              _searchQuery = '';
+                              _searchController.clear();
+                            }
+                          });
+                          break;
                       }
-                      break;
-                    case 'search':
-                      setState(() {
-                        _showSearch = !_showSearch;
-                        if (!_showSearch) {
-                          _searchQuery = '';
-                          _searchController.clear();
-                        }
-                      });
-                      break;
-                  }
-                },
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: 'search',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.search, size: 20),
-                        const SizedBox(width: 12),
-                        Text(languageProvider.getString('nav_explore'),
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'super',
-                    child: Row(
-                      children: [
-                        const Icon(Iconsax.flash, color: Colors.orange, size: 20),
-                        const SizedBox(width: 12),
-                        const Text('Super Request',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.orange)),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'profile',
-                    child: Row(
-                      children: [
-                        const Icon(Iconsax.user, size: 20),
-                        const SizedBox(width: 12),
-                        Text(languageProvider.getString('view_profile'),
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuDivider(),
-                  PopupMenuItem(
-                    value: 'clear',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_outline,
-                            size: 20, color: Colors.red.shade400),
-                        const SizedBox(width: 12),
-                        Text(languageProvider.getString('clear_chat_title'),
-                            style: TextStyle(
-                              color: Colors.red.shade400,
-                              fontWeight: FontWeight.w600,
-                            )),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          body: Column(
-            children: [
-              Divider(
-                height: 1,
-                color: Theme.of(context).dividerColor.withOpacity(0.3),
-              ),
-              // Search bar
-              if (_showSearch)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  child: TextField(
-                    controller: _searchController,
-                    autofocus: true,
-                    onChanged: (v) =>
-                        setState(() => _searchQuery = v.toLowerCase()),
-                    decoration: InputDecoration(
-                      hintText:
-                          languageProvider.getString('search_messages_hint'),
-                      prefixIcon: const Icon(Icons.search, size: 20),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.close, size: 18),
-                        onPressed: () => setState(() {
-                          _showSearch = false;
-                          _searchQuery = '';
-                          _searchController.clear();
-                        }),
+                    },
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: 'search',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.search, size: 20),
+                            const SizedBox(width: 12),
+                            Text(languageProvider.getString('nav_explore'),
+                                style:
+                                    const TextStyle(fontWeight: FontWeight.w600)),
+                          ],
+                        ),
                       ),
-                      filled: true,
-                      fillColor: Theme.of(context).cardColor,
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 0, horizontal: 16),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
+                      PopupMenuItem(
+                        value: 'super',
+                        child: Row(
+                          children: [
+                            const Icon(Iconsax.flash, color: Colors.orange, size: 20),
+                            const SizedBox(width: 12),
+                            const Text('Super Request',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.orange)),
+                          ],
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-              // --- Restriction Banner ---
-              if (!_isMatched && !_hasReply && _messagesFromMeCount >= 1)
-                Container(
-                  width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  color: Colors.amber.withOpacity(0.12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline,
-                          color: Colors.amber, size: 20),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          languageProvider
-                              .getString('chat_waiting_for_reply')
-                              .replaceAll('{name}', widget.otherUserName),
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.amber,
-                          ),
+                      PopupMenuItem(
+                        value: 'profile',
+                        child: Row(
+                          children: [
+                            const Icon(Iconsax.user, size: 20),
+                            const SizedBox(width: 12),
+                            Text(languageProvider.getString('view_profile'),
+                                style:
+                                    const TextStyle(fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuDivider(),
+                      PopupMenuItem(
+                        value: 'clear',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline,
+                                size: 20, color: Colors.red.shade400),
+                            const SizedBox(width: 12),
+                            Text(languageProvider.getString('clear_chat_title'),
+                                style: TextStyle(
+                                  color: Colors.red.shade400,
+                                  fontWeight: FontWeight.w600,
+                                )),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-              Expanded(
-                child: !_chatReady
-                    ? const Center(child: SizedBox.shrink())
-                    : StreamBuilder<List<ChatMessage>>(
-                        stream: _chatService.getMessagesStreamSmart(_chatId),
-                        builder: (context, snapshot) {
-                          final messages = snapshot.data ?? [];
-
-                          // Update state for call-gating and message restriction
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted) {
-                              bool needsUpdate = false;
-                              if (_messageCount != messages.length) {
-                                _messageCount = messages.length;
-                                needsUpdate = true;
-                              }
-
-                              final myMsgs = messages
-                                  .where((m) => m.senderId == _myUid)
-                                  .length;
-                              if (_messagesFromMeCount != myMsgs) {
-                                _messagesFromMeCount = myMsgs;
-                                needsUpdate = true;
-                              }
-
-                              final hasRep = messages
-                                  .any((m) => m.senderId == widget.otherUserId);
-                              if (_hasReply != hasRep) {
-                                _hasReply = hasRep;
-                                needsUpdate = true;
-                              }
-
-                              if (needsUpdate) setState(() {});
-                            }
-                          });
-
-                          final filtered = _searchQuery.isEmpty
-                              ? messages
-                              : messages
-                                  .where((m) => m.text
-                                      .toLowerCase()
-                                      .contains(_searchQuery))
-                                  .toList();
-
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            for (final msg in messages) {
-                              if (!msg.isRead &&
-                                  msg.senderId != _myUid &&
-                                  !_markedAsRead.contains(msg.id)) {
-                                _markedAsRead.add(msg.id);
-                                _chatService.markMessageAsRead(_chatId, msg.id);
-                              }
-                            }
-                          });
-
-                          if (filtered.isEmpty) {
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(20),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFF4D85)
-                                          .withOpacity(0.1),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      _searchQuery.isNotEmpty
-                                          ? Icons.search_off
-                                          : Iconsax.message,
-                                      size: 40,
-                                      color: const Color(0xFFFF4D85),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    _searchQuery.isNotEmpty
-                                        ? languageProvider
-                                            .getString('no_messages_found')
-                                        : languageProvider
-                                            .getString('say_hi_to')
-                                            .replaceAll(
-                                                '{name}', widget.otherUserName),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    _searchQuery.isNotEmpty
-                                        ? languageProvider
-                                            .getString('try_different_search')
-                                        : languageProvider
-                                            .getString('start_conversation'),
-                                    style: TextStyle(
-                                        color: Theme.of(context).hintColor),
-                                  ),
-                                ],
+                ],
+              ),
+              body: Column(
+                children: [
+                  Divider(
+                    height: 1,
+                    color: Theme.of(context).dividerColor.withOpacity(0.3),
+                  ),
+                  // Search bar
+                  if (_showSearch)
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      child: TextField(
+                        controller: _searchController,
+                        autofocus: true,
+                        onChanged: (v) =>
+                            setState(() => _searchQuery = v.toLowerCase()),
+                        decoration: InputDecoration(
+                          hintText:
+                              languageProvider.getString('search_messages_hint'),
+                          prefixIcon: const Icon(Icons.search, size: 20),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.close, size: 18),
+                            onPressed: () => setState(() {
+                              _showSearch = false;
+                              _searchQuery = '';
+                              _searchController.clear();
+                            }),
+                          ),
+                          filled: true,
+                          fillColor: Theme.of(context).cardColor,
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 0, horizontal: 16),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                  // --- Restriction Banner ---
+                  if (!_isMatched &&
+                      !_hasReply &&
+                      _messagesFromMeCount >= 1 &&
+                      (chat?.requestStatus == 'pending' || chat?.requestStatus == null))
+                    Container(
+                      width: double.infinity,
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      color: Colors.amber.withOpacity(0.12),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline,
+                              color: Colors.amber, size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              languageProvider
+                                  .getString('chat_waiting_for_reply')
+                                  .replaceAll('{name}', widget.otherUserName),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.amber,
                               ),
-                            );
-                          }
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Expanded(
+                    child: !_chatReady
+                        ? const Center(child: SizedBox.shrink())
+                        : StreamBuilder<List<ChatMessage>>(
+                            stream: _chatService.getMessagesStreamSmart(_chatId),
+                            builder: (context, snapshot) {
+                              final messages = snapshot.data ?? [];
 
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (_scrollController.hasClients &&
-                                _scrollController.position.maxScrollExtent >
-                                    0) {
-                              _scrollController.animateTo(
-                                _scrollController.position.maxScrollExtent,
-                                duration: const Duration(milliseconds: 200),
-                                curve: Curves.easeOut,
-                              );
-                            }
-                          });
+                              // Update state for call-gating and message restriction
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  bool needsUpdate = false;
+                                  if (_messageCount != messages.length) {
+                                    _messageCount = messages.length;
+                                    needsUpdate = true;
+                                  }
 
-                          return ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final msg = filtered[index];
-                              final isMe = msg.senderId == _myUid;
-                              final prevMsg =
-                                  index > 0 ? filtered[index - 1] : null;
-                              final showDateDivider = prevMsg == null ||
-                                  msg.timestamp.day != prevMsg.timestamp.day ||
-                                  msg.timestamp.month !=
-                                      prevMsg.timestamp.month ||
-                                  msg.timestamp.year != prevMsg.timestamp.year;
+                                  final myMsgs = messages
+                                      .where((m) => m.senderId == _myUid)
+                                      .length;
+                                  if (_messagesFromMeCount != myMsgs) {
+                                    _messagesFromMeCount = myMsgs;
+                                    needsUpdate = true;
+                                  }
 
-                              return Column(
-                                children: [
-                                  if (showDateDivider)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 20),
-                                      child: Center(
-                                        child: Container(
+                                  final hasRep = messages
+                                      .any((m) => m.senderId == widget.otherUserId);
+                                  if (_hasReply != hasRep) {
+                                    _hasReply = hasRep;
+                                    needsUpdate = true;
+                                  }
+
+                                  if (needsUpdate) setState(() {});
+                                }
+                              });
+
+                              final filtered = _searchQuery.isEmpty
+                                  ? messages
+                                  : messages
+                                      .where((m) => m.text
+                                          .toLowerCase()
+                                          .contains(_searchQuery))
+                                      .toList();
+
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                for (final msg in messages) {
+                                  if (!msg.isRead &&
+                                      msg.senderId != _myUid &&
+                                      !_markedAsRead.contains(msg.id)) {
+                                    _markedAsRead.add(msg.id);
+                                    _chatService.markMessageAsRead(_chatId, msg.id);
+                                  }
+                                }
+                              });
+
+                              if (filtered.isEmpty) {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(20),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFF4D85)
+                                              .withOpacity(0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          _searchQuery.isNotEmpty
+                                              ? Icons.search_off
+                                              : Iconsax.message,
+                                          size: 40,
+                                          color: const Color(0xFFFF4D85),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        _searchQuery.isNotEmpty
+                                            ? languageProvider
+                                                .getString('no_messages_found')
+                                            : languageProvider
+                                                .getString('say_hi_to')
+                                                .replaceAll(
+                                                    '{name}', widget.otherUserName),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        _searchQuery.isNotEmpty
+                                            ? languageProvider
+                                                .getString('try_different_search')
+                                            : languageProvider
+                                                .getString('start_conversation'),
+                                        style: TextStyle(
+                                            color: Theme.of(context).hintColor),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (_scrollController.hasClients &&
+                                    _scrollController.position.maxScrollExtent >
+                                        0) {
+                                  _scrollController.animateTo(
+                                    _scrollController.position.maxScrollExtent,
+                                    duration: const Duration(milliseconds: 200),
+                                    curve: Curves.easeOut,
+                                  );
+                                }
+                              });
+
+                              return ListView.builder(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                itemCount: filtered.length,
+                                itemBuilder: (context, index) {
+                                  final msg = filtered[index];
+                                  final isMe = msg.senderId == _myUid;
+                                  final prevMsg =
+                                      index > 0 ? filtered[index - 1] : null;
+                                  final showDateDivider = prevMsg == null ||
+                                      msg.timestamp.day != prevMsg.timestamp.day ||
+                                      msg.timestamp.month !=
+                                          prevMsg.timestamp.month ||
+                                      msg.timestamp.year != prevMsg.timestamp.year;
+
+                                  return Column(
+                                    children: [
+                                      if (showDateDivider)
+                                        Padding(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            color: Theme.of(context)
-                                                .dividerColor
-                                                .withOpacity(0.05),
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: Text(
-                                            DateFormatter.formatDateDivider(
-                                                msg.timestamp,
-                                                languageProvider),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color:
-                                                  Theme.of(context).hintColor,
-                                              fontWeight: FontWeight.w700,
+                                              vertical: 20),
+                                          child: Center(
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 6),
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .dividerColor
+                                                    .withOpacity(0.05),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: Text(
+                                                DateFormatter.formatDateDivider(
+                                                    msg.timestamp,
+                                                    languageProvider),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color:
+                                                      Theme.of(context).hintColor,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                  _buildMessageBubble(msg, isMe,
-                                      isRecipientOnline, languageProvider),
-                                ],
+                                      _buildMessageBubble(msg, isMe,
+                                          isRecipientOnline, languageProvider),
+                                    ],
+                                  );
+                                },
                               );
                             },
-                          );
-                        },
-                      ),
-              ),
-              if (_isRecording) _buildRecordingBar(languageProvider),
-              if (_showEmojiPicker)
-                SizedBox(
-                  height: 250,
-                  child: EmojiPicker(
-                    onEmojiSelected: (category, emoji) {
-                      _messageController.text += emoji.emoji;
-                      setState(() {});
-                    },
+                          ),
                   ),
-                ),
-              if (_replyingMessage != null) _buildReplyPreview(),
-              _buildMessageInput(languageProvider),
-            ],
-          ),
+                  if (chat?.requestStatus == 'pending' && chat?.requestSenderId != _myUid)
+                    _buildRequestActionCard(languageProvider)
+                  else if (chat?.requestStatus == 'declined')
+                    _buildDeclinedBanner(languageProvider)
+                  else ...[
+                    if (_isRecording) _buildRecordingBar(languageProvider),
+                    if (_showEmojiPicker)
+                      SizedBox(
+                        height: 250,
+                        child: EmojiPicker(
+                          onEmojiSelected: (category, emoji) {
+                            _messageController.text += emoji.emoji;
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                    if (_replyingMessage != null) _buildReplyPreview(),
+                    _buildMessageInput(languageProvider, chat),
+                  ],
+                ],
+              ),
+            );
+          },
         );
       },
     );
@@ -1123,8 +1166,11 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildMessageInput(LanguageProvider languageProvider) {
-    final isRestricted = !_isMatched && !_hasReply && _messagesFromMeCount >= 1;
+  Widget _buildMessageInput(LanguageProvider languageProvider, Chat? chat) {
+    final isRestricted = !_isMatched &&
+        !_hasReply &&
+        _messagesFromMeCount >= 1 &&
+        chat?.requestStatus != 'accepted';
 
     return Container(
       decoration: BoxDecoration(
@@ -1451,6 +1497,16 @@ class _ChatScreenState extends State<ChatScreen> {
                           _buildReplyContext(msg, isMe),
                         _buildMessageContent(
                             msg, isMe, isRecipientOnline, languageProvider),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2, left: 4, right: 4),
+                          child: Text(
+                            DateFormatter.formatClockTime(msg.timestamp),
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: Theme.of(context).hintColor.withOpacity(0.6),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -1886,6 +1942,189 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildRequestActionCard(LanguageProvider lp) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).dividerColor.withOpacity(0.1),
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFFFF4D85).withOpacity(0.08),
+                const Color(0xFFFF85B3).withOpacity(0.03),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: const Color(0xFFFF4D85).withOpacity(0.15),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF4D85).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Iconsax.message_notif,
+                  color: Color(0xFFFF4D85),
+                  size: 28,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                lp.getString('message_request_title'),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 18,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                lp.getString('message_request_desc').replaceAll('{name}', widget.otherUserName),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).hintColor,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _chatService.declineRequest(_chatId),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: BorderSide(color: Colors.red.shade300, width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        foregroundColor: Colors.red.shade400,
+                      ),
+                      child: Text(
+                        lp.getString('decline_request'),
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _chatService.acceptRequest(_chatId),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: const Color(0xFFFF4D85),
+                        foregroundColor: Colors.white,
+                        elevation: 2,
+                        shadowColor: const Color(0xFFFF4D85).withOpacity(0.4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        lp.getString('accept_request'),
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeclinedBanner(LanguageProvider lp) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).dividerColor.withOpacity(0.1),
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.red.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.red.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Iconsax.lock,
+                  color: Colors.redAccent,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      lp.getString('request_declined'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red.shade400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

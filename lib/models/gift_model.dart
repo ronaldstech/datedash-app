@@ -57,8 +57,8 @@ class GiftData {
       id: 'ring',
       icon: '💍',
       name: 'Diamond Ring',
-      cost: 2500,
-      color: Colors.white,
+      cost: 5000,
+      color: Colors.cyan,
     ),
   ];
 }
