@@ -206,7 +206,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '${widget.profile.firstName ?? 'Someone'}, ${widget.profile.age ?? '??'}',
+                                  widget.profile.showAge
+                                      ? '${widget.profile.firstName ?? 'Someone'}, ${widget.profile.age ?? '??'}'
+                                      : widget.profile.firstName ?? 'Someone',
                                   style: const TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.w900,
@@ -404,6 +406,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (widget.profile.smoking != null) items.add(_LabeledRow(icon: Iconsax.status, label: 'Smoking', value: widget.profile.smoking!));
     if (widget.profile.drinking != null) items.add(_LabeledRow(icon: Iconsax.cup, label: 'Drinking', value: widget.profile.drinking!));
     if (widget.profile.fitness != null) items.add(_LabeledRow(icon: Iconsax.activity, label: 'Exercise', value: widget.profile.fitness!));
+    if (widget.profile.diet != null) items.add(_LabeledRow(icon: Iconsax.coffee, label: 'Diet', value: widget.profile.diet!));
+    if (widget.profile.sleepingHabits != null) items.add(_LabeledRow(icon: Iconsax.moon, label: 'Sleep', value: widget.profile.sleepingHabits!));
+    if (widget.profile.pets != null && widget.profile.pets!.isNotEmpty) items.add(_LabeledRow(icon: Icons.pets, label: 'Pets', value: widget.profile.pets!));
+    if (widget.profile.zodiac != null && widget.profile.zodiac!.isNotEmpty) items.add(_LabeledRow(icon: Icons.stars, label: 'Zodiac', value: widget.profile.zodiac!));
     if (items.isEmpty) return const SizedBox.shrink();
     return Column(
       children: [

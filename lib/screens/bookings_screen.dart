@@ -280,12 +280,18 @@ class BookingsScreen extends StatelessWidget {
                             style: TextStyle(fontWeight: FontWeight.w700)),
                       ),
                       const SizedBox(width: 8),
-                      TextButton(
+                      ElevatedButton(
                         onPressed: () => _updateStatus(context, booking.id,
                             BookingStatus.rejected, booking.senderId, myUid),
-                        style:
-                            TextButton.styleFrom(foregroundColor: Colors.grey),
-                        child: const Text('Decline'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Decline',
+                            style: TextStyle(fontWeight: FontWeight.w700)),
                       ),
                     ],
                     if (isSent && booking.status == BookingStatus.pending) ...[

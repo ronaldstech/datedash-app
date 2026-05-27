@@ -6,6 +6,7 @@ import '../models/booking_model.dart';
 import '../models/user_profile_model.dart';
 import '../services/chat_service.dart';
 import '../services/profile_service.dart';
+import '../services/booking_service.dart';
 import '../utils/date_formatter.dart';
 import '../providers/profile_provider.dart';
 
@@ -34,6 +35,7 @@ class _BookingSheetState extends State<BookingSheet> {
   bool _isSubmitting = false;
   bool _isLoadingProfile = true;
   UserProfile? _recipientProfile;
+  bool _hasPendingRequest = false;
 
   @override
   void initState() {
@@ -49,9 +51,11 @@ class _BookingSheetState extends State<BookingSheet> {
 
   Future<void> _loadRecipientProfile() async {
     final profile = await ProfileService().getUserProfile(widget.otherUserId);
+    final pendingBooking = await BookingService().getPendingBooking(widget.myUid, widget.otherUserId);
     if (mounted) {
       setState(() {
         _recipientProfile = profile;
+        _hasPendingRequest = pendingBooking != null;
         _isLoadingProfile = false;
       });
     }
@@ -163,6 +167,34 @@ class _BookingSheetState extends State<BookingSheet> {
 
     final profileProvider = context.read<ProfileProvider>();
     final myProfile = profileProvider.userProfile;
+
+    // Check if the reason/senderNote is repeated from other requests
+    final trimmedNote = _senderNoteController.text.trim();
+    if (trimmedNote.isNotEmpty) {
+      try {
+        final existingBookings = await FirebaseFirestore.instance
+            .collection('bookings')
+            .where('senderId', isEqualTo: widget.myUid)
+            .where('senderNote', isEqualTo: trimmedNote)
+            .get();
+
+        if (existingBookings.docs.isNotEmpty) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Please write a unique personal message. Do not repeat messages from previous requests.'),
+                backgroundColor: Colors.redAccent,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            setState(() => _isSubmitting = false);
+          }
+          return;
+        }
+      } catch (e) {
+        debugPrint('Error validating unique reason: $e');
+      }
+    }
 
     final finalDateTime = DateTime(
       _selectedDate.year,
@@ -336,29 +368,63 @@ class _BookingSheetState extends State<BookingSheet> {
                     const SizedBox(height: 20),
                   ],
 
+                  // ── Pending request info card ─────────────────────
+                  if (_hasPendingRequest) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Iconsax.info_circle, color: Colors.amber, size: 24),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'A booking request is currently pending with ${widget.otherUserName}. You can manage all booking requests under My Bookings.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
                   // ── Date & Time ────────────────────────────────────
                   _buildSelectionRow(
                     icon: Iconsax.calendar,
                     label: 'Date',
                     value:
                         '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                    onTap: _selectDate,
+                    onTap: _hasPendingRequest ? () {} : _selectDate,
                   ),
                   const SizedBox(height: 12),
                   _buildSelectionRow(
                     icon: Iconsax.clock,
                     label: 'Time',
                     value: _selectedTime.format(context),
-                    onTap: _selectTime,
+                    onTap: _hasPendingRequest ? () {} : _selectTime,
                   ),
                   const SizedBox(height: 16),
 
                   // ── Personal note from sender ──────────────────────
                   TextField(
                     controller: _senderNoteController,
+                    enabled: !_hasPendingRequest,
                     maxLines: 2,
                     decoration: InputDecoration(
-                      hintText: 'Add a personal message (optional)...',
+                      hintText: _hasPendingRequest
+                          ? 'Message input disabled (pending request)'
+                          : 'Add a personal message (optional)...',
                       prefixIcon: const Icon(Iconsax.message_edit),
                       filled: true,
                       fillColor: Theme.of(context).cardColor,
@@ -375,7 +441,7 @@ class _BookingSheetState extends State<BookingSheet> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: _isSubmitting ? null : _confirmAndSubmit,
+                      onPressed: (_isSubmitting || _hasPendingRequest) ? null : _confirmAndSubmit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFF4D85),
                         foregroundColor: Colors.white,
@@ -390,9 +456,9 @@ class _BookingSheetState extends State<BookingSheet> {
                               child: CircularProgressIndicator(
                                   color: Colors.white, strokeWidth: 2),
                             )
-                          : const Text(
-                              'Send Booking Request',
-                              style: TextStyle(
+                          : Text(
+                              _hasPendingRequest ? 'Pending Request Sent' : 'Send Booking Request',
+                              style: const TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.w700),
                             ),
                     ),

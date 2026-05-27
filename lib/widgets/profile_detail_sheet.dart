@@ -86,7 +86,9 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${profile.firstName ?? 'Someone'}, ${profile.age ?? '??'}',
+                                profile.showAge
+                                    ? '${profile.firstName ?? 'Someone'}, ${profile.age ?? '??'}'
+                                    : profile.firstName ?? 'Someone',
                                 style: const TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w900,
@@ -511,6 +513,20 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
         'icon': Iconsax.moon,
         'label': context.read<LanguageProvider>().getString('sleep_label'),
         'value': widget.profile.sleepingHabits!
+      });
+    }
+    if (widget.profile.pets != null && widget.profile.pets!.isNotEmpty) {
+      items.add({
+        'icon': Icons.pets,
+        'label': context.read<LanguageProvider>().getString('pets_label'),
+        'value': widget.profile.pets!
+      });
+    }
+    if (widget.profile.zodiac != null && widget.profile.zodiac!.isNotEmpty) {
+      items.add({
+        'icon': Icons.stars,
+        'label': context.read<LanguageProvider>().getString('zodiac_label'),
+        'value': widget.profile.zodiac!
       });
     }
 

@@ -18,6 +18,8 @@ import '../services/auth_service.dart';
 import '../providers/language_provider.dart';
 import '../widgets/mandatory_phone_sheet.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'app_lock_screen.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -26,8 +28,61 @@ class LandingScreen extends StatefulWidget {
   State<LandingScreen> createState() => _LandingScreenState();
 }
 
-class _LandingScreenState extends State<LandingScreen> {
+class _LandingScreenState extends State<LandingScreen> with WidgetsBindingObserver {
   bool _isPhoneSheetShowing = false;
+  bool _isUnlocked = false;
+  bool _isLockChecking = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _checkAppLock();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      // Switched to other app or backgrounded -> IMMEDIATELY lock the app
+      _lockAppImmediately();
+    }
+  }
+
+  Future<void> _lockAppImmediately() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isLockEnabled = prefs.getBool('app_lock_enabled') ?? false;
+    final savedPin = prefs.getString('app_lock_pin');
+
+    if (isLockEnabled && savedPin != null) {
+      setState(() {
+        _isUnlocked = false;
+      });
+    }
+  }
+
+  Future<void> _checkAppLock() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isLockEnabled = prefs.getBool('app_lock_enabled') ?? false;
+    final savedPin = prefs.getString('app_lock_pin');
+
+    if (isLockEnabled && savedPin != null) {
+      setState(() {
+        _isUnlocked = false;
+        _isLockChecking = false;
+      });
+    } else {
+      setState(() {
+        _isUnlocked = true;
+        _isLockChecking = false;
+      });
+    }
+  }
 
   void _showMandatoryPhoneSheet(BuildContext context) {
     if (_isPhoneSheetShowing) return;
@@ -47,6 +102,25 @@ class _LandingScreenState extends State<LandingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLockChecking) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0F0F12),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFFFF4D85)),
+        ),
+      );
+    }
+
+    if (!_isUnlocked) {
+      return AppLockScreen(
+        onUnlock: () {
+          setState(() {
+            _isUnlocked = true;
+          });
+        },
+      );
+    }
+
     final languageProvider = context.watch<LanguageProvider>();
     return Consumer<ProfileProvider>(
       builder: (context, profileProvider, _) {
@@ -60,8 +134,9 @@ class _LandingScreenState extends State<LandingScreen> {
         }
 
         // Check if phone number is missing
-        final isPhoneMissing = profileProvider.userProfile!.phoneNumber == null || 
-                              profileProvider.userProfile!.phoneNumber!.isEmpty;
+        final isPhoneMissing =
+            profileProvider.userProfile!.phoneNumber == null ||
+                profileProvider.userProfile!.phoneNumber!.isEmpty;
 
         if (isPhoneMissing) {
           SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -534,7 +609,7 @@ class _LandingScreenState extends State<LandingScreen> {
                         ),
                         padding: const EdgeInsets.all(32),
                         child: Image.asset(
-                          'assets/images/signlogo.png',
+                          'assets/images/logo.png',
                           fit: BoxFit.contain,
                         ),
                       ),

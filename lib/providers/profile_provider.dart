@@ -217,8 +217,25 @@ class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
     }
   }
 
-  /// Updates and saves the user's swipe filter preferences
-  Future<void> updateFilters(int minAge, int maxAge, double maxDistance, String gender, bool ageStrict, bool distanceStrict) async {
+  Future<void> updateFilters(
+    int minAge, 
+    int maxAge, 
+    double maxDistance, 
+    String gender, 
+    bool ageStrict, 
+    bool distanceStrict, {
+    String filterRelationshipStatus = 'Any',
+    String filterReligion = 'Any',
+    String filterSmoking = 'Any',
+    String filterDrinking = 'Any',
+    String filterZodiac = 'Any',
+    String filterEducationLevel = 'Any',
+    bool filterVerifiedOnly = false,
+    String filterKids = 'Any',
+    String filterPets = 'Any',
+    String filterIntrovertExtrovert = 'Any',
+    String filterLookingFor = 'Any',
+  }) async {
     if (_userProfile == null || _currentUser == null) return;
     
     _userProfile!.filterMinAge = minAge;
@@ -227,6 +244,17 @@ class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
     _userProfile!.filterGender = gender;
     _userProfile!.filterAgeStrict = ageStrict;
     _userProfile!.filterDistanceStrict = distanceStrict;
+    _userProfile!.filterRelationshipStatus = filterRelationshipStatus;
+    _userProfile!.filterReligion = filterReligion;
+    _userProfile!.filterSmoking = filterSmoking;
+    _userProfile!.filterDrinking = filterDrinking;
+    _userProfile!.filterZodiac = filterZodiac;
+    _userProfile!.filterEducationLevel = filterEducationLevel;
+    _userProfile!.filterVerifiedOnly = filterVerifiedOnly;
+    _userProfile!.filterKids = filterKids;
+    _userProfile!.filterPets = filterPets;
+    _userProfile!.filterIntrovertExtrovert = filterIntrovertExtrovert;
+    _userProfile!.filterLookingFor = filterLookingFor;
     
     notifyListeners();
     
@@ -234,6 +262,7 @@ class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
       await saveUserProfile(_currentUser!.uid, _userProfile!);
       // Increment swipes version to force a reload of the swiping stack with new filters
       _swipesVersion++;
+      _exploreSwipesVersion++;
       notifyListeners();
     } catch (e) {
       debugPrint('ProfileProvider: Error saving filters: $e');

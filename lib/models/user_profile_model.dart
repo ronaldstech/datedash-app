@@ -30,6 +30,8 @@ class UserProfile {
   String? fitness;
   String? diet;
   String? sleepingHabits;
+  String? pets;
+  String? zodiac;
 
   // 💼 Work & Education
   String? occupation;
@@ -59,6 +61,9 @@ class UserProfile {
   String? videoIntro;
   bool isVerified;
   bool isOnline;
+  String? verificationStatus; // 'unverified', 'pending', 'verified'
+  String? nationalId;
+  String? nationalIdUrl;
 
   // 💬 Prompts
   String? promptPerfectDate;
@@ -84,6 +89,17 @@ class UserProfile {
   String? filterGender;
   bool filterAgeStrict;
   bool filterDistanceStrict;
+  String? filterRelationshipStatus;
+  String? filterReligion;
+  String? filterSmoking;
+  String? filterDrinking;
+  String? filterZodiac;
+  String? filterEducationLevel;
+  bool filterVerifiedOnly;
+  String? filterKids;
+  String? filterPets;
+  String? filterIntrovertExtrovert;
+  String? filterLookingFor;
 
   // 💰 Monetization
   bool isPremium;
@@ -101,6 +117,7 @@ class UserProfile {
   String? lastMessageResetDate; // YYYY-MM-DD
   List<String> claimedRewards; // One-time reward IDs
   int lastSeenLikesCount;
+  List<String> blockedUsers; // List of blocked user UIDs
 
   UserProfile({
     this.firstName,
@@ -120,6 +137,8 @@ class UserProfile {
     this.fitness,
     this.diet,
     this.sleepingHabits,
+    this.pets,
+    this.zodiac,
     this.occupation,
     this.industry,
     this.educationLevel,
@@ -139,6 +158,9 @@ class UserProfile {
     this.videoIntro,
     this.isVerified = false,
     this.isOnline = false,
+    this.verificationStatus = 'unverified',
+    this.nationalId,
+    this.nationalIdUrl,
     this.promptPerfectDate,
     this.promptFallForYou,
     this.promptGreenFlag,
@@ -175,6 +197,18 @@ class UserProfile {
     this.lastMessageResetDate,
     this.claimedRewards = const [],
     this.lastSeenLikesCount = 0,
+    this.blockedUsers = const [],
+    this.filterRelationshipStatus = 'Any',
+    this.filterReligion = 'Any',
+    this.filterSmoking = 'Any',
+    this.filterDrinking = 'Any',
+    this.filterZodiac = 'Any',
+    this.filterEducationLevel = 'Any',
+    this.filterVerifiedOnly = false,
+    this.filterKids = 'Any',
+    this.filterPets = 'Any',
+    this.filterIntrovertExtrovert = 'Any',
+    this.filterLookingFor = 'Any',
   });
 
   int? get age {
@@ -273,6 +307,8 @@ class UserProfile {
         fitness: map['fitness']?.toString(),
         diet: map['diet']?.toString(),
         sleepingHabits: map['sleepingHabits']?.toString(),
+        pets: map['pets']?.toString(),
+        zodiac: map['zodiac']?.toString(),
         occupation: map['occupation']?.toString(),
         industry: map['industry']?.toString(),
         educationLevel: map['educationLevel']?.toString(),
@@ -292,6 +328,10 @@ class UserProfile {
         videoIntro: map['videoIntro']?.toString(),
         isVerified: map['isVerified'] == true,
         isOnline: map['isOnline'] == true,
+        verificationStatus: map['verificationStatus']?.toString() ?? 'unverified',
+        nationalId: map['nationalId']?.toString(),
+        nationalIdUrl: map['nationalIdUrl']?.toString(),
+        blockedUsers: _parseList(map['blockedUsers']),
         promptPerfectDate: map['promptPerfectDate']?.toString(),
         promptFallForYou: map['promptFallForYou']?.toString(),
         promptGreenFlag: map['promptGreenFlag']?.toString(),
@@ -315,6 +355,17 @@ class UserProfile {
         filterGender: map['filterGender']?.toString(),
         filterAgeStrict: map['filterAgeStrict'] ?? false,
         filterDistanceStrict: map['filterDistanceStrict'] ?? false,
+        filterRelationshipStatus: map['filterRelationshipStatus']?.toString() ?? 'Any',
+        filterReligion: map['filterReligion']?.toString() ?? 'Any',
+        filterSmoking: map['filterSmoking']?.toString() ?? 'Any',
+        filterDrinking: map['filterDrinking']?.toString() ?? 'Any',
+        filterZodiac: map['filterZodiac']?.toString() ?? 'Any',
+        filterEducationLevel: map['filterEducationLevel']?.toString() ?? 'Any',
+        filterVerifiedOnly: map['filterVerifiedOnly'] ?? false,
+        filterKids: map['filterKids']?.toString() ?? 'Any',
+        filterPets: map['filterPets']?.toString() ?? 'Any',
+        filterIntrovertExtrovert: map['filterIntrovertExtrovert']?.toString() ?? 'Any',
+        filterLookingFor: map['filterLookingFor']?.toString() ?? 'Any',
         isPremium: map['isPremium'] == true,
         premiumType: map['premiumType']?.toString(),
         premiumExpiry: _parseDate(map['premiumExpiry']),
@@ -379,6 +430,8 @@ class UserProfile {
       'fitness': fitness,
       'diet': diet,
       'sleepingHabits': sleepingHabits,
+      'pets': pets,
+      'zodiac': zodiac,
       'occupation': occupation,
       'industry': industry,
       'educationLevel': educationLevel,
@@ -398,6 +451,10 @@ class UserProfile {
       'videoIntro': videoIntro,
       'isVerified': isVerified,
       'isOnline': isOnline,
+      'verificationStatus': verificationStatus,
+      'nationalId': nationalId,
+      'nationalIdUrl': nationalIdUrl,
+      'blockedUsers': blockedUsers,
       'promptPerfectDate': promptPerfectDate,
       'promptFallForYou': promptFallForYou,
       'promptGreenFlag': promptGreenFlag,
@@ -421,6 +478,17 @@ class UserProfile {
       'filterGender': filterGender,
       'filterAgeStrict': filterAgeStrict,
       'filterDistanceStrict': filterDistanceStrict,
+      'filterRelationshipStatus': filterRelationshipStatus,
+      'filterReligion': filterReligion,
+      'filterSmoking': filterSmoking,
+      'filterDrinking': filterDrinking,
+      'filterZodiac': filterZodiac,
+      'filterEducationLevel': filterEducationLevel,
+      'filterVerifiedOnly': filterVerifiedOnly,
+      'filterKids': filterKids,
+      'filterPets': filterPets,
+      'filterIntrovertExtrovert': filterIntrovertExtrovert,
+      'filterLookingFor': filterLookingFor,
       'isPremium': isPremium,
       'premiumType': premiumType,
       'premiumExpiry': premiumExpiry != null ? Timestamp.fromDate(premiumExpiry!) : null,
@@ -461,6 +529,8 @@ class UserProfile {
     if (fitness != null && fitness!.isNotEmpty) filledFields++;
     if (diet != null && diet!.isNotEmpty) filledFields++;
     if (sleepingHabits != null && sleepingHabits!.isNotEmpty) filledFields++;
+    if (pets != null && pets!.isNotEmpty) filledFields++;
+    if (zodiac != null && zodiac!.isNotEmpty) filledFields++;
 
     if (occupation != null && occupation!.isNotEmpty) filledFields++;
     if (industry != null && industry!.isNotEmpty) filledFields++;
@@ -487,7 +557,7 @@ class UserProfile {
     if (promptGreenFlag != null && promptGreenFlag!.isNotEmpty) filledFields++;
     if (promptTwoTruths != null && promptTwoTruths!.isNotEmpty) filledFields++;
 
-    totalFields = 37;
+    totalFields = 39;
     return ((filledFields / totalFields) * 100).round();
   }
 

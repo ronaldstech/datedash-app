@@ -194,8 +194,6 @@ class LikesScreen extends StatelessWidget {
                                   debugPrint(
                                       'Error loading likes drawer profile: $e');
                                 },
-                                child: const Icon(Iconsax.user,
-                                    color: Colors.grey),
                               ),
                             ),
                           ),
@@ -309,18 +307,22 @@ class LikesScreen extends StatelessWidget {
                           Row(
                             children: [
                               Expanded(
-                                child: Text(
-                                  isUnlocked
-                                      ? '${profile.firstName ?? lp.getString('someone_fallback')}, ${profile.age ?? '??'}'
-                                      : '•••••, ${profile.age ?? '??'}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 16,
+                                  child: Text(
+                                    isUnlocked
+                                        ? (profile.showAge 
+                                            ? '${profile.firstName ?? lp.getString('someone_fallback')}, ${profile.age ?? '??'}'
+                                            : profile.firstName ?? lp.getString('someone_fallback'))
+                                        : (profile.showAge
+                                            ? '•••••, ${profile.age ?? '??'}'
+                                            : '•••••'),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 16,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
                               ),
                               if (profile.isVerified) ...[
                                 const SizedBox(width: 4),

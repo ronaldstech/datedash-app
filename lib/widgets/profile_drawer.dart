@@ -15,6 +15,8 @@ import '../providers/language_provider.dart';
 import '../screens/transactions_screen.dart';
 import '../screens/live_list_screen.dart';
 import '../screens/bookings_screen.dart';
+import '../services/booking_service.dart';
+import '../models/booking_model.dart';
 
 class ProfileDrawer extends StatelessWidget {
   const ProfileDrawer({super.key});
@@ -28,6 +30,7 @@ class ProfileDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final languageProvider = context.watch<LanguageProvider>();
+    final myUid = context.watch<ProfileProvider>().currentUser?.uid;
 
     return Drawer(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -257,19 +260,70 @@ class ProfileDrawer extends StatelessWidget {
                               builder: (_) => const ChatListScreen()));
                     },
                   ),
-                  _buildItem(
-                    context,
-                    Iconsax.calendar_tick,
-                    languageProvider.getString('my_bookings'),
-                    color: const Color(0xFFFFA000),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
+                  myUid == null
+                      ? _buildItem(
                           context,
-                          MaterialPageRoute(
-                              builder: (_) => const BookingsScreen()));
-                    },
-                  ),
+                          Iconsax.calendar_tick,
+                          languageProvider.getString('my_bookings'),
+                          color: const Color(0xFFFFA000),
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const BookingsScreen()));
+                          },
+                        )
+                      : StreamBuilder<List<BookingModel>>(
+                          stream: BookingService().getPendingReceivedBookingsStream(myUid),
+                          builder: (context, snapshot) {
+                            final pendingCount = snapshot.data?.length ?? 0;
+                            Widget? trailingWidget;
+                            if (pendingCount > 0) {
+                              trailingWidget = Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFF4D85),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      '$pendingCount',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward_ios,
+                                      size: 12,
+                                      color: Theme.of(context)
+                                          .hintColor
+                                          .withOpacity(0.5)),
+                                ],
+                              );
+                            }
+                            return _buildItem(
+                              context,
+                              Iconsax.calendar_tick,
+                              languageProvider.getString('my_bookings'),
+                              color: const Color(0xFFFFA000),
+                              trailing: trailingWidget,
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => const BookingsScreen()));
+                              },
+                            );
+                          },
+                        ),
                   _buildItem(
                     context,
                     Iconsax.eye,
@@ -440,7 +494,7 @@ class ProfileDrawer extends StatelessWidget {
   }
 
   Widget _buildItem(BuildContext context, IconData icon, String title,
-      {Color? color, Color? backgroundColor, Color? borderColor, VoidCallback? onTap}) {
+      {Color? color, Color? backgroundColor, Color? borderColor, Widget? trailing, VoidCallback? onTap}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
@@ -483,7 +537,7 @@ class ProfileDrawer extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: backgroundColor != null ? Colors.white : null),
         ),
-        trailing: Icon(Icons.arrow_forward_ios,
+        trailing: trailing ?? Icon(Icons.arrow_forward_ios,
             size: 12,
             color: backgroundColor != null
                 ? Colors.white.withOpacity(0.7)

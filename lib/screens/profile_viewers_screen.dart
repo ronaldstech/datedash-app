@@ -218,8 +218,12 @@ class ProfileViewersScreen extends StatelessWidget {
                         children: [
                           Text(
                             isUnlocked
-                                ? '${profile.firstName ?? languageProvider.getString('someone_fallback')}, ${profile.age ?? '??'}'
-                                : '•••••, ${profile.age ?? '??'}',
+                                ? (profile.showAge 
+                                    ? '${profile.firstName ?? languageProvider.getString('someone_fallback')}, ${profile.age ?? '??'}'
+                                    : profile.firstName ?? languageProvider.getString('someone_fallback'))
+                                : (profile.showAge
+                                    ? '•••••, ${profile.age ?? '??'}'
+                                    : '•••••'),
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,

@@ -107,7 +107,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       {'title': languageProvider.getString('category_media'), 'icon': Iconsax.camera, 'key': 'Media'},
       {'title': languageProvider.getString('category_location'), 'icon': Iconsax.location, 'key': 'Location'},
       {'title': languageProvider.getString('category_prompts'), 'icon': Iconsax.messages_2, 'key': 'Prompts'},
-      {'title': languageProvider.getString('category_verification'), 'icon': Iconsax.verify, 'key': 'Verification'},
     ];
 
     if (_isLoading) {
@@ -471,6 +470,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           items: const ['Early Bird', 'Night Owl', 'Flexible'],
           onChanged: (val) => _profile.sleepingHabits = val,
         ),
+        _buildChoiceChips(
+          label: languageProvider.getString('pets_label'),
+          value: _profile.pets,
+          items: const ['Dog person', 'Cat person', 'Both', 'No pets', 'Other'],
+          onChanged: (val) => _profile.pets = val,
+        ),
+        _buildChoiceChips(
+          label: languageProvider.getString('zodiac_label'),
+          value: _profile.zodiac,
+          items: const [
+            'Aries',
+            'Taurus',
+            'Gemini',
+            'Cancer',
+            'Leo',
+            'Virgo',
+            'Libra',
+            'Scorpio',
+            'Sagittarius',
+            'Capricorn',
+            'Aquarius',
+            'Pisces'
+          ],
+          onChanged: (val) => _profile.zodiac = val,
+        ),
       ]),
       // 6. Interests & Hobbies
       _buildPageContent([
@@ -485,7 +509,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             'Reading',
             'Cooking',
             'Art',
-            'Photography'
+            'Photography',
+            'Hiking',
+            'Movies',
+            'Dancing',
+            'Writing',
+            'Gardening',
+            'Yoga',
+            'Gym',
+            'Swimming',
+            'Shopping',
+            'Coffee',
+            'Foodie',
+            'Fashion',
+            'Animals',
+            'Outdoors',
+            'Cycling',
+            'Fishing',
+            'Camping',
+            'Board Games'
           ],
           onChanged: (val) => _profile.hobbies = val,
         ),
@@ -644,110 +686,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           initialValue: _profile.promptTwoTruths,
           onChanged: (val) => _profile.promptTwoTruths = val,
           maxLines: 2,
-        ),
-      ]),
-      // 11. Verification
-      _buildPageContent([
-        Padding(
-          padding: const EdgeInsets.only(bottom: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                languageProvider.getString('verification_title'),
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                languageProvider.getString('verification_sub'),
-                style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        Container(
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: _profile.isVerified
-                  ? Colors.green.withOpacity(0.3)
-                  : Theme.of(context).dividerColor,
-              width: 1.5,
-            ),
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: (_profile.isVerified ? Colors.green : _primaryColor)
-                      .withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  _profile.isVerified ? Iconsax.verify : Iconsax.security_safe,
-                  color: _profile.isVerified ? Colors.green : _primaryColor,
-                  size: 40,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                _profile.isVerified ? languageProvider.getString('profile_verified') : languageProvider.getString('facial_verification'),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                _profile.isVerified
-                    ? languageProvider.getString('verification_confirmed_sub')
-                    : languageProvider.getString('quick_scan_sub'),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 32),
-              if (!_profile.isVerified)
-                ElevatedButton(
-                  onPressed: () {
-                    // Start facial verification flow
-                    setState(() {
-                      _profile.isVerified = true;
-                    });
-                    _onFieldUpdated();
-                    _showPremiumSnack('Verification started!', isSuccess: true);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _primaryColor,
-                    foregroundColor: Colors.white,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Iconsax.camera, size: 20),
-                      const SizedBox(width: 10),
-                      Text(
-                        languageProvider.getString('start_verification_button'),
-                        style: const TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
         ),
       ]),
     ];

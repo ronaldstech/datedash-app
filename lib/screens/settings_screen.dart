@@ -8,6 +8,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/local_db_service.dart';
 import 'premium_screen.dart';
+import 'verification_screen.dart';
+import 'edit_profile_screen.dart';
+import 'security_settings_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -16,6 +19,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     final languageProvider = context.watch<LanguageProvider>();
+    final profileProvider = context.watch<ProfileProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -39,8 +43,12 @@ class SettingsScreen extends StatelessWidget {
             Iconsax.user_edit,
             languageProvider.getString('edit_profile'),
             languageProvider.getString('edit_profile_sub'),
-            onTap: () => Navigator.pop(context),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+            ),
           ),
+          _buildVerificationTile(context, languageProvider, profileProvider),
           _buildSettingTile(
             context,
             Iconsax.sms,
@@ -52,9 +60,15 @@ class SettingsScreen extends StatelessWidget {
             Iconsax.lock,
             languageProvider.getString('security'),
             languageProvider.getString('security_sub'),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SecuritySettingsScreen()),
+            ),
           ),
           const SizedBox(height: 20),
           _buildPrivacySection(context, languageProvider),
+          const SizedBox(height: 20),
+          _buildBookingSection(context, languageProvider),
           const SizedBox(height: 20),
           _buildSectionHeader(languageProvider.getString('preferences')),
           _buildThemeTile(context, themeProvider, languageProvider),
@@ -696,6 +710,27 @@ class SettingsScreen extends StatelessWidget {
                     }
                   },
                 ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBookingSection(
+      BuildContext context, LanguageProvider languageProvider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(languageProvider.getString('booking_section_title')),
+        Consumer<ProfileProvider>(
+          builder: (context, profileProvider, _) {
+            final profile = profileProvider.userProfile;
+            if (profile == null) return const SizedBox.shrink();
+
+            return Column(
+              children: [
                 _buildPrivacyTile(
                   context,
                   Iconsax.calendar_tick,
@@ -710,20 +745,95 @@ class SettingsScreen extends StatelessWidget {
                     }
                   },
                 ),
+                _buildSettingTile(
+                  context,
+                  Iconsax.calendar_edit,
+                  languageProvider.getString('booking_details'),
+                  languageProvider.getString('booking_details_sub'),
+                  onTap: () => _showBookingPreferencesSheet(context),
+                ),
               ],
             );
           },
         ),
-        const SizedBox(height: 20),
-        _buildSectionHeader(languageProvider.getString('booking_preferences')),
-        _buildSettingTile(
-          context,
-          Iconsax.calendar_edit,
-          languageProvider.getString('booking_details'),
-          languageProvider.getString('booking_details_sub'),
-          onTap: () => _showBookingPreferencesSheet(context),
-        ),
       ],
+    );
+  }
+
+  Widget _buildVerificationTile(
+      BuildContext context, LanguageProvider languageProvider, ProfileProvider profileProvider) {
+    final profile = profileProvider.userProfile;
+    final status = profile?.verificationStatus ?? 'unverified';
+
+    IconData iconData = Iconsax.verify;
+    Color iconColor = const Color(0xFFFF4D85);
+
+    if (status == 'verified') {
+      iconColor = Colors.green;
+    } else if (status == 'pending') {
+      iconColor = Colors.orange;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(
+                Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(iconData, color: iconColor, size: 22),
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                languageProvider.getString('verification_status_$status'),
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+              ),
+            ),
+            if (status == 'verified') ...[
+              const SizedBox(width: 6),
+              const Icon(Icons.verified, color: Colors.green, size: 16),
+            ] else if (status == 'pending') ...[
+              const SizedBox(width: 6),
+              const Icon(Icons.hourglass_empty_rounded, color: Colors.orange, size: 16),
+            ],
+          ],
+        ),
+        subtitle: Text(
+          languageProvider.getString('verification_status_${status}_sub'),
+          style: TextStyle(
+            color: Theme.of(context).hintColor,
+            fontSize: 12,
+          ),
+        ),
+        trailing: Icon(
+          Iconsax.arrow_right_3,
+          size: 18,
+          color: Theme.of(context).hintColor,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const VerificationScreen()),
+          );
+        },
+      ),
     );
   }
 

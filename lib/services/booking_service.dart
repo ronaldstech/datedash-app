@@ -65,6 +65,17 @@ class BookingService {
     });
   }
 
+  /// Returns a stream of pending received bookings for a user
+  Stream<List<BookingModel>> getPendingReceivedBookingsStream(String userId) {
+    return _bookingsCollection
+        .where('receiverId', isEqualTo: userId)
+        .where('status', isEqualTo: 'pending')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => BookingModel.fromDoc(doc)).toList();
+    });
+  }
+
   /// Checks if there's a pending booking between two users
   Future<BookingModel?> getPendingBooking(String uid1, String uid2) async {
     try {

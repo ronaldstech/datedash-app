@@ -1419,7 +1419,9 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
             children: [
               Flexible(
                 child: Text(
-                  '${profile.firstName ?? 'Someone'},',
+                  profile.showAge
+                      ? '${profile.firstName ?? 'Someone'},'
+                      : profile.firstName ?? 'Someone',
                   style: const TextStyle(
                       color: Colors.white,
                       fontSize: 32,
@@ -1429,15 +1431,17 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                '${profile.age ?? '??'}',
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -0.5),
-              ),
+              if (profile.showAge) ...[
+                const SizedBox(width: 8),
+                Text(
+                  '${profile.age ?? '??'}',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: -0.5),
+                ),
+              ],
               if (profile.isVerified) ...[
                 const SizedBox(width: 8),
                 const Icon(Icons.verified_rounded,

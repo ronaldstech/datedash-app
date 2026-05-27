@@ -53,6 +53,125 @@ class ProfileService {
   }
 
   /// Fetches a list of other users for swiping, excluding those already swiped on
+  List<UserProfile> _applyProfileFiltering(
+      UserProfile? currentUserProfile, List<UserProfile> rawProfiles) {
+    if (currentUserProfile == null) return rawProfiles;
+
+    final minAge = currentUserProfile.filterMinAge ?? 18;
+    final maxAge = currentUserProfile.filterMaxAge ?? 60;
+    final maxDistance = currentUserProfile.filterMaxDistance ?? 50.0;
+    
+    String filterGender = currentUserProfile.filterGender ?? 'Everyone';
+    if ((currentUserProfile.filterGender == null ||
+            currentUserProfile.filterGender!.isEmpty) &&
+        currentUserProfile.gender != null) {
+      if (currentUserProfile.gender == 'Male') filterGender = 'Women';
+      if (currentUserProfile.gender == 'Female') filterGender = 'Men';
+    }
+    
+    final ageStrict = currentUserProfile.filterAgeStrict;
+    final distanceStrict = currentUserProfile.filterDistanceStrict;
+    final filterRelationshipStatus = currentUserProfile.filterRelationshipStatus ?? 'Any';
+    final filterReligion = currentUserProfile.filterReligion ?? 'Any';
+    final filterSmoking = currentUserProfile.filterSmoking ?? 'Any';
+    final filterDrinking = currentUserProfile.filterDrinking ?? 'Any';
+    final filterZodiac = currentUserProfile.filterZodiac ?? 'Any';
+    final filterEducationLevel = currentUserProfile.filterEducationLevel ?? 'Any';
+    final filterVerifiedOnly = currentUserProfile.filterVerifiedOnly;
+    final filterKids = currentUserProfile.filterKids ?? 'Any';
+    final filterPets = currentUserProfile.filterPets ?? 'Any';
+    final filterIntrovertExtrovert = currentUserProfile.filterIntrovertExtrovert ?? 'Any';
+    final filterLookingFor = currentUserProfile.filterLookingFor ?? 'Any';
+
+    List<UserProfile> strictProfiles = [];
+    List<UserProfile> relaxedProfiles = [];
+
+    for (var profile in rawProfiles) {
+      if (profile.hideProfile == true) continue;
+
+      // Apply gender filter (always strict)
+      if (filterGender != 'Everyone' && filterGender.isNotEmpty) {
+        String targetGender = filterGender;
+        if (filterGender == 'Men') targetGender = 'Male';
+        if (filterGender == 'Women') targetGender = 'Female';
+        if (profile.gender != targetGender) continue;
+      }
+
+      // Apply advanced relationship, lifestyle, and background filters
+      if (filterRelationshipStatus != 'Any' && filterRelationshipStatus.isNotEmpty) {
+        if (profile.relationshipStatus != filterRelationshipStatus) continue;
+      }
+      if (filterReligion != 'Any' && filterReligion.isNotEmpty) {
+        if (profile.religion != filterReligion) continue;
+      }
+      if (filterSmoking != 'Any' && filterSmoking.isNotEmpty) {
+        if (profile.smoking != filterSmoking) continue;
+      }
+      if (filterDrinking != 'Any' && filterDrinking.isNotEmpty) {
+        if (profile.drinking != filterDrinking) continue;
+      }
+      if (filterZodiac != 'Any' && filterZodiac.isNotEmpty) {
+        if (profile.zodiac != filterZodiac) continue;
+      }
+      if (filterEducationLevel != 'Any' && filterEducationLevel.isNotEmpty) {
+        if (profile.educationLevel != filterEducationLevel) continue;
+      }
+      if (filterVerifiedOnly) {
+        if (profile.isVerified != true) continue;
+      }
+      if (filterKids != 'Any' && filterKids.isNotEmpty) {
+        if (profile.wantKids != filterKids) continue;
+      }
+      if (filterPets != 'Any' && filterPets.isNotEmpty) {
+        if (profile.pets != filterPets) continue;
+      }
+      if (filterIntrovertExtrovert != 'Any' && filterIntrovertExtrovert.isNotEmpty) {
+        if (profile.introvertExtrovert != filterIntrovertExtrovert) continue;
+      }
+      if (filterLookingFor != 'Any' && filterLookingFor.isNotEmpty) {
+        if (!profile.lookingFor.contains(filterLookingFor)) continue;
+      }
+
+      bool isStrictMatch = true;
+
+      // Apply age filter
+      final age = profile.age;
+      if (age != null) {
+        if (age < minAge || age > maxAge) {
+          if (ageStrict) continue;
+          isStrictMatch = false;
+        }
+      }
+
+      // Apply distance filter
+      if (currentUserProfile.latitude != null &&
+          currentUserProfile.longitude != null &&
+          profile.latitude != null &&
+          profile.longitude != null) {
+        double distanceInMeters = Geolocator.distanceBetween(
+          currentUserProfile.latitude!,
+          currentUserProfile.longitude!,
+          profile.latitude!,
+          profile.longitude!,
+        );
+        double distanceInKm = distanceInMeters / 1000;
+        if (distanceInKm > maxDistance) {
+          if (distanceStrict) continue;
+          isStrictMatch = false;
+        }
+      }
+
+      if (isStrictMatch) {
+        strictProfiles.add(profile);
+      } else {
+        relaxedProfiles.add(profile);
+      }
+    }
+
+    strictProfiles.addAll(relaxedProfiles);
+    return strictProfiles;
+  }
+
   Future<List<UserProfile>> getSwipeProfiles(String currentUserId) async {
     try {
       debugPrint('Fetching swipe profiles for user: $currentUserId');
@@ -75,94 +194,25 @@ class ProfileService {
         final isSelf = doc.id == currentUserId;
         final isSwiped = swipedIds.contains(doc.id);
 
-        if (isSelf) debugPrint('Filtering out self: ${doc.id}');
-        if (isSwiped) debugPrint('Filtering out swiped: ${doc.id}');
-
         return !isSelf && !isSwiped;
       }).toList();
 
-      debugPrint('Users after filtering: ${filteredDocs.length}');
+      debugPrint('Users after filtering out swiped/self: ${filteredDocs.length}');
 
-      final currentUserProfile = await getUserProfile(currentUserId);
-      final minAge = currentUserProfile?.filterMinAge ?? 18;
-      final maxAge = currentUserProfile?.filterMaxAge ?? 60;
-      final maxDistance = currentUserProfile?.filterMaxDistance ?? 50.0;
-      String filterGender = currentUserProfile?.filterGender ?? 'Everyone';
-      if ((currentUserProfile?.filterGender == null ||
-              currentUserProfile!.filterGender!.isEmpty) &&
-          currentUserProfile?.gender != null) {
-        if (currentUserProfile!.gender == 'Male') filterGender = 'Women';
-        if (currentUserProfile.gender == 'Female') filterGender = 'Men';
-      }
-      final ageStrict = currentUserProfile?.filterAgeStrict ?? false;
-      final distanceStrict = currentUserProfile?.filterDistanceStrict ?? false;
-
-      List<UserProfile> strictProfiles = [];
-      List<UserProfile> relaxedProfiles = [];
-
+      List<UserProfile> rawProfiles = [];
       for (var doc in filteredDocs) {
         try {
           final data = doc.data() as Map<String, dynamic>;
           data['uid'] = doc.id;
           final profile = UserProfile.fromMap(data);
-
-          // Skip users who have hidden their profile
-          if (profile.hideProfile == true) continue;
-
-          if (profile.firstName == null) {
-            debugPrint('Warning: User ${doc.id} has no firstName');
-          }
-
-          // Apply gender filter (always strict)
-          if (filterGender != 'Everyone' && filterGender.isNotEmpty) {
-            String targetGender = filterGender;
-            if (filterGender == 'Men') targetGender = 'Male';
-            if (filterGender == 'Women') targetGender = 'Female';
-            if (profile.gender != targetGender) continue;
-          }
-
-          bool isStrictMatch = true;
-
-          // Apply age filter
-          final age = profile.age;
-          if (age != null) {
-            if (age < minAge || age > maxAge) {
-              if (ageStrict) continue;
-              isStrictMatch = false;
-            }
-          }
-
-          // Apply distance filter
-          if (currentUserProfile != null &&
-              currentUserProfile.latitude != null &&
-              currentUserProfile.longitude != null &&
-              profile.latitude != null &&
-              profile.longitude != null) {
-            double distanceInMeters = Geolocator.distanceBetween(
-              currentUserProfile.latitude!,
-              currentUserProfile.longitude!,
-              profile.latitude!,
-              profile.longitude!,
-            );
-            double distanceInKm = distanceInMeters / 1000;
-            if (distanceInKm > maxDistance) {
-              if (distanceStrict) continue;
-              isStrictMatch = false;
-            }
-          }
-
-          if (isStrictMatch) {
-            strictProfiles.add(profile);
-          } else {
-            relaxedProfiles.add(profile);
-          }
+          rawProfiles.add(profile);
         } catch (e) {
           debugPrint('Error parsing user ${doc.id}: $e');
         }
       }
 
-      strictProfiles.addAll(relaxedProfiles);
-      return strictProfiles;
+      final currentUserProfile = await getUserProfile(currentUserId);
+      return _applyProfileFiltering(currentUserProfile, rawProfiles);
     } catch (e) {
       debugPrint('Error fetching swipe profiles globally: $e');
       return [];
@@ -399,7 +449,6 @@ class ProfileService {
     });
   }
 
-  /// Fetches swipeable profiles filtered by a lookingFor category, excluding already-swiped users
   Future<List<UserProfile>> getSwipeProfilesByCategory(
       String currentUserId, String category) async {
     try {
@@ -414,7 +463,7 @@ class ProfileService {
           .where('lookingFor', arrayContains: category)
           .get();
 
-      List<UserProfile> profiles = [];
+      List<UserProfile> rawProfiles = [];
       for (var doc in snapshot.docs) {
         if (doc.id == currentUserId) continue;
         if (swipedIds.contains(doc.id)) continue;
@@ -422,13 +471,14 @@ class ProfileService {
           final data = doc.data() as Map<String, dynamic>;
           data['uid'] = doc.id;
           final profile = UserProfile.fromMap(data);
-          if (profile.hideProfile == true) continue;
-          profiles.add(profile);
+          rawProfiles.add(profile);
         } catch (e) {
           debugPrint('Error parsing profile ${doc.id}: $e');
         }
       }
-      return profiles;
+      
+      final currentUserProfile = await getUserProfile(currentUserId);
+      return _applyProfileFiltering(currentUserProfile, rawProfiles);
     } catch (e) {
       debugPrint('Error fetching category swipe profiles: $e');
       return [];

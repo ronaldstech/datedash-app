@@ -157,15 +157,15 @@ class _BookingBubbleState extends State<BookingBubble> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: TextButton(
+                        child: ElevatedButton(
                           onPressed: () =>
                               _updateStatus(BookingStatus.rejected),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.red,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
-                              side:
-                                  const BorderSide(color: Colors.red, width: 1),
                             ),
                           ),
                           child: const Text('Decline'),
