@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../models/user_profile_model.dart';
 import '../services/profile_service.dart';
 import '../providers/language_provider.dart';
+import 'landing_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -399,6 +400,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           items: const ['Yes', 'No', 'Maybe', 'Already have'],
           onChanged: (val) => _profile.wantKids = val,
         ),
+        _buildChoiceChips(
+          label: 'Family Plans',
+          value: _profile.familyPlans,
+          items: const ['Want some day', 'Don\'t want', 'Have and want more', 'Have and don\'t want more', 'Not sure yet'],
+          onChanged: (val) => _profile.familyPlans = val,
+        ),
       ]),
 
       // 4. Work & Education
@@ -595,6 +602,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           initialValue: _profile.coreValues,
           hint: 'Family, Ambition, Honesty...',
           onChanged: (val) => _profile.coreValues = val,
+        ),
+        _buildChoiceChips(
+          label: 'Communication Style',
+          value: _profile.communicationStyle,
+          items: const ['Big text in person', 'Phone caller', 'Video chatter', 'Bad texter', 'Better in person'],
+          onChanged: (val) => _profile.communicationStyle = val,
+        ),
+        _buildChoiceChips(
+          label: 'Love Style',
+          value: _profile.loveStyle,
+          items: const ['Thoughtful gestures', 'Presents', 'Touch', 'Deep talks', 'Time together'],
+          onChanged: (val) => _profile.loveStyle = val,
         ),
       ]),
       // 8. Media & Verification
@@ -1002,6 +1021,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _pickAndUploadImages() async {
+    // Prevent app lock when picking images
+    try {
+      LandingScreen.ignoreNextLock = true;
+    } catch (_) {}
     final List<XFile> images = await _picker.pickMultiImage();
     if (images.isEmpty) return;
 

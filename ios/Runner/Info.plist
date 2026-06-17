@@ -74,5 +74,7 @@
 	<string>This app needs access to your microphone to record audio for your profile video.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app needs your location to show you potential matches nearby.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>We use Face ID / Touch ID to secure your access to DateDash.</string>
 </dict>
 </plist>

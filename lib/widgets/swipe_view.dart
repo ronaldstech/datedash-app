@@ -149,24 +149,18 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
     }
   }
 
-  void _onSwipeComplete(String direction) async {
+  void _onSwipeComplete(String direction) {
     if (_profiles.isEmpty) return;
 
     final targetProfile = _profiles[_currentIndex];
     final profileProvider = context.read<ProfileProvider>();
     final currentUserId = profileProvider.currentUser?.uid;
     final swipeType = direction == 'right' ? 'like' : 'dislike';
-    if (currentUserId != null && targetProfile.uid != null) {
-      final isMatch = await _profileService.swipeUser(
-          currentUserId, targetProfile.uid!, swipeType,
-          senderName: profileProvider.displayName);
-      profileProvider.setLastSwipedUserId(targetProfile.uid);
 
-      if (isMatch && mounted) {
-        _showMatchDialog(targetProfile);
-      }
-    }
+    // Set last swiped user immediately for instant rewind availability
+    profileProvider.setLastSwipedUserId(targetProfile.uid);
 
+    // Update UI immediately (optimistic update)
     setState(() {
       _freeSwipesUsed++;
       if (_currentIndex < _profiles.length - 1) {
@@ -183,6 +177,22 @@ class _SwipeViewState extends State<SwipeView> with TickerProviderStateMixin {
       _dragOffset = Offset.zero;
       _isAnimating = false;
     });
+
+    // Run network write in the background
+    if (currentUserId != null && targetProfile.uid != null) {
+      _profileService.swipeUser(
+        currentUserId,
+        targetProfile.uid!,
+        swipeType,
+        senderName: profileProvider.displayName,
+      ).then((isMatch) {
+        if (isMatch && mounted) {
+          _showMatchDialog(targetProfile);
+        }
+      }).catchError((e) {
+        debugPrint('SwipeView: Error processing swipe in background: $e');
+      });
+    }
   }
 
   Future<void> _loadMoreProfiles() async {

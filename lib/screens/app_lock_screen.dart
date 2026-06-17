@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:local_auth/local_auth.dart';
 import 'dart:ui';
 
 class AppLockScreen extends StatefulWidget {
@@ -18,10 +19,16 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
   bool _isScanningBiometric = false;
   bool _biometricSuccess = false;
 
+  double _scanProgress = 0.0;
+  String _scanStatusText = 'Tap sensor to scan fingerprint';
+  bool _isHolding = false;
+
   final Color _primaryColor = const Color(0xFFFF4D85);
+  final LocalAuthentication _auth = LocalAuthentication();
 
   late AnimationController _pulseController;
   late Animation<double> _pulseScale;
+  late AnimationController _scanProgressController;
 
   @override
   void initState() {
@@ -36,11 +43,22 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
     _pulseScale = Tween<double>(begin: 0.95, end: 1.05).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+
+    _scanProgressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _scanProgressController.addListener(() {
+      setState(() {
+        _scanProgress = _scanProgressController.value;
+      });
+    });
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
+    _scanProgressController.dispose();
     super.dispose();
   }
 
@@ -51,32 +69,85 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
       _isBiometricEnabled = prefs.getBool('biometric_lock_enabled') ?? false;
     });
 
-    // Auto-trigger biometric check on start if enabled
+    // Auto-open biometric overlay on start if enabled
     if (_isBiometricEnabled) {
-      _triggerBiometricScan();
+      setState(() {
+        _isScanningBiometric = true;
+        _scanStatusText = 'Scan fingerprint to unlock';
+        _scanProgress = 0.0;
+        _isHolding = false;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _authenticateWithDeviceBiometrics();
+      });
     }
   }
 
-  Future<void> _triggerBiometricScan() async {
-    if (_isScanningBiometric || _biometricSuccess) return;
-
+  Future<void> _authenticateWithDeviceBiometrics() async {
+    if (_biometricSuccess) return;
+    
     setState(() {
-      _isScanningBiometric = true;
+      _isHolding = true;
+      _scanStatusText = 'Verifying identity...';
+      _scanProgress = 0.0;
     });
+    _scanProgressController.reset();
 
-    // Stunning simulated scanner delay & pulse
-    await Future.delayed(const Duration(milliseconds: 1800));
+    try {
+      final bool isSupported = await _auth.isDeviceSupported();
+      final bool canCheckBiometrics = await _auth.canCheckBiometrics;
+      if (!isSupported || !canCheckBiometrics) {
+        setState(() {
+          _isHolding = false;
+          _scanStatusText = 'Biometrics not supported or setup.';
+        });
+        return;
+      }
 
-    if (!mounted) return;
+      // Pulsing effect
+      _scanProgressController.repeat();
 
-    setState(() {
-      _isScanningBiometric = false;
-      _biometricSuccess = true;
-    });
+      final bool didAuthenticate = await _auth.authenticate(
+        localizedReason: 'Verify your biometric signature to unlock DateDash',
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          stickyAuth: true,
+        ),
+      );
 
-    // Play quick success sound/haptic delay
-    await Future.delayed(const Duration(milliseconds: 400));
-    widget.onUnlock();
+      _scanProgressController.stop();
+
+      if (didAuthenticate) {
+        setState(() {
+          _scanProgress = 1.0;
+          _isHolding = false;
+          _biometricSuccess = true;
+          _scanStatusText = 'Verified Successfully!';
+        });
+
+        // Success feedback delay
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (mounted) {
+          setState(() {
+            _isScanningBiometric = false;
+          });
+          widget.onUnlock();
+        }
+      } else {
+        setState(() {
+          _isHolding = false;
+          _scanProgress = 0.0;
+          _scanStatusText = 'Verification failed. Tap to retry.';
+        });
+      }
+    } catch (e) {
+      _scanProgressController.stop();
+      setState(() {
+        _isHolding = false;
+        _scanProgress = 0.0;
+        _scanStatusText = 'Authentication cancelled. Tap to retry.';
+      });
+    }
   }
 
   void _onNumberTap(int number) {
@@ -271,17 +342,29 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
                         if (index == 9) {
                           if (hasBiometricOption) {
                             return Center(
-                              child: ScaleTransition(
-                                scale: _pulseScale,
-                                child: IconButton(
-                                  icon: Icon(
-                                    _biometricSuccess 
-                                        ? Icons.verified_user_rounded 
-                                        : Iconsax.finger_scan, 
-                                    color: _biometricSuccess ? Colors.green : _primaryColor,
-                                    size: 32,
+                              child: GestureDetector(
+                                onTap: _authenticateWithDeviceBiometrics,
+                                child: ScaleTransition(
+                                  scale: _pulseScale,
+                                  child: Container(
+                                    width: 56,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _primaryColor.withOpacity(0.1),
+                                      border: Border.all(
+                                        color: _primaryColor.withOpacity(0.4),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      _biometricSuccess
+                                          ? Icons.verified_user_rounded
+                                          : Iconsax.finger_scan,
+                                      color: _biometricSuccess ? Colors.greenAccent : _primaryColor,
+                                      size: 28,
+                                    ),
                                   ),
-                                  onPressed: _triggerBiometricScan,
                                 ),
                               ),
                             );
@@ -340,38 +423,110 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                 child: Container(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withOpacity(0.75),
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ScaleTransition(
-                          scale: _pulseScale,
-                          child: Container(
-                            padding: const EdgeInsets.all(32),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _primaryColor.withOpacity(0.12),
-                              border: Border.all(color: _primaryColor.withOpacity(0.3), width: 2),
-                            ),
-                            child: Icon(Iconsax.finger_scan5, size: 72, color: _primaryColor),
+                        // Tap sensor to authenticate
+                        GestureDetector(
+                          onTap: _authenticateWithDeviceBiometrics,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Outer progress ring
+                              SizedBox(
+                                width: 160,
+                                height: 160,
+                                child: AnimatedBuilder(
+                                  animation: _scanProgressController,
+                                  builder: (context, _) => CircularProgressIndicator(
+                                    value: _scanProgress,
+                                    strokeWidth: 4,
+                                    backgroundColor: Colors.white.withOpacity(0.08),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      _biometricSuccess ? Colors.greenAccent : _primaryColor,
+                                    ),
+                                    strokeCap: StrokeCap.round,
+                                  ),
+                                ),
+                              ),
+                              // Inner fingerprint icon
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.all(28),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _isHolding
+                                      ? _primaryColor.withOpacity(0.25)
+                                      : _biometricSuccess
+                                          ? Colors.greenAccent.withOpacity(0.15)
+                                          : _primaryColor.withOpacity(0.1),
+                                  border: Border.all(
+                                    color: _isHolding
+                                        ? _primaryColor.withOpacity(0.6)
+                                        : _biometricSuccess
+                                            ? Colors.greenAccent.withOpacity(0.5)
+                                            : _primaryColor.withOpacity(0.25),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Icon(
+                                  _biometricSuccess
+                                      ? Icons.verified_user_rounded
+                                      : Iconsax.finger_scan5,
+                                  size: 64,
+                                  color: _biometricSuccess
+                                      ? Colors.greenAccent
+                                      : _isHolding
+                                          ? _primaryColor
+                                          : _primaryColor.withOpacity(0.7),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 32),
-                        const Text(
-                          'Scanning Fingerprint...',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
+                        const SizedBox(height: 36),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: Text(
+                            _biometricSuccess ? 'Verified Successfully! ✓' : _scanStatusText,
+                            key: ValueKey(_scanStatusText + _biometricSuccess.toString()),
+                            style: TextStyle(
+                              color: _biometricSuccess ? Colors.greenAccent : Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Place your finger on your reader to unlock',
+                          _isHolding ? 'Authenticating using device...' : 'Tap the icon above to unlock',
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.5),
                             fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 48),
+                        // Use PIN instead button
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _isScanningBiometric = false;
+                              _scanProgress = 0.0;
+                              _isHolding = false;
+                              _scanProgressController.reset();
+                              _scanStatusText = 'Tap sensor to scan fingerprint';
+                            });
+                          },
+                          child: Text(
+                            'Use PIN instead',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.5),
+                              fontSize: 14,
+                              decoration: TextDecoration.underline,
+                              decorationColor: Colors.white.withOpacity(0.3),
+                            ),
                           ),
                         ),
                       ],

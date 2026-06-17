@@ -837,6 +837,31 @@ class ChatService {
     }
   }
 
+  /// Sets typing status for the current user in a chat
+  Future<void> setTypingStatus(String chatId, String userId, bool isTyping) async {
+    try {
+      await _firestore.collection('chats').doc(chatId).update({
+        'typingStatus.$userId': isTyping,
+      });
+    } catch (e) {
+      debugPrint('Error updating typing status: $e');
+    }
+  }
+
+  /// Streams the typing status of the other user in a chat
+  Stream<bool> getTypingStream(String chatId, String otherUserId) {
+    return _firestore.collection('chats').doc(chatId).snapshots().map((snap) {
+      if (!snap.exists) return false;
+      final data = snap.data();
+      if (data == null) return false;
+      final typingMap = data['typingStatus'] as Map<String, dynamic>?;
+      return typingMap?[otherUserId] == true;
+    }).handleError((error) {
+      debugPrint('Error in getTypingStream: $error');
+      return false;
+    });
+  }
+
   /// Get total unread message count for a user
   Stream<int> getUnreadMessageCountStream(String uid) {
     return _firestore

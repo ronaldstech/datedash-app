@@ -43,6 +43,7 @@ class UserProfile {
   List<String> lookingFor;
   bool? openToLongDistance;
   String? wantKids;
+  String? familyPlans;
 
   // 🎨 Interests & Hobbies
   List<String> hobbies;
@@ -53,6 +54,8 @@ class UserProfile {
   // 🧠 Personality & Values
   String? introvertExtrovert;
   String? loveLanguage;
+  String? communicationStyle;
+  String? loveStyle;
   String? mbti;
   String? politicalViews;
   String? coreValues;
@@ -100,6 +103,11 @@ class UserProfile {
   String? filterPets;
   String? filterIntrovertExtrovert;
   String? filterLookingFor;
+  int? filterMaxPhotos;
+  bool filterHasBio;
+  String? filterFamilyPlans;
+  String? filterCommunicationStyle;
+  String? filterLoveStyle;
 
   // 💰 Monetization
   bool isPremium;
@@ -118,6 +126,8 @@ class UserProfile {
   List<String> claimedRewards; // One-time reward IDs
   int lastSeenLikesCount;
   List<String> blockedUsers; // List of blocked user UIDs
+  String? fcmToken;
+
 
   UserProfile({
     this.firstName,
@@ -146,12 +156,15 @@ class UserProfile {
     this.lookingFor = const [],
     this.openToLongDistance,
     this.wantKids,
+    this.familyPlans,
     this.hobbies = const [],
     this.musicGenres = const [],
     this.moviesShows = const [],
     this.weekendActivities = const [],
     this.introvertExtrovert,
     this.loveLanguage,
+    this.communicationStyle,
+    this.loveStyle,
     this.mbti,
     this.politicalViews,
     this.coreValues,
@@ -209,6 +222,12 @@ class UserProfile {
     this.filterPets = 'Any',
     this.filterIntrovertExtrovert = 'Any',
     this.filterLookingFor = 'Any',
+    this.filterMaxPhotos = 9,
+    this.filterHasBio = false,
+    this.filterFamilyPlans = 'Any',
+    this.filterCommunicationStyle = 'Any',
+    this.filterLoveStyle = 'Any',
+    this.fcmToken,
   });
 
   int? get age {
@@ -316,12 +335,15 @@ class UserProfile {
         lookingFor: _parseList(map['lookingFor']),
         openToLongDistance: map['openToLongDistance'] is bool ? map['openToLongDistance'] : null,
         wantKids: map['wantKids']?.toString(),
+        familyPlans: map['familyPlans']?.toString(),
         hobbies: _parseList(map['hobbies']),
         musicGenres: _parseList(map['musicGenres']),
         moviesShows: _parseList(map['moviesShows']),
         weekendActivities: _parseList(map['weekendActivities']),
         introvertExtrovert: map['introvertExtrovert']?.toString(),
         loveLanguage: map['loveLanguage']?.toString(),
+        communicationStyle: map['communicationStyle']?.toString(),
+        loveStyle: map['loveStyle']?.toString(),
         mbti: map['mbti']?.toString(),
         politicalViews: map['politicalViews']?.toString(),
         coreValues: map['coreValues']?.toString(),
@@ -366,6 +388,11 @@ class UserProfile {
         filterPets: map['filterPets']?.toString() ?? 'Any',
         filterIntrovertExtrovert: map['filterIntrovertExtrovert']?.toString() ?? 'Any',
         filterLookingFor: map['filterLookingFor']?.toString() ?? 'Any',
+        filterMaxPhotos: (map['filterMaxPhotos'] as num?)?.toInt() ?? 9,
+        filterHasBio: map['filterHasBio'] == true,
+        filterFamilyPlans: map['filterFamilyPlans']?.toString() ?? 'Any',
+        filterCommunicationStyle: map['filterCommunicationStyle']?.toString() ?? 'Any',
+        filterLoveStyle: map['filterLoveStyle']?.toString() ?? 'Any',
         isPremium: map['isPremium'] == true,
         premiumType: map['premiumType']?.toString(),
         premiumExpiry: _parseDate(map['premiumExpiry']),
@@ -379,6 +406,7 @@ class UserProfile {
         lastMessageResetDate: map['lastMessageResetDate']?.toString(),
         claimedRewards: _parseList(map['claimedRewards']),
         lastSeenLikesCount: (map['lastSeenLikesCount'] as num?)?.toInt() ?? 0,
+        fcmToken: map['fcmToken']?.toString(),
       );
     } catch (e) {
       debugPrint('UserProfile error parsing map: $e');
@@ -439,12 +467,15 @@ class UserProfile {
       'lookingFor': lookingFor,
       'openToLongDistance': openToLongDistance,
       'wantKids': wantKids,
+      'familyPlans': familyPlans,
       'hobbies': hobbies,
       'musicGenres': musicGenres,
       'moviesShows': moviesShows,
       'weekendActivities': weekendActivities,
       'introvertExtrovert': introvertExtrovert,
       'loveLanguage': loveLanguage,
+      'communicationStyle': communicationStyle,
+      'loveStyle': loveStyle,
       'mbti': mbti,
       'politicalViews': politicalViews,
       'coreValues': coreValues,
@@ -471,6 +502,7 @@ class UserProfile {
       'longitude': longitude,
       'uid': uid,
       'phoneNumber': phoneNumber,
+      'fcmToken': fcmToken,
       'countryCode': countryCode,
       'filterMinAge': filterMinAge,
       'filterMaxAge': filterMaxAge,
@@ -489,6 +521,11 @@ class UserProfile {
       'filterPets': filterPets,
       'filterIntrovertExtrovert': filterIntrovertExtrovert,
       'filterLookingFor': filterLookingFor,
+      'filterMaxPhotos': filterMaxPhotos,
+      'filterHasBio': filterHasBio,
+      'filterFamilyPlans': filterFamilyPlans,
+      'filterCommunicationStyle': filterCommunicationStyle,
+      'filterLoveStyle': filterLoveStyle,
       'isPremium': isPremium,
       'premiumType': premiumType,
       'premiumExpiry': premiumExpiry != null ? Timestamp.fromDate(premiumExpiry!) : null,
@@ -540,6 +577,7 @@ class UserProfile {
     if (lookingFor.isNotEmpty) filledFields++;
     if (openToLongDistance != null) filledFields++;
     if (wantKids != null && wantKids!.isNotEmpty) filledFields++;
+    if (familyPlans != null && familyPlans!.isNotEmpty) filledFields++;
 
     if (hobbies.isNotEmpty) filledFields++;
     if (musicGenres.isNotEmpty) filledFields++;
@@ -548,6 +586,8 @@ class UserProfile {
 
     if (introvertExtrovert != null && introvertExtrovert!.isNotEmpty) filledFields++;
     if (loveLanguage != null && loveLanguage!.isNotEmpty) filledFields++;
+    if (communicationStyle != null && communicationStyle!.isNotEmpty) filledFields++;
+    if (loveStyle != null && loveStyle!.isNotEmpty) filledFields++;
     if (mbti != null && mbti!.isNotEmpty) filledFields++;
     if (politicalViews != null && politicalViews!.isNotEmpty) filledFields++;
     if (coreValues != null && coreValues!.isNotEmpty) filledFields++;
@@ -557,7 +597,7 @@ class UserProfile {
     if (promptGreenFlag != null && promptGreenFlag!.isNotEmpty) filledFields++;
     if (promptTwoTruths != null && promptTwoTruths!.isNotEmpty) filledFields++;
 
-    totalFields = 39;
+    totalFields = 42;
     return ((filledFields / totalFields) * 100).round();
   }
 
@@ -594,7 +634,7 @@ class UserProfile {
         // Page 5: Relationship Goals
         return lookingFor.isNotEmpty &&
             openToLongDistance != null &&
-            (wantKids?.isNotEmpty ?? false);
+            ((wantKids?.isNotEmpty ?? false) || (familyPlans?.isNotEmpty ?? false));
       case 'interests':
         // Page 6: Interests & Hobbies
         return hobbies.isNotEmpty ||
@@ -605,6 +645,8 @@ class UserProfile {
         // Page 7: Personality & Values
         return (introvertExtrovert?.isNotEmpty ?? false) ||
             (loveLanguage?.isNotEmpty ?? false) ||
+            (communicationStyle?.isNotEmpty ?? false) ||
+            (loveStyle?.isNotEmpty ?? false) ||
             (mbti?.isNotEmpty ?? false) ||
             (politicalViews?.isNotEmpty ?? false) ||
             (coreValues?.isNotEmpty ?? false);

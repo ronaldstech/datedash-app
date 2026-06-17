@@ -7,6 +7,8 @@ import '../models/live_stream_model.dart';
 import '../services/live_stream_service.dart';
 import '../providers/profile_provider.dart';
 import '../models/gift_model.dart';
+import '../models/user_profile_model.dart';
+import '../services/profile_service.dart';
 
 class LiveStreamScreen extends StatefulWidget {
   final String streamId;
@@ -101,89 +103,170 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
   @override
   Widget build(BuildContext context) {
     final pp = context.watch<ProfileProvider>();
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // ── Video layer ───────────────────────────────────────────
-          _buildVideoLayer(),
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('live_streams')
+          .doc(widget.streamId)
+          .snapshots(),
+      builder: (context, snapshot) {
+        LiveStream? currentStream;
+        if (snapshot.hasData && snapshot.data!.exists) {
+          final data = snapshot.data!.data() as Map<String, dynamic>;
+          currentStream = LiveStream.fromMap(data, snapshot.data!.id);
+        }
+        final activeStream = currentStream ?? widget.stream;
+        final bool isCurrentGuest = activeStream != null &&
+            activeStream.guestId == pp.currentUser!.uid &&
+            activeStream.guestStatus == 'joined';
 
-          // ── Dark gradient overlay ─────────────────────────────────
-          Positioned.fill(
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.35),
-                      Colors.transparent,
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.80),
-                    ],
-                    stops: const [0, 0.2, 0.6, 1],
+        return Scaffold(
+          backgroundColor: Colors.black,
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              // ── Video layer ───────────────────────────────────────────
+              _buildVideoLayer(activeStream),
+
+              // ── Dark gradient overlay ─────────────────────────────────
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.35),
+                          Colors.transparent,
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.80),
+                        ],
+                        stops: const [0, 0.2, 0.6, 1],
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
 
-          // ── Main UI ───────────────────────────────────────────────
-          SafeArea(
-            child: Column(
-              children: [
-                _buildTopBar(context),
-                const Spacer(),
-                _buildChatAndControls(context, pp),
-              ],
-            ),
-          ),
+              // ── Main UI ───────────────────────────────────────────────
+              SafeArea(
+                child: Column(
+                  children: [
+                    _buildTopBar(context, activeStream),
+                    const Spacer(),
+                    _buildChatAndControls(context, pp),
+                  ],
+                ),
+              ),
 
-          // ── Broadcaster side-bar controls ─────────────────────────
-          if (widget.isBroadcaster) _buildBroadcasterControls(),
-        ],
-      ),
+              // ── Broadcaster/Guest side-bar controls ─────────────────────────
+              if (widget.isBroadcaster || isCurrentGuest)
+                _buildSideControls(isGuest: isCurrentGuest, stream: activeStream, pp: pp),
+            ],
+          ),
+        );
+      },
     );
   }
 
   // ─────────────── Video layer ─────────────────────────────────────────────────
 
-  Widget _buildVideoLayer() {
-    return _buildCameraOffPlaceholder(
-      widget.isBroadcaster ? 'Streaming disabled' : 'Waiting for broadcaster…',
+  Widget _buildVideoLayer(LiveStream? stream) {
+    final bool isGuestJoined = stream != null &&
+        stream.guestStatus == 'joined' &&
+        stream.guestId != null &&
+        stream.guestPhoto != null;
+
+    if (!isGuestJoined) {
+      final photo = widget.isBroadcaster
+          ? (context.read<ProfileProvider>().photoURL ?? '')
+          : (stream?.broadcasterPhoto ?? '');
+      return _buildSingleVideoPlayer(photo, widget.isBroadcaster ? 'You' : (stream?.broadcasterName ?? 'Host'), _isCameraOff);
+    }
+
+    final hostPhoto = stream.broadcasterPhoto;
+    final hostName = stream.broadcasterName;
+    
+    final guestPhoto = stream.guestPhoto ?? '';
+    final guestName = stream.guestName ?? 'Guest';
+
+    final bool hostCamOff = widget.isBroadcaster ? _isCameraOff : false;
+    final bool guestCamOff = (widget.isBroadcaster == false && stream.guestId == context.read<ProfileProvider>().currentUser?.uid) ? _isCameraOff : false;
+
+    return Column(
+      children: [
+        Expanded(
+          child: _buildSingleVideoPlayer(hostPhoto, '$hostName (Host)', hostCamOff),
+        ),
+        Container(
+          height: 2,
+          color: const Color(0xFFFF4D85).withOpacity(0.5),
+        ),
+        Expanded(
+          child: _buildSingleVideoPlayer(guestPhoto, '$guestName (Co-host)', guestCamOff),
+        ),
+      ],
     );
   }
 
-  Widget _buildCameraOffPlaceholder(String label) {
-    final photo = widget.isBroadcaster
-        ? (context.read<ProfileProvider>().photoURL ?? '')
-        : (widget.stream?.broadcasterPhoto ?? '');
+  Widget _buildSingleVideoPlayer(String photo, String name, bool camOff) {
+    if (camOff) {
+      return Container(
+        color: const Color(0xFF111111),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (photo.isNotEmpty)
+                CircleAvatar(
+                  radius: 40,
+                  backgroundImage: NetworkImage(photo),
+                ),
+              const SizedBox(height: 12),
+              Text(
+                '$name\'s camera is off',
+                style: const TextStyle(color: Colors.white54, fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
       decoration: photo.isNotEmpty
           ? BoxDecoration(
               image: DecorationImage(
                 image: NetworkImage(photo),
                 fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.5), BlendMode.darken),
               ),
             )
           : const BoxDecoration(color: Color(0xFF111111)),
-      child: Center(
-        child: Text(label,
-            style: const TextStyle(
-                color: Colors.white54,
-                fontSize: 14,
-                fontWeight: FontWeight.w600)),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 12,
+            bottom: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                name,
+                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   // ─────────────── Top bar ─────────────────────────────────────────────────────
 
-  Widget _buildTopBar(BuildContext context) {
+  Widget _buildTopBar(BuildContext context, LiveStream? stream) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
@@ -194,7 +277,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
             backgroundImage: NetworkImage(
               widget.isBroadcaster
                   ? (context.read<ProfileProvider>().photoURL ?? '')
-                  : (widget.stream?.broadcasterPhoto ?? ''),
+                  : (stream?.broadcasterPhoto ?? ''),
             ),
           ),
           const SizedBox(width: 10),
@@ -205,7 +288,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
               Text(
                 widget.isBroadcaster
                     ? 'You'
-                    : (widget.stream?.broadcasterName ?? 'Live'),
+                    : (stream?.broadcasterName ?? 'Live'),
                 style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
@@ -245,7 +328,16 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
           ),
           const Spacer(),
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: () async {
+              final navigator = Navigator.of(context);
+              if (!widget.isBroadcaster) {
+                final pp = context.read<ProfileProvider>();
+                if (stream != null && stream.guestId == pp.currentUser!.uid) {
+                  await _liveService.removeGuest(widget.streamId);
+                }
+              }
+              navigator.pop();
+            },
             child: Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -268,9 +360,13 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
     );
   }
 
-  // ─────────────── Broadcaster side controls ────────────────────────────────────
+  // ─────────────── Side controls ────────────────────────────────────
 
-  Widget _buildBroadcasterControls() {
+  Widget _buildSideControls({
+    required bool isGuest,
+    required LiveStream? stream,
+    required ProfileProvider pp,
+  }) {
     return Positioned(
       right: 12,
       top: 0,
@@ -294,6 +390,179 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
               onTap: _toggleCamera,
               active: _isCameraOff,
               activeColor: Colors.orange,
+            ),
+            if (isGuest) ...[
+              const SizedBox(height: 16),
+              _controlBtn(
+                icon: Icons.exit_to_app,
+                label: 'Leave Seat',
+                onTap: () async {
+                  await _liveService.removeGuest(widget.streamId);
+                },
+                active: true,
+                activeColor: Colors.redAccent,
+              ),
+            ],
+            if (widget.isBroadcaster) ...[
+              const SizedBox(height: 16),
+              if (stream?.guestStatus == 'joined')
+                _controlBtn(
+                  icon: Icons.person_remove,
+                  label: 'Remove Guest',
+                  onTap: () async {
+                    await _liveService.removeGuest(widget.streamId);
+                  },
+                  active: true,
+                  activeColor: Colors.redAccent,
+                )
+              else
+                _controlBtn(
+                  icon: Icons.person_add,
+                  label: 'Invite Match',
+                  onTap: () => _showInviteMatchSheet(context, pp.currentUser!.uid),
+                  active: false,
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showInviteMatchSheet(BuildContext context, String hostId) {
+    final profileService = ProfileService();
+    final pp = context.read<ProfileProvider>();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Color(0xFF1A1A1E),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white12,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Invite a Match',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: StreamBuilder<List<UserProfile>>(
+                stream: profileService.getMatchesStream(hostId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator(color: Color(0xFFFF4D85)));
+                  }
+                  final matches = snapshot.data ?? [];
+                  if (matches.isEmpty) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 40),
+                        child: Text(
+                          'No matches found. Swipe to get matches first!',
+                          style: TextStyle(color: Colors.white54),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    itemCount: matches.length,
+                    itemBuilder: (context, index) {
+                      final match = matches[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundImage: match.photos.isNotEmpty
+                                  ? NetworkImage(match.photos.first)
+                                  : null,
+                              child: match.photos.isEmpty
+                                  ? const Icon(Icons.person, color: Colors.white)
+                                  : null,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    match.firstName ?? 'Unknown',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  const Text(
+                                    'Matched',
+                                    style: TextStyle(
+                                      color: Colors.white54,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                final guestPhoto = match.photos.isNotEmpty ? match.photos.first : '';
+                                await _liveService.inviteGuest(
+                                  streamId: widget.streamId,
+                                  hostId: hostId,
+                                  hostName: pp.displayName,
+                                  guestId: match.uid ?? '',
+                                  guestName: match.firstName ?? 'Guest',
+                                  guestPhoto: guestPhoto,
+                                );
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Invitation sent to ${match.firstName}!'),
+                                      backgroundColor: const Color(0xFFFF4D85),
+                                    ),
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF4D85),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              child: const Text('Invite'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),

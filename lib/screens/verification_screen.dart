@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import '../providers/profile_provider.dart';
 import '../providers/language_provider.dart';
+import 'landing_screen.dart';
 
 
 class VerificationScreen extends StatefulWidget {
@@ -57,6 +58,10 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
 
   Future<void> _pickImage(ImageSource source) async {
     try {
+      // Prevent app lock when picking images
+      try {
+        LandingScreen.ignoreNextLock = true;
+      } catch (_) {}
       final XFile? image = await _picker.pickImage(source: source);
       if (image != null) {
         setState(() {

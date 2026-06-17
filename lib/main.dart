@@ -15,12 +15,14 @@ import 'providers/language_provider.dart';
 import 'widgets/match_notification_wrapper.dart';
 import 'services/update_service.dart';
 import 'screens/update_screen.dart';
+import 'services/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await PushNotificationService().initialize();
   // GoogleSignIn.instance.initialize() is not needed in this version.
 
   runApp(
@@ -88,6 +90,7 @@ class _DateDashAppState extends State<DateDashApp> with WidgetsBindingObserver {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeProvider.themeMode,
       builder: (context, child) => AppNotificationWrapper(
+        navigatorKey: _navigatorKey,
         child: CallListenerWrapper(
           navigatorKey: _navigatorKey,
           child: child!,

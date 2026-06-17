@@ -146,11 +146,11 @@ class LikesScreen extends StatelessWidget {
                   : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
 
               final profileProvider = context.watch<ProfileProvider>();
-              final isUnlocked =
-                  profileProvider.userProfile?.isPremium == true ||
-                      (profileProvider.userProfile?.unlockedLikes
-                              .contains(profile.uid) ??
-                          false);
+              final isUnlocked = (profileProvider.userProfile?.isPremium == true &&
+                      profileProvider.userProfile?.premiumType?.toUpperCase() == 'ELITE') ||
+                  (profileProvider.userProfile?.unlockedLikes
+                          .contains(profile.uid) ??
+                      false);
 
               return GestureDetector(
                 onTap: isUnlocked
@@ -229,7 +229,8 @@ class LikesScreen extends StatelessWidget {
                 : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800';
 
             final profileProvider = context.watch<ProfileProvider>();
-            final isUnlocked = profileProvider.userProfile?.isPremium == true ||
+            final isUnlocked = (profileProvider.userProfile?.isPremium == true &&
+                    profileProvider.userProfile?.premiumType?.toUpperCase() == 'ELITE') ||
                 (profileProvider.userProfile?.unlockedLikes
                         .contains(profile.uid) ??
                     false);

@@ -31,6 +31,11 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
   late String _pets;
   late String _introvertExtrovert;
   late String _lookingFor;
+  late int _maxPhotos;
+  late bool _hasBio;
+  late String _familyPlans;
+  late String _communicationStyle;
+  late String _loveStyle;
 
   bool _isSaving = false;
 
@@ -50,6 +55,10 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
     'Sponsor',
     'Figuring Out'
   ];
+  
+  final List<String> _familyPlansOptions = ['Any', 'Want some day', 'Don\'t want', 'Have and want more', 'Have and don\'t want more', 'Not sure yet'];
+  final List<String> _communicationStyleOptions = ['Any', 'Big text in person', 'Phone caller', 'Video chatter', 'Bad texter', 'Better in person'];
+  final List<String> _loveStyleOptions = ['Any', 'Thoughtful gestures', 'Presents', 'Touch', 'Deep talks', 'Time together'];
   
   // Custom Filter options lists
   final List<String> _relationshipStatusOptions = [
@@ -137,6 +146,11 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
     _pets = profile?.filterPets ?? 'Any';
     _introvertExtrovert = profile?.filterIntrovertExtrovert ?? 'Any';
     _lookingFor = profile?.filterLookingFor ?? 'Any';
+    _maxPhotos = profile?.filterMaxPhotos ?? 9;
+    _hasBio = profile?.filterHasBio ?? false;
+    _familyPlans = profile?.filterFamilyPlans ?? 'Any';
+    _communicationStyle = profile?.filterCommunicationStyle ?? 'Any';
+    _loveStyle = profile?.filterLoveStyle ?? 'Any';
   }
 
   Future<void> _saveFilters() async {
@@ -160,6 +174,11 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
             filterPets: _pets,
             filterIntrovertExtrovert: _introvertExtrovert,
             filterLookingFor: _lookingFor,
+            filterMaxPhotos: _maxPhotos,
+            filterHasBio: _hasBio,
+            filterFamilyPlans: _familyPlans,
+            filterCommunicationStyle: _communicationStyle,
+            filterLoveStyle: _loveStyle,
           );
       if (mounted) {
         Navigator.pop(context);
@@ -833,6 +852,122 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
                         items: _introvertExtrovertOptions,
                         onChanged: (val) => setState(() => _introvertExtrovert = val),
                         color: Colors.tealAccent,
+                        isPremiumLocked: !isPremium,
+                      ),
+                      
+                      // Max Photos
+                      _buildGroupCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.photo_library_rounded, size: 18, color: Colors.blueAccent),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'Max Photos Needed',
+                                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                    ),
+                                    if (!isPremium) ...[
+                                      const SizedBox(width: 8),
+                                      const Icon(Iconsax.crown, color: Colors.amber, size: 14),
+                                    ],
+                                  ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blueAccent.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    _maxPhotos >= 9 ? 'Any' : '$_maxPhotos photos',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.blueAccent,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            AbsorbPointer(
+                              absorbing: !isPremium,
+                              child: Opacity(
+                                opacity: !isPremium ? 0.6 : 1.0,
+                                child: SliderTheme(
+                                  data: SliderThemeData(
+                                    activeTrackColor: Colors.blueAccent,
+                                    inactiveTrackColor: Colors.blueAccent.withOpacity(0.15),
+                                    thumbColor: Colors.white,
+                                    overlayColor: Colors.blueAccent.withOpacity(0.1),
+                                    trackHeight: 4,
+                                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10, elevation: 4),
+                                  ),
+                                  child: Slider(
+                                    value: _maxPhotos.toDouble(),
+                                    min: 1,
+                                    max: 9,
+                                    divisions: 8,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _maxPhotos = value.round();
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Has Bio
+                      _buildGroupCard(
+                        child: _buildToggleRow(
+                          title: 'Must Have a Bio',
+                          subtitle: 'Only show users who have written a bio.',
+                          value: _hasBio,
+                          activeColor: const Color(0xFFFF4D85),
+                          onChanged: (val) => setState(() => _hasBio = val),
+                          isPremiumLocked: !isPremium,
+                        ),
+                      ),
+                      
+                      // Family Plans
+                      _buildDropdownCard(
+                        icon: Icons.family_restroom_rounded,
+                        title: 'Family Plans',
+                        value: _familyPlans,
+                        items: _familyPlansOptions,
+                        onChanged: (val) => setState(() => _familyPlans = val),
+                        color: Colors.indigoAccent,
+                        isPremiumLocked: !isPremium,
+                      ),
+                      
+                      // Communication Style
+                      _buildDropdownCard(
+                        icon: Icons.chat_bubble_rounded,
+                        title: 'Communication Style',
+                        value: _communicationStyle,
+                        items: _communicationStyleOptions,
+                        onChanged: (val) => setState(() => _communicationStyle = val),
+                        color: Colors.deepPurpleAccent,
+                        isPremiumLocked: !isPremium,
+                      ),
+                      
+                      // Love Style
+                      _buildDropdownCard(
+                        icon: Icons.favorite_border_rounded,
+                        title: 'Love Style',
+                        value: _loveStyle,
+                        items: _loveStyleOptions,
+                        onChanged: (val) => setState(() => _loveStyle = val),
+                        color: Colors.redAccent,
                         isPremiumLocked: !isPremium,
                       ),
                       

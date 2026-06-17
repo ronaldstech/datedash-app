@@ -235,6 +235,11 @@ class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
     String filterPets = 'Any',
     String filterIntrovertExtrovert = 'Any',
     String filterLookingFor = 'Any',
+    int filterMaxPhotos = 9,
+    bool filterHasBio = false,
+    String filterFamilyPlans = 'Any',
+    String filterCommunicationStyle = 'Any',
+    String filterLoveStyle = 'Any',
   }) async {
     if (_userProfile == null || _currentUser == null) return;
     
@@ -255,6 +260,11 @@ class ProfileProvider with ChangeNotifier, WidgetsBindingObserver {
     _userProfile!.filterPets = filterPets;
     _userProfile!.filterIntrovertExtrovert = filterIntrovertExtrovert;
     _userProfile!.filterLookingFor = filterLookingFor;
+    _userProfile!.filterMaxPhotos = filterMaxPhotos;
+    _userProfile!.filterHasBio = filterHasBio;
+    _userProfile!.filterFamilyPlans = filterFamilyPlans;
+    _userProfile!.filterCommunicationStyle = filterCommunicationStyle;
+    _userProfile!.filterLoveStyle = filterLoveStyle;
     
     notifyListeners();
     

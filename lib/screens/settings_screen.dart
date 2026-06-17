@@ -11,6 +11,7 @@ import 'premium_screen.dart';
 import 'verification_screen.dart';
 import 'edit_profile_screen.dart';
 import 'security_settings_screen.dart';
+import 'notification_settings_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -45,16 +46,11 @@ class SettingsScreen extends StatelessWidget {
             languageProvider.getString('edit_profile_sub'),
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+              MaterialPageRoute(
+                  builder: (context) => const EditProfileScreen()),
             ),
           ),
           _buildVerificationTile(context, languageProvider, profileProvider),
-          _buildSettingTile(
-            context,
-            Iconsax.sms,
-            languageProvider.getString('email_settings'),
-            languageProvider.getString('email_settings_sub'),
-          ),
           _buildSettingTile(
             context,
             Iconsax.lock,
@@ -62,7 +58,8 @@ class SettingsScreen extends StatelessWidget {
             languageProvider.getString('security_sub'),
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const SecuritySettingsScreen()),
+              MaterialPageRoute(
+                  builder: (context) => const SecuritySettingsScreen()),
             ),
           ),
           const SizedBox(height: 20),
@@ -77,6 +74,11 @@ class SettingsScreen extends StatelessWidget {
             Iconsax.notification,
             languageProvider.getString('notifications'),
             languageProvider.getString('notifications_sub'),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const NotificationSettingsScreen()),
+            ),
           ),
           _buildLanguageTile(context),
           const SizedBox(height: 20),
@@ -474,7 +476,8 @@ class SettingsScreen extends StatelessWidget {
             ),
             subtitle: Text(
               languageProvider.getString('wipe_local_data_sub'),
-              style: TextStyle(color: Theme.of(context).hintColor, fontSize: 12),
+              style:
+                  TextStyle(color: Theme.of(context).hintColor, fontSize: 12),
             ),
             onTap: () => _showWipeDataConfirmation(context),
           ),
@@ -636,6 +639,7 @@ class SettingsScreen extends StatelessWidget {
             if (profile == null) return const SizedBox.shrink();
 
             final isPremium = profileProvider.userProfile?.isPremium ?? false;
+            final isElite = isPremium && profileProvider.userProfile?.premiumType?.toUpperCase() == 'ELITE';
 
             return Column(
               children: [
@@ -646,8 +650,8 @@ class SettingsScreen extends StatelessWidget {
                   languageProvider.getString('show_age_sub'),
                   profile.showAge,
                   (val) {
-                    if (!isPremium) {
-                      _showPremiumDialog(context, languageProvider);
+                    if (!isElite) {
+                      _showPremiumDialog(context, languageProvider, requiredTier: 'ELITE');
                       return;
                     }
                     profile.showAge = val;
@@ -656,7 +660,7 @@ class SettingsScreen extends StatelessWidget {
                       profileProvider.saveUserProfile(user.uid, profile);
                     }
                   },
-                  isPremiumLocked: !isPremium,
+                  isPremiumLocked: !isElite,
                 ),
                 _buildPrivacyTile(
                   context,
@@ -666,7 +670,7 @@ class SettingsScreen extends StatelessWidget {
                   profile.showDistance,
                   (val) {
                     if (!isPremium) {
-                      _showPremiumDialog(context, languageProvider);
+                      _showPremiumDialog(context, languageProvider, requiredTier: 'PREMIUM');
                       return;
                     }
                     profile.showDistance = val;
@@ -684,8 +688,8 @@ class SettingsScreen extends StatelessWidget {
                   languageProvider.getString('hide_profile_sub'),
                   profile.hideProfile,
                   (val) {
-                    if (!isPremium) {
-                      _showPremiumDialog(context, languageProvider);
+                    if (!isElite) {
+                      _showPremiumDialog(context, languageProvider, requiredTier: 'ELITE');
                       return;
                     }
                     profile.hideProfile = val;
@@ -694,7 +698,7 @@ class SettingsScreen extends StatelessWidget {
                       profileProvider.saveUserProfile(user.uid, profile);
                     }
                   },
-                  isPremiumLocked: !isPremium,
+                  isPremiumLocked: !isElite,
                 ),
                 _buildPrivacyTile(
                   context,
@@ -723,7 +727,8 @@ class SettingsScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader(languageProvider.getString('booking_section_title')),
+        _buildSectionHeader(
+            languageProvider.getString('booking_section_title')),
         Consumer<ProfileProvider>(
           builder: (context, profileProvider, _) {
             final profile = profileProvider.userProfile;
@@ -760,8 +765,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildVerificationTile(
-      BuildContext context, LanguageProvider languageProvider, ProfileProvider profileProvider) {
+  Widget _buildVerificationTile(BuildContext context,
+      LanguageProvider languageProvider, ProfileProvider profileProvider) {
     final profile = profileProvider.userProfile;
     final status = profile?.verificationStatus ?? 'unverified';
 
@@ -803,7 +808,8 @@ class SettingsScreen extends StatelessWidget {
             Expanded(
               child: Text(
                 languageProvider.getString('verification_status_$status'),
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
               ),
             ),
             if (status == 'verified') ...[
@@ -811,7 +817,8 @@ class SettingsScreen extends StatelessWidget {
               const Icon(Icons.verified, color: Colors.green, size: 16),
             ] else if (status == 'pending') ...[
               const SizedBox(width: 6),
-              const Icon(Icons.hourglass_empty_rounded, color: Colors.orange, size: 16),
+              const Icon(Icons.hourglass_empty_rounded,
+                  color: Colors.orange, size: 16),
             ],
           ],
         ),
@@ -883,24 +890,28 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 20),
               Row(
                 children: [
-                  const Icon(Iconsax.calendar_edit, color: Color(0xFFFFA000), size: 28),
+                  const Icon(Iconsax.calendar_edit,
+                      color: Color(0xFFFFA000), size: 28),
                   const SizedBox(width: 12),
                   Text(
                     languageProvider.getString('booking_details'),
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.w800),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
                 languageProvider.getString('booking_details_hint'),
-                style: TextStyle(color: Theme.of(context).hintColor, fontSize: 13),
+                style:
+                    TextStyle(color: Theme.of(context).hintColor, fontSize: 13),
               ),
               const SizedBox(height: 24),
               TextField(
                 controller: locationCtrl,
                 decoration: InputDecoration(
-                  labelText: languageProvider.getString('booking_location_label'),
+                  labelText:
+                      languageProvider.getString('booking_location_label'),
                   hintText: 'e.g., Downtown, Starbucks, Central Park',
                   prefixIcon: const Icon(Iconsax.location),
                   filled: true,
@@ -932,7 +943,8 @@ class SettingsScreen extends StatelessWidget {
                 maxLines: 3,
                 decoration: InputDecoration(
                   labelText: languageProvider.getString('booking_notes_label'),
-                  hintText: 'Any specific rules, preferences, or notes for your dates...',
+                  hintText:
+                      'Any specific rules, preferences, or notes for your dates...',
                   prefixIcon: const Padding(
                     padding: EdgeInsets.only(bottom: 32.0),
                     child: Icon(Iconsax.note_text),
@@ -954,25 +966,29 @@ class SettingsScreen extends StatelessWidget {
                     profile.bookingLocation = locationCtrl.text.trim();
                     profile.bookingRate = rateCtrl.text.trim();
                     profile.bookingNotes = notesCtrl.text.trim();
-                    
+
                     final user = profileProvider.currentUser;
                     if (user != null) {
                       profileProvider.saveUserProfile(user.uid, profile);
                     }
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(languageProvider.getString('saving_label'))),
+                      SnackBar(
+                          content:
+                              Text(languageProvider.getString('saving_label'))),
                     );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFFA000),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     elevation: 0,
                   ),
                   child: Text(
                     languageProvider.getString('save'),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -983,7 +999,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showPremiumDialog(BuildContext context, LanguageProvider languageProvider) {
+  void _showPremiumDialog(
+      BuildContext context, LanguageProvider languageProvider, {String requiredTier = 'Premium'}) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -994,15 +1011,17 @@ class SettingsScreen extends StatelessWidget {
             const Icon(Iconsax.crown5, color: Colors.amber, size: 28),
             const SizedBox(width: 12),
             Text(
-              languageProvider.currentLanguageCode == 'sw' ? 'Kipengele cha Premium' : 'Premium Feature',
+              languageProvider.currentLanguageCode == 'sw'
+                  ? 'Kipengele cha $requiredTier'
+                  : '$requiredTier Feature',
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
           ],
         ),
         content: Text(
           languageProvider.currentLanguageCode == 'sw'
-              ? 'Kuficha umri, umbali, au wasifu wako ni kipengele cha Premium. Boresha mpango wako ili kupata udhibiti kamili!'
-              : 'Hiding your age, distance, or profile is a Premium feature. Upgrade your plan to gain full control over your privacy!',
+              ? 'Hiki ni kipengele cha $requiredTier. Boresha mpango wako ili kupata udhibiti kamili!'
+              : 'This is a $requiredTier feature. Upgrade your plan to gain full control!',
           style: const TextStyle(height: 1.5, fontSize: 14),
         ),
         actions: [
@@ -1010,7 +1029,9 @@ class SettingsScreen extends StatelessWidget {
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               languageProvider.getString('cancel'),
-              style: TextStyle(color: Theme.of(context).hintColor, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  color: Theme.of(context).hintColor,
+                  fontWeight: FontWeight.w600),
             ),
           ),
           ElevatedButton(
@@ -1025,10 +1046,13 @@ class SettingsScreen extends StatelessWidget {
               backgroundColor: const Color(0xFFFF4D85),
               foregroundColor: Colors.white,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: Text(
-              languageProvider.currentLanguageCode == 'sw' ? 'Pata Premium' : 'Upgrade Now',
+              languageProvider.currentLanguageCode == 'sw'
+                  ? 'Pata Premium'
+                  : 'Upgrade Now',
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
@@ -1065,14 +1089,12 @@ class SettingsScreen extends StatelessWidget {
         secondary: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: isPremiumLocked 
-                ? Colors.amber.withOpacity(0.1)
-                : const Color(0xFFFF4D85).withOpacity(0.1),
+            color: const Color(0xFFFF4D85).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
             icon,
-            color: isPremiumLocked ? Colors.amber : const Color(0xFFFF4D85),
+            color: const Color(0xFFFF4D85),
             size: 22,
           ),
         ),
@@ -1081,7 +1103,8 @@ class SettingsScreen extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
               ),
             ),
             if (isPremiumLocked) ...[
@@ -1091,7 +1114,8 @@ class SettingsScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.amber.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.amber.withOpacity(0.3), width: 0.5),
+                  border: Border.all(
+                      color: Colors.amber.withOpacity(0.3), width: 0.5),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
@@ -1120,7 +1144,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
         value: value,
-        activeColor: isPremiumLocked ? Colors.amber : const Color(0xFFFF4D85),
+        activeColor: const Color(0xFFFF4D85),
         onChanged: onChanged,
       ),
     );

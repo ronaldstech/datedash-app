@@ -82,6 +82,11 @@ class ProfileService {
     final filterPets = currentUserProfile.filterPets ?? 'Any';
     final filterIntrovertExtrovert = currentUserProfile.filterIntrovertExtrovert ?? 'Any';
     final filterLookingFor = currentUserProfile.filterLookingFor ?? 'Any';
+    final filterMaxPhotos = currentUserProfile.filterMaxPhotos ?? 9;
+    final filterHasBio = currentUserProfile.filterHasBio;
+    final filterFamilyPlans = currentUserProfile.filterFamilyPlans ?? 'Any';
+    final filterCommunicationStyle = currentUserProfile.filterCommunicationStyle ?? 'Any';
+    final filterLoveStyle = currentUserProfile.filterLoveStyle ?? 'Any';
 
     List<UserProfile> strictProfiles = [];
     List<UserProfile> relaxedProfiles = [];
@@ -130,6 +135,21 @@ class ProfileService {
       }
       if (filterLookingFor != 'Any' && filterLookingFor.isNotEmpty) {
         if (!profile.lookingFor.contains(filterLookingFor)) continue;
+      }
+      if (filterHasBio) {
+        if (profile.bio == null || profile.bio!.trim().isEmpty) continue;
+      }
+      if (filterMaxPhotos != 9) {
+        if (profile.photos.length > filterMaxPhotos) continue;
+      }
+      if (filterFamilyPlans != 'Any' && filterFamilyPlans.isNotEmpty) {
+        if (profile.familyPlans != filterFamilyPlans) continue;
+      }
+      if (filterCommunicationStyle != 'Any' && filterCommunicationStyle.isNotEmpty) {
+        if (profile.communicationStyle != filterCommunicationStyle) continue;
+      }
+      if (filterLoveStyle != 'Any' && filterLoveStyle.isNotEmpty) {
+        if (profile.loveStyle != filterLoveStyle) continue;
       }
 
       bool isStrictMatch = true;

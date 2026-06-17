@@ -135,4 +135,56 @@ class LiveStreamService {
       }).toList();
     });
   }
+
+  /// Invites a guest to join the live stream
+  Future<void> inviteGuest({
+    required String streamId,
+    required String hostId,
+    required String hostName,
+    required String guestId,
+    required String guestName,
+    required String guestPhoto,
+  }) async {
+    await _liveStreamsCollection.doc(streamId).update({
+      'guestId': guestId,
+      'guestName': guestName,
+      'guestPhoto': guestPhoto,
+      'guestStatus': 'invited',
+    });
+
+    await _notificationService.sendNotification(
+      recipientId: guestId,
+      senderId: hostId,
+      senderName: hostName,
+      type: 'live_invite',
+      message: streamId,
+    );
+  }
+
+  /// Accepts a guest invitation
+  Future<void> acceptInvite(String streamId) async {
+    await _liveStreamsCollection.doc(streamId).update({
+      'guestStatus': 'joined',
+    });
+  }
+
+  /// Declines a guest invitation
+  Future<void> declineInvite(String streamId) async {
+    await _liveStreamsCollection.doc(streamId).update({
+      'guestStatus': 'declined',
+      'guestId': FieldValue.delete(),
+      'guestName': FieldValue.delete(),
+      'guestPhoto': FieldValue.delete(),
+    });
+  }
+
+  /// Removes a guest from the stream (either kicked by host or left)
+  Future<void> removeGuest(String streamId) async {
+    await _liveStreamsCollection.doc(streamId).update({
+      'guestStatus': FieldValue.delete(),
+      'guestId': FieldValue.delete(),
+      'guestName': FieldValue.delete(),
+      'guestPhoto': FieldValue.delete(),
+    });
+  }
 }

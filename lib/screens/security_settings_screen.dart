@@ -3,6 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:local_auth/local_auth.dart';
 import '../providers/profile_provider.dart';
 import '../providers/language_provider.dart';
 import '../models/user_profile_model.dart';
@@ -77,6 +78,41 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     if (value && !_isPinEnabled) {
       _showSnack('Please set a PIN code first before enabling biometrics.', isError: true);
       return;
+    }
+
+    if (value) {
+      final LocalAuthentication auth = LocalAuthentication();
+      try {
+        final bool isSupported = await auth.isDeviceSupported();
+        final bool canCheckBiometrics = await auth.canCheckBiometrics;
+        if (!isSupported || !canCheckBiometrics) {
+          _showSnack('Biometric hardware is not supported or configured on this device.', isError: true);
+          return;
+        }
+
+        final List<BiometricType> availableBiometrics = await auth.getAvailableBiometrics();
+        if (availableBiometrics.isEmpty) {
+          _showSnack('No fingerprints or Face ID enrolled on this device.', isError: true);
+          return;
+        }
+
+        // Verify biometrics before enabling
+        final bool didAuthenticate = await auth.authenticate(
+          localizedReason: 'Verify your biometric signature to enable biometric lock',
+          options: const AuthenticationOptions(
+            biometricOnly: true,
+            stickyAuth: true,
+          ),
+        );
+
+        if (!didAuthenticate) {
+          _showSnack('Biometric authentication failed. Could not enable biometric lock.', isError: true);
+          return;
+        }
+      } catch (e) {
+        _showSnack('Biometric error: $e', isError: true);
+        return;
+      }
     }
 
     final prefs = await SharedPreferences.getInstance();

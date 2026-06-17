@@ -48,6 +48,8 @@ class UpdateService {
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;
 
+      debugPrint('UpdateService: comparing remote: "$latestVersion" with local: "$currentVersion"');
+
       if (_isNewer(latestVersion, currentVersion)) {
         return AppUpdateInfo(
           latestVersion: latestVersion,

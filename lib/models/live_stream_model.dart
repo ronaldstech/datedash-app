@@ -9,6 +9,10 @@ class LiveStream {
   final String title;
   final String status;
   final DateTime startedAt;
+  final String? guestId;
+  final String? guestName;
+  final String? guestPhoto;
+  final String? guestStatus;
 
   LiveStream({
     required this.id,
@@ -19,6 +23,10 @@ class LiveStream {
     required this.title,
     this.status = 'active',
     required this.startedAt,
+    this.guestId,
+    this.guestName,
+    this.guestPhoto,
+    this.guestStatus,
   });
 
   Map<String, dynamic> toMap() {
@@ -30,6 +38,10 @@ class LiveStream {
       'title': title,
       'status': status,
       'startedAt': FieldValue.serverTimestamp(),
+      'guestId': guestId,
+      'guestName': guestName,
+      'guestPhoto': guestPhoto,
+      'guestStatus': guestStatus,
     };
   }
 
@@ -43,6 +55,10 @@ class LiveStream {
       title: map['title'] ?? '',
       status: map['status'] ?? 'active',
       startedAt: (map['startedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      guestId: map['guestId'],
+      guestName: map['guestName'],
+      guestPhoto: map['guestPhoto'],
+      guestStatus: map['guestStatus'],
     );
   }
 }

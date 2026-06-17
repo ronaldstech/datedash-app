@@ -5,6 +5,7 @@ import 'package:datedash/services/payment_service.dart';
 import 'package:datedash/models/payment_operator_model.dart';
 import 'package:datedash/providers/profile_provider.dart';
 import 'package:provider/provider.dart';
+import 'edit_profile_screen.dart';
 
 class PremiumScreen extends StatefulWidget {
   final int initialTab;
@@ -1322,6 +1323,13 @@ class _PremiumScreenState extends State<PremiumScreen>
   }
 
   void _showWithdrawalSheet(BuildContext context, bool isDark) {
+    final profileProvider = context.read<ProfileProvider>();
+    final percentage = profileProvider.userProfile?.completionPercentage ?? 0;
+    if (percentage < 100) {
+      _showProfileIncompleteDialog(context, percentage);
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1329,6 +1337,71 @@ class _PremiumScreenState extends State<PremiumScreen>
       builder: (context) {
         return _WithdrawalSheet(isDark: isDark);
       },
+    );
+  }
+
+  void _showProfileIncompleteDialog(BuildContext context, int percentage) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Color(0xFFFF4D85), size: 28),
+            SizedBox(width: 8),
+            Text(
+              'Profile Incomplete',
+              style: TextStyle(fontWeight: FontWeight.w900),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Your profile is currently $percentage% complete.',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'For verification and security purposes, you must complete your profile to 100% before you can withdraw funds.',
+              style: TextStyle(color: Colors.grey, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: LinearProgressIndicator(
+                value: percentage / 100,
+                backgroundColor: Colors.grey.withOpacity(0.2),
+                color: const Color(0xFFFF4D85),
+                minHeight: 8,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4D85),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Complete Profile'),
+          ),
+        ],
+      ),
     );
   }
 }
