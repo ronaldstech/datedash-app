@@ -222,7 +222,7 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
           ),
           if (_isUploading)
             Container(
-              color: Colors.black.withOpacity(0.6),
+              color: Colors.black.withValues(alpha: 	0.6),
               child: Center(
                 child: Container(
                   padding: const EdgeInsets.all(32),
@@ -271,10 +271,10 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [_primaryColor.withOpacity(0.15), Colors.purple.withOpacity(0.15)],
+              colors: [_primaryColor.withValues(alpha: 	0.15), Colors.purple.withValues(alpha: 	0.15)],
             ),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: _primaryColor.withOpacity(0.2)),
+            border: Border.all(color: _primaryColor.withValues(alpha: 	0.2)),
           ),
           child: Column(
             children: [
@@ -288,7 +288,7 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
               Text(
                 lp.getString('verification_sub'),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13, height: 1.4),
+                style: TextStyle(color: Colors.white.withValues(alpha: 	0.7), fontSize: 13, height: 1.4),
               ),
             ],
           ),
@@ -374,7 +374,7 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Iconsax.camera5, size: 44, color: _primaryColor.withOpacity(0.7)),
+                        Icon(Iconsax.camera5, size: 44, color: _primaryColor.withValues(alpha: 	0.7)),
                         const SizedBox(height: 12),
                         Text(
                           lp.getString('id_document_photo'),
@@ -420,7 +420,7 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
       top: 10,
       right: 10,
       child: Material(
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha: 	0.5),
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: () => _showImageSourcePicker(),
@@ -458,7 +458,7 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: _primaryColor.withOpacity(0.1), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: _primaryColor.withValues(alpha: 	0.1), shape: BoxShape.circle),
                 child: Icon(Iconsax.camera, color: _primaryColor),
               ),
               title: const Text('Camera', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -470,7 +470,7 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.purple.withOpacity(0.1), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: Colors.purple.withValues(alpha: 	0.1), shape: BoxShape.circle),
                 child: const Icon(Iconsax.gallery, color: Colors.purple),
               ),
               title: const Text('Gallery', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -499,9 +499,9 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
           child: Container(
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.1),
+              color: Colors.orange.withValues(alpha: 	0.1),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.orange.withOpacity(0.2), width: 2),
+              border: Border.all(color: Colors.orange.withValues(alpha: 	0.2), width: 2),
             ),
             child: const Icon(
               Iconsax.shield_search,
@@ -523,7 +523,7 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
           child: Text(
             lp.getString('verification_status_pending_sub'),
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14, height: 1.5, fontWeight: FontWeight.w500),
+            style: TextStyle(color: Colors.white.withValues(alpha: 	0.6), fontSize: 14, height: 1.5, fontWeight: FontWeight.w500),
           ),
         ),
         const SizedBox(height: 32),
@@ -569,9 +569,9 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.orange.withOpacity(0.08),
+            color: Colors.orange.withValues(alpha: 	0.08),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.orange.withOpacity(0.2)),
+            border: Border.all(color: Colors.orange.withValues(alpha: 	0.2)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,7 +590,7 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
                     Text(
                       'Our safety team typically reviews submissions within 24 hours. You will receive a notification once your identity has been verified.',
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.75),
+                        color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 	0.75),
                         fontSize: 13,
                         height: 1.5,
                       ),
@@ -615,11 +615,11 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
         Container(
           padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            color: Colors.green.withOpacity(0.1),
+            color: Colors.green.withValues(alpha: 	0.1),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.green.withOpacity(0.2),
+                color: Colors.green.withValues(alpha: 	0.2),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -644,7 +644,7 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
           child: Text(
             lp.getString('verification_status_verified_sub'),
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white.withOpacity(0.65), fontSize: 14, height: 1.5, fontWeight: FontWeight.w500),
+            style: TextStyle(color: Colors.white.withValues(alpha: 	0.65), fontSize: 14, height: 1.5, fontWeight: FontWeight.w500),
           ),
         ),
         const SizedBox(height: 48),
@@ -655,7 +655,7 @@ class _VerificationScreenState extends State<VerificationScreen> with TickerProv
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.green.withOpacity(0.15)),
+            border: Border.all(color: Colors.green.withValues(alpha: 	0.15)),
           ),
           child: const Column(
             children: [

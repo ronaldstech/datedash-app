@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
-import '../../providers/language_provider.dart';
 import '../landing_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -23,7 +21,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
   String _verificationId = '';
   bool _isLoading = false;
   bool _isOtpSent = false;
-  int? _resendToken;
+
 
   Future<void> _sendOtp() async {
     if (_completePhoneNumber.isEmpty) {
@@ -56,7 +54,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
         codeSent: (String verificationId, int? resendToken) {
           setState(() {
             _verificationId = verificationId;
-            _resendToken = resendToken;
+
             _isOtpSent = true;
             _isLoading = false;
           });
@@ -70,9 +68,11 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
       );
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${e.toString()}')),
+          );
+        }
     }
   }
 
@@ -94,16 +94,18 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
         );
       }
     } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Invalid OTP: ${e.toString()}')),
-      );
+        setState(() => _isLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Invalid OTP: ${e.toString()}')),
+          );
+        }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final languageProvider = context.watch<LanguageProvider>();
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -158,7 +160,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                   decoration: InputDecoration(
                     labelText: 'Phone Number',
                     labelStyle: TextStyle(color: Theme.of(context).hintColor),
-                    hintStyle: TextStyle(color: Theme.of(context).hintColor.withOpacity(0.5)),
+                    hintStyle: TextStyle(color: Theme.of(context).hintColor.withValues(alpha: 	0.5)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -166,14 +168,14 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.5)),
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 	0.5)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: const BorderSide(color: Color(0xFFFF4D85), width: 2),
                     ),
                     filled: true,
-                    fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02),
+                    fillColor: isDark ? Colors.white.withValues(alpha: 	0.05) : Colors.black.withValues(alpha: 	0.02),
                   ),
                   initialCountryCode: 'MW', // Malawi as default per previous context
                   onChanged: (phone) {
@@ -186,9 +188,9 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
               else
                 Container(
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02),
+                    color: isDark ? Colors.white.withValues(alpha: 	0.05) : Colors.black.withValues(alpha: 	0.02),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5)),
+                    border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 	0.5)),
                   ),
                   child: TextField(
                     controller: _otpController,
@@ -202,7 +204,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     ),
                     decoration: InputDecoration(
                       hintText: '000000',
-                      hintStyle: TextStyle(color: Theme.of(context).hintColor.withOpacity(0.3), letterSpacing: 12),
+                      hintStyle: TextStyle(color: Theme.of(context).hintColor.withValues(alpha: 	0.3), letterSpacing: 12),
                       counterText: '',
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(vertical: 20),
@@ -221,7 +223,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   elevation: 5,
-                  shadowColor: const Color(0xFFFF4D85).withOpacity(0.5),
+                  shadowColor: const Color(0xFFFF4D85).withValues(alpha: 	0.5),
                 ),
                 child: _isLoading
                     ? const SizedBox(

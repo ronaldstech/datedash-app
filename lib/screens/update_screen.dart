@@ -180,7 +180,7 @@ class _UpdateScreenState extends State<UpdateScreen>
                                 'Not Now',
                                 style: TextStyle(
                                   color: _isDownloading
-                                      ? _textSecondary.withOpacity(0.3)
+                                      ? _textSecondary.withValues(alpha: 	0.3)
                                       : _textSecondary,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
@@ -230,9 +230,9 @@ class _UpdateScreenState extends State<UpdateScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: _pink.withOpacity(0.12),
+              color: _pink.withValues(alpha: 	0.12),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: _pink.withOpacity(0.30), width: 0.5),
+              border: Border.all(color: _pink.withValues(alpha: 	0.30), width: 0.5),
             ),
             child: const Text('UPDATE',
                 style: TextStyle(

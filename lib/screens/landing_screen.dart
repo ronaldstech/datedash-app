@@ -195,7 +195,7 @@ class _LandingScreenState extends State<LandingScreen> with WidgetsBindingObserv
                           color: Theme.of(context)
                               .iconTheme
                               .color
-                              ?.withOpacity(0.7),
+                              ?.withValues(alpha: 	0.7),
                           size: 22),
                       onPressed: () {
                         showModalBottomSheet(
@@ -227,7 +227,7 @@ class _LandingScreenState extends State<LandingScreen> with WidgetsBindingObserv
                               color: Theme.of(context)
                                   .iconTheme
                                   .color
-                                  ?.withOpacity(0.7),
+                                  ?.withValues(alpha: 	0.7),
                               size: 20,
                             ),
                           ),
@@ -280,7 +280,7 @@ class _LandingScreenState extends State<LandingScreen> with WidgetsBindingObserv
                                   decoration: BoxDecoration(
                                     color: Theme.of(context)
                                         .dividerColor
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 	0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
@@ -288,7 +288,7 @@ class _LandingScreenState extends State<LandingScreen> with WidgetsBindingObserv
                                     color: Theme.of(context)
                                         .iconTheme
                                         .color
-                                        ?.withOpacity(0.7),
+                                        ?.withValues(alpha: 	0.7),
                                     size: 20,
                                   ),
                                 ),
@@ -320,17 +320,17 @@ class _LandingScreenState extends State<LandingScreen> with WidgetsBindingObserv
                 height: 64,
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.black.withOpacity(0.9)
-                      : Colors.white.withOpacity(0.9),
+                      ? Colors.black.withValues(alpha: 	0.9)
+                      : Colors.white.withValues(alpha: 	0.9),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white.withOpacity(0.08)
-                        : Colors.black.withOpacity(0.05),
+                        ? Colors.white.withValues(alpha: 	0.08)
+                        : Colors.black.withValues(alpha: 	0.05),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 	0.1),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -412,7 +412,7 @@ class _LandingScreenState extends State<LandingScreen> with WidgetsBindingObserv
                       decoration: BoxDecoration(
                         border: Border.all(
                           color:
-                              borderColor.withOpacity(progress.clamp(0.3, 1.0)),
+                              borderColor.withValues(alpha: 	progress.clamp(0.3, 1.0)),
                           width: 5 + (progress * 3), // Grows from 5→8px
                           strokeAlign: BorderSide.strokeAlignInside,
                         ),
@@ -420,7 +420,7 @@ class _LandingScreenState extends State<LandingScreen> with WidgetsBindingObserv
                           // Tight inner glow
                           BoxShadow(
                             color: glowInner
-                                .withOpacity((progress * 0.9).clamp(0, 0.9)),
+                                .withValues(alpha: 	(progress * 0.9).clamp(0, 0.9)),
                             blurRadius: 16,
                             spreadRadius: 2,
                             blurStyle: BlurStyle.outer,
@@ -428,7 +428,7 @@ class _LandingScreenState extends State<LandingScreen> with WidgetsBindingObserv
                           // Mid halo
                           BoxShadow(
                             color: glowMid
-                                .withOpacity((progress * 0.6).clamp(0, 0.6)),
+                                .withValues(alpha: 	(progress * 0.6).clamp(0, 0.6)),
                             blurRadius: 40,
                             spreadRadius: 8,
                             blurStyle: BlurStyle.outer,
@@ -436,7 +436,7 @@ class _LandingScreenState extends State<LandingScreen> with WidgetsBindingObserv
                           // Wide diffuse outer glow
                           BoxShadow(
                             color: glowOuter
-                                .withOpacity((progress * 0.35).clamp(0, 0.35)),
+                                .withValues(alpha: 	(progress * 0.35).clamp(0, 0.35)),
                             blurRadius: 80,
                             spreadRadius: 20,
                             blurStyle: BlurStyle.outer,
@@ -453,7 +453,7 @@ class _LandingScreenState extends State<LandingScreen> with WidgetsBindingObserv
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                   child: Container(
-                    color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+                    color: Theme.of(context).colorScheme.surface.withValues(alpha: 	0.9),
                     child: IncompleteProfileWizard(
                       profile: profileProvider.userProfile!,
                       completion: completion,
@@ -479,7 +479,7 @@ class _LandingScreenState extends State<LandingScreen> with WidgetsBindingObserv
     final isSelected = currentIndex == index;
     final color = isSelected
         ? const Color(0xFFFF4D85)
-        : Theme.of(context).hintColor.withOpacity(0.6);
+        : Theme.of(context).hintColor.withValues(alpha: 	0.6);
 
     int badgeCount = 0;
     if (hasBadge) {

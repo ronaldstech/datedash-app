@@ -88,7 +88,7 @@ class LikesScreen extends StatelessWidget {
                           color: Theme.of(context)
                               .iconTheme
                               .color
-                              ?.withOpacity(0.3),
+                              ?.withValues(alpha: 	0.3),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -173,8 +173,8 @@ class LikesScreen extends StatelessWidget {
                                 )
                               : LinearGradient(
                                   colors: [
-                                    Colors.grey.withOpacity(0.5),
-                                    Colors.grey.withOpacity(0.2)
+                                    Colors.grey.withValues(alpha: 	0.5),
+                                    Colors.grey.withValues(alpha: 	0.2)
                                   ],
                                 ),
                         ),
@@ -245,7 +245,7 @@ class LikesScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 	0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -263,7 +263,7 @@ class LikesScreen extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            color: Colors.grey.withOpacity(0.2),
+                            color: Colors.grey.withValues(alpha: 	0.2),
                             child: const Center(
                               child: Icon(Icons.broken_image_rounded,
                                   color: Colors.grey, size: 40),
@@ -279,7 +279,7 @@ class LikesScreen extends StatelessWidget {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withOpacity(0.8),
+                            Colors.black.withValues(alpha: 	0.8),
                           ],
                         ),
                       ),
@@ -289,7 +289,7 @@ class LikesScreen extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.4),
+                            color: Colors.black.withValues(alpha: 	0.4),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -345,7 +345,7 @@ class LikesScreen extends StatelessWidget {
                                     child: Text(
                                       profile.lookingFor.first,
                                       style: TextStyle(
-                                        color: Colors.white.withOpacity(0.8),
+                                        color: Colors.white.withValues(alpha: 	0.8),
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -366,7 +366,7 @@ class LikesScreen extends StatelessWidget {
                                   profile.getDistanceDisplay(
                                       profileProvider.userProfile),
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withValues(alpha: 	0.8),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -404,7 +404,7 @@ class LikesScreen extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 	0.2),
                 blurRadius: 20,
                 offset: const Offset(0, -5),
               ),
@@ -418,7 +418,7 @@ class LikesScreen extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
+                  color: Colors.grey.withValues(alpha: 	0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -434,7 +434,7 @@ class LikesScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFFFF4D85).withOpacity(0.3),
+                        color: const Color(0xFFFF4D85).withValues(alpha: 	0.3),
                         width: 4,
                       ),
                     ),
@@ -487,7 +487,7 @@ class LikesScreen extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFB300).withOpacity(0.1),
+                  color: const Color(0xFFFFB300).withValues(alpha: 	0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -543,7 +543,7 @@ class LikesScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFFFB300).withOpacity(0.3),
+                              color: const Color(0xFFFFB300).withValues(alpha: 	0.3),
                               blurRadius: 12,
                               offset: const Offset(0, 6),
                             ),
@@ -584,7 +584,7 @@ class LikesScreen extends StatelessWidget {
                               boxShadow: [
                                 BoxShadow(
                                   color:
-                                      const Color(0xFFFF4D85).withOpacity(0.3),
+                                      const Color(0xFFFF4D85).withValues(alpha: 	0.3),
                                   blurRadius: 12,
                                   offset: const Offset(0, 6),
                                 ),

@@ -286,8 +286,8 @@ class _PremiumScreenState extends State<PremiumScreen>
             height: 38,
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.black.withOpacity(0.03),
+                  ? Colors.white.withValues(alpha: 	0.05)
+                  : Colors.black.withValues(alpha: 	0.03),
               borderRadius: BorderRadius.circular(19),
               border:
                   Border.all(color: isDark ? Colors.white12 : Colors.black12),
@@ -297,13 +297,13 @@ class _PremiumScreenState extends State<PremiumScreen>
               controller: _tabController,
               indicatorSize: TabBarIndicatorSize.tab,
               indicator: BoxDecoration(
-                  color: isDark ? Colors.white.withOpacity(0.1) : Colors.white,
+                  color: isDark ? Colors.white.withValues(alpha: 	0.1) : Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: isDark
                       ? []
                       : [
                           BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 	0.05),
                               blurRadius: 4,
                               offset: const Offset(0, 2))
                         ]),
@@ -410,7 +410,7 @@ class _PremiumScreenState extends State<PremiumScreen>
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                      color: const Color(0xFFFF4D85).withOpacity(0.3),
+                      color: const Color(0xFFFF4D85).withValues(alpha: 	0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4))
                 ]
@@ -507,7 +507,7 @@ class _PremiumScreenState extends State<PremiumScreen>
             borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
             boxShadow: [
               BoxShadow(
-                color: accentColor.withOpacity(0.15),
+                color: accentColor.withValues(alpha: 	0.15),
                 blurRadius: 40,
                 offset: const Offset(0, -10),
               )
@@ -524,7 +524,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                   height: 200,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: accentColor.withOpacity(0.05),
+                    color: accentColor.withValues(alpha: 	0.05),
                   ),
                 ),
               ),
@@ -547,10 +547,10 @@ class _PremiumScreenState extends State<PremiumScreen>
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: accentColor.withOpacity(0.1),
+                          color: accentColor.withValues(alpha: 	0.1),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: accentColor.withOpacity(0.2),
+                            color: accentColor.withValues(alpha: 	0.2),
                             width: 1.5,
                           ),
                         ),
@@ -595,13 +595,13 @@ class _PremiumScreenState extends State<PremiumScreen>
                           gradient: LinearGradient(
                             colors: [
                               accentColor,
-                              accentColor.withOpacity(0.8)
+                              accentColor.withValues(alpha: 	0.8)
                             ],
                           ),
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             BoxShadow(
-                              color: accentColor.withOpacity(0.3),
+                              color: accentColor.withValues(alpha: 	0.3),
                               blurRadius: 15,
                               offset: const Offset(0, 8),
                             )
@@ -645,11 +645,11 @@ class _PremiumScreenState extends State<PremiumScreen>
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.white.withOpacity(0.03)
-            : Colors.black.withOpacity(0.02),
+            ? Colors.white.withValues(alpha: 	0.03)
+            : Colors.black.withValues(alpha: 	0.02),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 	0.05),
         ),
       ),
       child: Row(
@@ -694,7 +694,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: isPopular
-                    ? Colors.white.withOpacity(0.9)
+                    ? Colors.white.withValues(alpha: 	0.9)
                     : (isDark ? Colors.white70 : Colors.black87),
               ),
             ),
@@ -728,32 +728,32 @@ class _PremiumScreenState extends State<PremiumScreen>
             ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [themePink, themePink.withOpacity(0.8)],
+                colors: [themePink, themePink.withValues(alpha: 	0.8)],
               )
             : LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: isDark
                     ? [
-                        Colors.white.withOpacity(0.12),
-                        Colors.white.withOpacity(0.05),
+                        Colors.white.withValues(alpha: 	0.12),
+                        Colors.white.withValues(alpha: 	0.05),
                       ]
                     : [
                         Colors.white,
-                        Colors.white.withOpacity(0.9),
+                        Colors.white.withValues(alpha: 	0.9),
                       ],
               ),
         border: Border.all(
           color: isPopular
-              ? Colors.white.withOpacity(0.3)
+              ? Colors.white.withValues(alpha: 	0.3)
               : (isDark ? Colors.white12 : Colors.black12),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isPopular
-                ? themePink.withOpacity(0.4)
-                : (isDark ? Colors.black45 : Colors.black.withOpacity(0.05)),
+                ? themePink.withValues(alpha: 	0.4)
+                : (isDark ? Colors.black45 : Colors.black.withValues(alpha: 	0.05)),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -775,7 +775,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        themePinkLight.withOpacity(0.4),
+                        themePinkLight.withValues(alpha: 	0.4),
                         Colors.transparent,
                       ],
                     ),
@@ -795,8 +795,8 @@ class _PremiumScreenState extends State<PremiumScreen>
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isPopular
-                              ? Colors.white.withOpacity(0.2)
-                              : accentColor.withOpacity(0.1),
+                              ? Colors.white.withValues(alpha: 	0.2)
+                              : accentColor.withValues(alpha: 	0.1),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
@@ -884,8 +884,8 @@ class _PremiumScreenState extends State<PremiumScreen>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
                           backgroundColor: isPopular
-                              ? Colors.white.withOpacity(0.15)
-                              : accentColor.withOpacity(0.05),
+                              ? Colors.white.withValues(alpha: 	0.15)
+                              : accentColor.withValues(alpha: 	0.05),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -929,7 +929,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                         backgroundColor: isPopular
                             ? Colors.white
                             : (isDark
-                                ? Colors.white.withOpacity(0.1)
+                                ? Colors.white.withValues(alpha: 	0.1)
                                 : Colors.black87),
                         foregroundColor: isPopular ? themePink : Colors.white,
                         elevation: 0,
@@ -972,19 +972,19 @@ class _PremiumScreenState extends State<PremiumScreen>
                     gradient: LinearGradient(
                       colors: isDark
                           ? [
-                              Colors.white.withOpacity(0.08),
-                              Colors.white.withOpacity(0.02)
+                              Colors.white.withValues(alpha: 	0.08),
+                              Colors.white.withValues(alpha: 	0.02)
                             ]
                           : [
-                              const Color(0xFFFFB300).withOpacity(0.1),
-                              const Color(0xFFFFB300).withOpacity(0.05)
+                              const Color(0xFFFFB300).withValues(alpha: 	0.1),
+                              const Color(0xFFFFB300).withValues(alpha: 	0.05)
                             ],
                     ),
                     borderRadius: BorderRadius.circular(32),
                     border: Border.all(
                       color: isDark
                           ? Colors.white12
-                          : const Color(0xFFFFB300).withOpacity(0.2),
+                          : const Color(0xFFFFB300).withValues(alpha: 	0.2),
                     ),
                   ),
                   child: Column(
@@ -992,7 +992,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFB300).withOpacity(0.15),
+                          color: const Color(0xFFFFB300).withValues(alpha: 	0.15),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Iconsax.wallet_3,
@@ -1059,7 +1059,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFFFB300),
                       side: BorderSide(
-                        color: const Color(0xFFFFB300).withOpacity(0.5),
+                        color: const Color(0xFFFFB300).withValues(alpha: 	0.5),
                         width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
@@ -1140,19 +1140,19 @@ class _PremiumScreenState extends State<PremiumScreen>
       decoration: BoxDecoration(
         color: isPopular
             ? themePink
-            : (isDark ? Colors.white.withOpacity(0.05) : Colors.white),
+            : (isDark ? Colors.white.withValues(alpha: 	0.05) : Colors.white),
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
           color: isPopular
-              ? Colors.white.withOpacity(0.3)
-              : (isDark ? Colors.white12 : Colors.black.withOpacity(0.05)),
+              ? Colors.white.withValues(alpha: 	0.3)
+              : (isDark ? Colors.white12 : Colors.black.withValues(alpha: 	0.05)),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isPopular
-                ? themePink.withOpacity(0.3)
-                : (isDark ? Colors.black45 : Colors.black.withOpacity(0.05)),
+                ? themePink.withValues(alpha: 	0.3)
+                : (isDark ? Colors.black45 : Colors.black.withValues(alpha: 	0.05)),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -1171,8 +1171,8 @@ class _PremiumScreenState extends State<PremiumScreen>
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: isPopular
-                          ? Colors.white.withOpacity(0.2)
-                          : const Color(0xFFFFB300).withOpacity(0.1),
+                          ? Colors.white.withValues(alpha: 	0.2)
+                          : const Color(0xFFFFB300).withValues(alpha: 	0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -1211,7 +1211,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                       color: isPopular
                           ? Colors.white
                           : (isDark
-                              ? Colors.white.withOpacity(0.1)
+                              ? Colors.white.withValues(alpha: 	0.1)
                               : Colors.black87),
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -1373,7 +1373,7 @@ class _PremiumScreenState extends State<PremiumScreen>
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
                 value: percentage / 100,
-                backgroundColor: Colors.grey.withOpacity(0.2),
+                backgroundColor: Colors.grey.withValues(alpha: 	0.2),
                 color: const Color(0xFFFF4D85),
                 minHeight: 8,
               ),
@@ -1533,8 +1533,8 @@ class _WithdrawalSheetState extends State<_WithdrawalSheet> {
                 prefixIcon: const Icon(Iconsax.coin),
                 filled: true,
                 fillColor: widget.isDark
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.black.withOpacity(0.03),
+                    ? Colors.white.withValues(alpha: 	0.05)
+                    : Colors.black.withValues(alpha: 	0.03),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none),
@@ -1575,8 +1575,8 @@ class _WithdrawalSheetState extends State<_WithdrawalSheet> {
                 prefixIcon: const Icon(Iconsax.mobile),
                 filled: true,
                 fillColor: widget.isDark
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.black.withOpacity(0.03),
+                    ? Colors.white.withValues(alpha: 	0.05)
+                    : Colors.black.withValues(alpha: 	0.03),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none),
@@ -1588,10 +1588,10 @@ class _WithdrawalSheetState extends State<_WithdrawalSheet> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFB300).withOpacity(0.05),
+                color: const Color(0xFFFFB300).withValues(alpha: 	0.05),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                    color: const Color(0xFFFFB300).withOpacity(0.1)),
+                    color: const Color(0xFFFFB300).withValues(alpha: 	0.1)),
               ),
               child: Column(
                 children: [
@@ -1665,7 +1665,7 @@ class _WithdrawalSheetState extends State<_WithdrawalSheet> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             color: isSelected
-                ? const Color(0xFFFFB300).withOpacity(0.1)
+                ? const Color(0xFFFFB300).withValues(alpha: 	0.1)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
@@ -1985,7 +1985,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.5 : 0.1),
+            color: Colors.black.withValues(alpha: 	isDark ? 0.5 : 0.1),
             blurRadius: 20,
             spreadRadius: 5,
           )
@@ -2086,16 +2086,16 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.white.withOpacity(0.05)
+                            ? Colors.white.withValues(alpha: 	0.05)
                             : Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                             color: isDark
-                                ? Colors.white.withOpacity(0.1)
-                                : Colors.black.withOpacity(0.05)),
+                                ? Colors.white.withValues(alpha: 	0.1)
+                                : Colors.black.withValues(alpha: 	0.05)),
                         boxShadow: [
                           BoxShadow(
-                            color: opColor.withOpacity(0.1),
+                            color: opColor.withValues(alpha: 	0.1),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           )
@@ -2113,13 +2113,13 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 	0.1),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   )
                                 ],
                                 border: Border.all(
-                                    color: opColor.withOpacity(0.2), width: 2),
+                                    color: opColor.withValues(alpha: 	0.2), width: 2),
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(18),
@@ -2159,7 +2159,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: opColor.withOpacity(0.1),
+                                color: opColor.withValues(alpha: 	0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Iconsax.arrow_right_3,
@@ -2199,13 +2199,13 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: isDark
-                ? Colors.white.withOpacity(0.05)
-                : Colors.black.withOpacity(0.03),
+                ? Colors.white.withValues(alpha: 	0.05)
+                : Colors.black.withValues(alpha: 	0.03),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
                 color: isDark
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.05)),
+                    ? Colors.white.withValues(alpha: 	0.1)
+                    : Colors.black.withValues(alpha: 	0.05)),
           ),
           child: Column(
             children: [
@@ -2219,7 +2219,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
                       borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 	0.05),
                           blurRadius: 10,
                         )
                       ],
@@ -2315,7 +2315,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFF4D85).withOpacity(0.3),
+                color: const Color(0xFFFF4D85).withValues(alpha: 	0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -2391,7 +2391,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.greenAccent.withOpacity(0.1),
+              color: Colors.greenAccent.withValues(alpha: 	0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(Iconsax.tick_circle5,
@@ -2424,7 +2424,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFF4D85).withOpacity(0.3),
+                  color: const Color(0xFFFF4D85).withValues(alpha: 	0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
@@ -2458,7 +2458,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.redAccent.withOpacity(0.1),
+              color: Colors.redAccent.withValues(alpha: 	0.1),
               shape: BoxShape.circle,
             ),
             child:
@@ -2474,7 +2474,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
             _errorMsg,
             textAlign: TextAlign.center,
             style: TextStyle(
-                color: Colors.redAccent.withOpacity(0.8),
+                color: Colors.redAccent.withValues(alpha: 	0.8),
                 fontSize: 16,
                 height: 1.5),
           ),
@@ -2486,7 +2486,7 @@ class _PaymentSheetContentState extends State<_PaymentSheetContent> {
               onPressed: () => setState(() => _step = 1),
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    isDark ? Colors.white.withOpacity(0.05) : Colors.black12,
+                    isDark ? Colors.white.withValues(alpha: 	0.05) : Colors.black12,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16)),
@@ -2545,7 +2545,7 @@ class _PulsingLogoState extends State<_PulsingLogo>
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF4D85).withOpacity(0.4),
+              color: const Color(0xFFFF4D85).withValues(alpha: 0.4),
               blurRadius: 30,
               spreadRadius: 10,
             ),

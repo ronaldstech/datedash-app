@@ -86,7 +86,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   end: Alignment.bottomRight,
                   colors: [
                     Theme.of(context).scaffoldBackgroundColor,
-                    Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                    Theme.of(context).colorScheme.primary.withValues(alpha: 	0.05),
                   ],
                 ),
               ),
@@ -100,7 +100,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF4D85).withOpacity(0.1),
+                        color: const Color(0xFFFF4D85).withValues(alpha: 	0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -162,7 +162,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 	0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Iconsax.lock, size: 20, color: Colors.grey),
@@ -278,7 +278,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           Container(
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF4D85).withOpacity(0.05),
+              color: const Color(0xFFFF4D85).withValues(alpha: 	0.05),
               shape: BoxShape.circle,
             ),
             child: const Icon(Iconsax.notification_bing,
@@ -356,12 +356,12 @@ class _NotificationCardState extends State<_NotificationCard> {
           decoration: BoxDecoration(
             color: widget.notification.isRead
                 ? Colors.transparent
-                : const Color(0xFFFF4D85).withOpacity(0.03),
+                : const Color(0xFFFF4D85).withValues(alpha: 	0.03),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: widget.notification.isRead
-                  ? Colors.grey.withOpacity(0.08)
-                  : const Color(0xFFFF4D85).withOpacity(0.15),
+                  ? Colors.grey.withValues(alpha: 	0.08)
+                  : const Color(0xFFFF4D85).withValues(alpha: 	0.15),
               width: 1,
             ),
           ),
@@ -423,7 +423,7 @@ class _NotificationCardState extends State<_NotificationCard> {
                       _formatDateTime(widget.notification.timestamp, lp),
                       style: TextStyle(
                         color:
-                            Theme.of(context).hintColor.withOpacity(0.6),
+                            Theme.of(context).hintColor.withValues(alpha: 	0.6),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -652,12 +652,12 @@ class _NotificationCardState extends State<_NotificationCard> {
             color: const Color(0xFF1A1A2E),
             borderRadius: BorderRadius.circular(32),
             border: Border.all(
-              color: const Color(0xFFFF4D85).withOpacity(0.3),
+              color: const Color(0xFFFF4D85).withValues(alpha: 	0.3),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFF4D85).withOpacity(0.15),
+                color: const Color(0xFFFF4D85).withValues(alpha: 	0.15),
                 blurRadius: 40,
                 spreadRadius: 5,
               ),
@@ -760,7 +760,7 @@ class _NotificationCardState extends State<_NotificationCard> {
                 child: Text(
                   'NOT NOW',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 	0.7),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),

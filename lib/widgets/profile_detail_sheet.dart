@@ -69,7 +69,7 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
+                  color: Colors.grey.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -200,7 +200,7 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: primaryColor.withOpacity(0.35),
+                              color: primaryColor.withValues(alpha: 0.35),
                               blurRadius: 15,
                               offset: const Offset(0, 8),
                             ),
@@ -247,7 +247,7 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
                               .textTheme
                               .bodyLarge
                               ?.color
-                              ?.withOpacity(0.8),
+                              ?.withValues(alpha: 0.8),
                         ),
                       ),
                       const SizedBox(height: 28),
@@ -333,7 +333,7 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
                 color: Theme.of(context).scaffoldBackgroundColor,
                 border: Border(
                   top: BorderSide(
-                    color: Theme.of(context).dividerColor.withOpacity(0.15),
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.15),
                   ),
                 ),
               ),
@@ -629,7 +629,7 @@ class _ProfileDetailSheetState extends State<ProfileDetailSheet> {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                  color: Theme.of(context).dividerColor.withOpacity(0.3)),
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -704,7 +704,7 @@ class _LabeledRow extends StatelessWidget {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: const Color(0xFFFF4D85).withOpacity(0.08),
+              color: const Color(0xFFFF4D85).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, size: 16, color: const Color(0xFFFF4D85)),
@@ -739,9 +739,9 @@ class _Chip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: c.withOpacity(0.1),
+        color: c.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: c.withOpacity(0.3)),
+        border: Border.all(color: c.withValues(alpha: 0.3)),
       ),
       child: Text(
         label,
@@ -784,12 +784,12 @@ class _ActionButton extends StatelessWidget {
               color: Theme.of(context).cardColor,
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(0.25),
+                  color: color.withValues(alpha: 0.25),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
               ],
-              border: Border.all(color: color.withOpacity(0.15), width: 1.5),
+              border: Border.all(color: color.withValues(alpha: 0.15), width: 1.5),
             ),
             child: Center(
               child: svgAsset != null

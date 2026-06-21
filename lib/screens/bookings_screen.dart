@@ -127,7 +127,6 @@ class BookingsScreen extends StatelessWidget {
         statusIcon = Iconsax.close_circle5;
         break;
       case BookingStatus.pending:
-      default:
         statusColor = const Color(0xFFFFA000);
         statusIcon = Iconsax.clock5;
         break;
@@ -153,7 +152,7 @@ class BookingsScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.05 : 0.05),
+                color: Colors.black.withValues(alpha: 	isDark ? 0.05 : 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -169,7 +168,7 @@ class BookingsScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 20,
-                      backgroundColor: Colors.grey.withOpacity(0.2),
+                      backgroundColor: Colors.grey.withValues(alpha: 	0.2),
                       backgroundImage: finalPhotoUrl != null
                           ? NetworkImage(finalPhotoUrl)
                           : null,
@@ -192,7 +191,7 @@ class BookingsScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
+                        color: statusColor.withValues(alpha: 	0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -357,7 +356,7 @@ class BookingsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF4D85).withOpacity(0.05),
+              color: const Color(0xFFFF4D85).withValues(alpha: 	0.05),
               shape: BoxShape.circle,
             ),
             child: const Icon(Iconsax.calendar_remove,

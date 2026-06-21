@@ -76,7 +76,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          const Color(0xFFFF4D85).withOpacity(0.05),
+                          const Color(0xFFFF4D85).withValues(alpha: 	0.05),
                           Theme.of(context).scaffoldBackgroundColor,
                         ],
                       ),
@@ -128,7 +128,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFF4D85).withOpacity(0.1),
+                          color: const Color(0xFFFF4D85).withValues(alpha: 	0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: StreamBuilder<List<UserProfile>>(
@@ -250,7 +250,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Iconsax.warning_2, size: 64, color: Colors.red.withOpacity(0.4)),
+          Icon(Iconsax.warning_2, size: 64, color: Colors.red.withValues(alpha: 	0.4)),
           const SizedBox(height: 16),
           Text(lp.getString('failed_load_messages'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
@@ -270,15 +270,15 @@ class _ChatListScreenState extends State<ChatListScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.05),
+          color: Colors.grey.withValues(alpha: 	0.05),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.grey.withOpacity(0.1)),
+          border: Border.all(color: Colors.grey.withValues(alpha: 	0.1)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: const Color(0xFFFF4D85).withOpacity(0.1), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: const Color(0xFFFF4D85).withValues(alpha: 	0.1), shape: BoxShape.circle),
               child: const Icon(Iconsax.heart_add, color: Color(0xFFFF4D85), size: 20),
             ),
             const SizedBox(width: 16),
@@ -325,7 +325,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
-                  BoxShadow(color: const Color(0xFFFF4D85).withOpacity(0.2), blurRadius: 10, spreadRadius: 1),
+                  BoxShadow(color: const Color(0xFFFF4D85).withValues(alpha: 	0.2), blurRadius: 10, spreadRadius: 1),
                 ],
               ),
               child: Container(
@@ -358,7 +358,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Iconsax.message_2, size: 64, color: Theme.of(context).hintColor.withOpacity(0.2)),
+          Icon(Iconsax.message_2, size: 64, color: Theme.of(context).hintColor.withValues(alpha: 	0.2)),
           const SizedBox(height: 16),
           Text(lp.getString('no_conversations_yet'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
@@ -497,7 +497,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                               decoration: BoxDecoration(
                                 color: const Color(0xFFFF4D85),
                                 borderRadius: BorderRadius.circular(12),
-                                boxShadow: [BoxShadow(color: const Color(0xFFFF4D85).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 2))],
+                                boxShadow: [BoxShadow(color: const Color(0xFFFF4D85).withValues(alpha: 	0.3), blurRadius: 8, offset: const Offset(0, 2))],
                               ),
                               child: Text(
                                 unread > 99 ? '99+' : '$unread',

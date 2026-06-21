@@ -99,10 +99,8 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         // Verify biometrics before enabling
         final bool didAuthenticate = await auth.authenticate(
           localizedReason: 'Verify your biometric signature to enable biometric lock',
-          options: const AuthenticationOptions(
-            biometricOnly: true,
-            stickyAuth: true,
-          ),
+          biometricOnly: true,
+          persistAcrossBackgrounding: true,
         );
 
         if (!didAuthenticate) {
@@ -508,7 +506,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: _primaryColor.withOpacity(0.1),
+                          color: _primaryColor.withValues(alpha: 	0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -613,7 +611,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                                             }
                                           },
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: _primaryColor.withOpacity(0.1),
+                                            backgroundColor: _primaryColor.withValues(alpha: 	0.1),
                                             foregroundColor: _primaryColor,
                                             elevation: 0,
                                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -700,14 +698,14 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                   secondary: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: Colors.blue.withValues(alpha: 	0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Iconsax.key5, color: Colors.blue, size: 20),
                   ),
                   title: const Text('Lock App with PIN', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                   subtitle: const Text('Require a 4-digit PIN code on launch', style: TextStyle(fontSize: 11)),
-                  activeColor: _primaryColor,
+                  activeThumbColor: _primaryColor,
                 ),
                 if (_isPinEnabled) ...[
                   const Divider(height: 1),
@@ -715,7 +713,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.purple.withOpacity(0.1),
+                        color: Colors.purple.withValues(alpha: 	0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Iconsax.edit5, color: Colors.purple, size: 20),
@@ -736,14 +734,14 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                   secondary: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
+                      color: Colors.green.withValues(alpha: 	0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Iconsax.finger_scan5, color: Colors.green, size: 20),
                   ),
                   title: const Text('Lock App with Biometrics', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                   subtitle: const Text('Use fingerprint or face recognition', style: TextStyle(fontSize: 11)),
-                  activeColor: _primaryColor,
+                  activeThumbColor: _primaryColor,
                 ),
               ],
             ),
@@ -761,7 +759,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange.withValues(alpha: 	0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Iconsax.shield_cross5, color: Colors.orange, size: 20),
@@ -771,7 +769,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               trailing: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  color: Theme.of(context).dividerColor.withValues(alpha: 	0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(

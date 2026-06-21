@@ -290,7 +290,7 @@ class _BookingSheetState extends State<BookingSheet> {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.3),
+                        color: Colors.grey.withValues(alpha: 	0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -321,10 +321,10 @@ class _BookingSheetState extends State<BookingSheet> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF4D85).withOpacity(0.07),
+                        color: const Color(0xFFFF4D85).withValues(alpha: 	0.07),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                            color: const Color(0xFFFF4D85).withOpacity(0.2)),
+                            color: const Color(0xFFFF4D85).withValues(alpha: 	0.2)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,9 +374,9 @@ class _BookingSheetState extends State<BookingSheet> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.08),
+                        color: Colors.amber.withValues(alpha: 	0.08),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                        border: Border.all(color: Colors.amber.withValues(alpha: 	0.3)),
                       ),
                       child: Row(
                         children: [
@@ -388,7 +388,7 @@ class _BookingSheetState extends State<BookingSheet> {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                                color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 	0.8),
                                 height: 1.4,
                               ),
                             ),

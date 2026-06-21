@@ -82,13 +82,13 @@ class _ActionButtonState extends State<ActionButton> with SingleTickerProviderSt
                       ? []
                       : [
                           BoxShadow(
-                            color: effectiveColor.withOpacity(0.35),
+                            color: effectiveColor.withValues(alpha: 	0.35),
                             blurRadius: 24,
                             spreadRadius: 2,
                             offset: const Offset(0, 8),
                           ),
                           BoxShadow(
-                            color: effectiveColor.withOpacity(0.12),
+                            color: effectiveColor.withValues(alpha: 	0.12),
                             blurRadius: 6,
                             spreadRadius: 0,
                             offset: const Offset(0, 2),

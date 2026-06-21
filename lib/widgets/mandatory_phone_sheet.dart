@@ -114,7 +114,7 @@ class _MandatoryPhoneSheetState extends State<MandatoryPhoneSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
+                color: Colors.grey.withValues(alpha: 	0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -143,11 +143,11 @@ class _MandatoryPhoneSheetState extends State<MandatoryPhoneSheet> {
           Container(
             decoration: BoxDecoration(
               color:
-                  isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+                  isDark ? Colors.white.withValues(alpha: 	0.05) : Colors.grey.shade50,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isDark
-                    ? Colors.white.withOpacity(0.1)
+                    ? Colors.white.withValues(alpha: 	0.1)
                     : Colors.grey.shade200,
               ),
             ),

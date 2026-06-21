@@ -54,7 +54,7 @@ class _GiftsScreenState extends State<GiftsScreen> {
                     child: Icon(
                       Iconsax.gift5,
                       size: 200,
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 	0.1),
                     ),
                   ),
                   _buildHeaderContent(profileProvider, lp),
@@ -77,7 +77,7 @@ class _GiftsScreenState extends State<GiftsScreen> {
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 1.5,
-                      color: Colors.grey.withOpacity(0.8),
+                      color: Colors.grey.withValues(alpha: 	0.8),
                     ),
                   ),
                 ],
@@ -145,7 +145,7 @@ class _GiftsScreenState extends State<GiftsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 	0.2),
                 shape: BoxShape.circle,
               ),
               child:
@@ -165,7 +165,7 @@ class _GiftsScreenState extends State<GiftsScreen> {
             Text(
               'TOTAL CREDITS RECEIVED',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 	0.8),
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.2,
@@ -188,8 +188,8 @@ class _GiftsScreenState extends State<GiftsScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.black.withOpacity(0.03),
+                    ? Colors.white.withValues(alpha: 	0.05)
+                    : Colors.black.withValues(alpha: 	0.03),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Iconsax.gift, size: 64, color: Colors.blueGrey),
@@ -234,12 +234,12 @@ class _GiftRewardCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 	0.05) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.black.withOpacity(0.03),
+              ? Colors.white.withValues(alpha: 	0.05)
+              : Colors.black.withValues(alpha: 	0.03),
         ),
       ),
       child: ListTile(
@@ -249,7 +249,7 @@ class _GiftRewardCard extends StatelessWidget {
           height: 52,
           decoration: BoxDecoration(
             color: (isReward ? Colors.orangeAccent : const Color(0xFFFF4D85))
-                .withOpacity(0.1),
+                .withValues(alpha: 	0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -288,7 +288,7 @@ class _GiftRewardCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.orangeAccent.withOpacity(0.12),
+                  color: Colors.orangeAccent.withValues(alpha: 	0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(

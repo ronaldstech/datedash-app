@@ -255,7 +255,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 	0.8),
             fontSize: 14,
             fontWeight: FontWeight.bold,
           ),
@@ -267,13 +267,13 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
           style: const TextStyle(color: Colors.white, fontSize: 16),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.35)),
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 	0.35)),
             filled: true,
-            fillColor: Colors.white.withOpacity(0.03),
-            prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.4), size: 20),
+            fillColor: Colors.white.withValues(alpha: 	0.03),
+            prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 	0.4), size: 20),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.08), width: 1.5),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 	0.08), width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
@@ -300,7 +300,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 	0.8),
             fontSize: 14,
             fontWeight: FontWeight.bold,
           ),
@@ -318,16 +318,16 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                     duration: const Duration(milliseconds: 200),
                     height: 56,
                     decoration: BoxDecoration(
-                      color: isSelected ? _primaryColor.withOpacity(0.12) : Colors.white.withOpacity(0.02),
+                      color: isSelected ? _primaryColor.withValues(alpha: 	0.12) : Colors.white.withValues(alpha: 	0.02),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected ? _primaryColor : Colors.white.withOpacity(0.08),
+                        color: isSelected ? _primaryColor : Colors.white.withValues(alpha: 	0.08),
                         width: 1.5,
                       ),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: _primaryColor.withOpacity(0.2),
+                                color: _primaryColor.withValues(alpha: 	0.2),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -340,12 +340,12 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: isSelected ? _primaryColor.withOpacity(0.2) : Colors.white.withOpacity(0.05),
+                            color: isSelected ? _primaryColor.withValues(alpha: 	0.2) : Colors.white.withValues(alpha: 	0.05),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             item.icon,
-                            color: isSelected ? _primaryColor : Colors.white.withOpacity(0.6),
+                            color: isSelected ? _primaryColor : Colors.white.withValues(alpha: 	0.6),
                             size: 16,
                           ),
                         ),
@@ -354,7 +354,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                           child: Text(
                             item.label,
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                              color: isSelected ? Colors.white : Colors.white.withValues(alpha: 	0.7),
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                               fontSize: 14,
                             ),
@@ -393,16 +393,16 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   decoration: BoxDecoration(
-                    color: isSelected ? _primaryColor.withOpacity(0.12) : Colors.white.withOpacity(0.02),
+                    color: isSelected ? _primaryColor.withValues(alpha: 	0.12) : Colors.white.withValues(alpha: 	0.02),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isSelected ? _primaryColor : Colors.white.withOpacity(0.08),
+                      color: isSelected ? _primaryColor : Colors.white.withValues(alpha: 	0.08),
                       width: 1.5,
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: _primaryColor.withOpacity(0.2),
+                              color: _primaryColor.withValues(alpha: 	0.2),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -415,12 +415,12 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: isSelected ? _primaryColor.withOpacity(0.2) : Colors.white.withOpacity(0.05),
+                          color: isSelected ? _primaryColor.withValues(alpha: 	0.2) : Colors.white.withValues(alpha: 	0.05),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           item.icon,
-                          color: isSelected ? _primaryColor : Colors.white.withOpacity(0.6),
+                          color: isSelected ? _primaryColor : Colors.white.withValues(alpha: 	0.6),
                           size: 14,
                         ),
                       ),
@@ -429,7 +429,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                         child: Text(
                           item.label,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 	0.7),
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                             fontSize: 12,
                           ),
@@ -465,7 +465,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 	0.8),
             fontSize: 14,
             fontWeight: FontWeight.bold,
           ),
@@ -487,7 +487,9 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                       surface: const Color(0xFF1E0B16),
                       onSurface: Colors.white,
                     ),
-                    dialogBackgroundColor: const Color(0xFF0F0F12),
+                    dialogTheme: const DialogThemeData(
+                      backgroundColor: Color(0xFF0F0F12),
+                    ),
                   ),
                   child: child!,
                 );
@@ -501,10 +503,10 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.03),
+              color: Colors.white.withValues(alpha: 	0.03),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: Colors.white.withOpacity(0.08),
+                color: Colors.white.withValues(alpha: 	0.08),
                 width: 1.5,
               ),
             ),
@@ -515,7 +517,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                   children: [
                     Icon(
                       Iconsax.calendar,
-                      color: Colors.white.withOpacity(0.4),
+                      color: Colors.white.withValues(alpha: 	0.4),
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -524,7 +526,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                           ? '${value.year}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}'
                           : languageProvider.getString('select_date'),
                       style: TextStyle(
-                        color: value != null ? Colors.white : Colors.white.withOpacity(0.35),
+                        color: value != null ? Colors.white : Colors.white.withValues(alpha: 	0.35),
                         fontSize: 16,
                       ),
                     ),
@@ -532,7 +534,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                 ),
                 Icon(
                   Iconsax.arrow_down_1,
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 	0.4),
                   size: 16,
                 ),
               ],
@@ -561,7 +563,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
         Text(
           'Upload up to 6 high-quality photos. Adding photos significantly boosts your completion score.',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 	0.5),
             fontSize: 13,
           ),
         ),
@@ -572,12 +574,12 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
               LinearProgressIndicator(
                 value: _uploadProgress,
                 color: _primaryColor,
-                backgroundColor: Colors.white.withOpacity(0.1),
+                backgroundColor: Colors.white.withValues(alpha: 	0.1),
               ),
               const SizedBox(height: 8),
               Text(
                 'Uploading selected photos...',
-                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                style: TextStyle(color: Colors.white.withValues(alpha: 	0.5), fontSize: 12),
               ),
               const SizedBox(height: 16),
             ],
@@ -606,7 +608,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                         photoUrl,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
-                          color: Colors.white.withOpacity(0.05),
+                          color: Colors.white.withValues(alpha: 	0.05),
                           child: const Icon(Iconsax.image, color: Colors.white24),
                         ),
                       ),
@@ -649,17 +651,17 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                 onTap: _isUploading ? null : _pickAndUploadImages,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.02),
+                    color: Colors.white.withValues(alpha: 	0.02),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.12),
+                      color: Colors.white.withValues(alpha: 	0.12),
                       width: 1.5,
                     ),
                   ),
                   child: Center(
                     child: Icon(
                       Iconsax.add,
-                      color: _primaryColor.withOpacity(0.8),
+                      color: _primaryColor.withValues(alpha: 	0.8),
                       size: 28,
                     ),
                   ),
@@ -699,7 +701,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                   Text(
                     'Step ${_currentPage + 1} of 7',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 	0.5),
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
@@ -709,9 +711,9 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _primaryColor.withOpacity(0.15),
+                  color: _primaryColor.withValues(alpha: 	0.15),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: _primaryColor.withOpacity(0.3), width: 1),
+                  border: Border.all(color: _primaryColor.withValues(alpha: 	0.3), width: 1),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -738,7 +740,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
               Container(
                 height: 6,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
+                  color: Colors.white.withValues(alpha: 	0.06),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -756,7 +758,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFF4D85).withOpacity(0.4),
+                      color: const Color(0xFFFF4D85).withValues(alpha: 	0.4),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -788,9 +790,9 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.03),
+                  color: Colors.white.withValues(alpha: 	0.03),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withOpacity(0.08)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 	0.08)),
                 ),
                 child: const Icon(
                   Iconsax.arrow_left_2,
@@ -812,7 +814,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                 height: 6,
                 width: isActive ? 16 : 6,
                 decoration: BoxDecoration(
-                  color: isActive ? _primaryColor : Colors.white.withOpacity(0.2),
+                  color: isActive ? _primaryColor : Colors.white.withValues(alpha: 	0.2),
                   borderRadius: BorderRadius.circular(3),
                 ),
               );
@@ -834,7 +836,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: _primaryColor.withOpacity(0.4),
+                    color: _primaryColor.withValues(alpha: 	0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -885,7 +887,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
           Text(
             subtitle,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 	0.5),
               fontSize: 14,
             ),
           ),
@@ -928,7 +930,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
               height: 280,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _primaryColor.withOpacity(0.1),
+                color: _primaryColor.withValues(alpha: 	0.1),
               ),
             ),
           ),
@@ -940,7 +942,7 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
               height: 320,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFB388FF).withOpacity(0.06),
+                color: const Color(0xFFB388FF).withValues(alpha: 	0.06),
               ),
             ),
           ),
@@ -958,10 +960,10 @@ class _IncompleteProfileWizardState extends State<IncompleteProfileWizard> {
                         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.03),
+                            color: Colors.white.withValues(alpha: 	0.03),
                             borderRadius: BorderRadius.circular(30),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.08),
+                              color: Colors.white.withValues(alpha: 	0.08),
                               width: 1.5,
                             ),
                           ),

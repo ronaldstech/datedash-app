@@ -53,8 +53,8 @@ class ProfileDrawer extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFFFF4D85).withOpacity(0.15),
-                        const Color(0xFFFF4D85).withOpacity(0.05),
+                        const Color(0xFFFF4D85).withValues(alpha: 0.15),
+                        const Color(0xFFFF4D85).withValues(alpha: 0.05),
                         Colors.transparent,
                       ],
                     ),
@@ -304,7 +304,7 @@ class ProfileDrawer extends StatelessWidget {
                                       size: 12,
                                       color: Theme.of(context)
                                           .hintColor
-                                          .withOpacity(0.5)),
+                                          .withValues(alpha: 0.5)),
                                 ],
                               );
                             }
@@ -435,11 +435,11 @@ class ProfileDrawer extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
         decoration: BoxDecoration(
           color: isDark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.black.withOpacity(0.03),
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
+            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
           ),
         ),
         child: Column(
@@ -448,7 +448,7 @@ class ProfileDrawer extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
+                color: iconColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: iconColor, size: 20),
@@ -487,7 +487,7 @@ class ProfileDrawer extends StatelessWidget {
           fontSize: 11,
           fontWeight: FontWeight.w900,
           letterSpacing: 1.5,
-          color: Theme.of(context).hintColor.withOpacity(0.6),
+          color: Theme.of(context).hintColor.withValues(alpha: 0.6),
         ),
       ),
     );
@@ -502,16 +502,16 @@ class ProfileDrawer extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor ??
             (isDark
-                ? Colors.white.withOpacity(0.03)
-                : Colors.black.withOpacity(0.02)),
+                ? Colors.white.withValues(alpha: 0.03)
+                : Colors.black.withValues(alpha: 0.02)),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: borderColor ??
               (backgroundColor != null
-                  ? backgroundColor.withOpacity(0.3)
+                  ? backgroundColor.withValues(alpha: 0.3)
                   : (isDark
-                      ? Colors.white.withOpacity(0.05)
-                      : Colors.black.withOpacity(0.05))),
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.05))),
         ),
       ),
       child: ListTile(
@@ -520,8 +520,8 @@ class ProfileDrawer extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: backgroundColor != null
-                ? Colors.white.withOpacity(0.2)
-                : (color ?? const Color(0xFFFF4D85)).withOpacity(0.1),
+                ? Colors.white.withValues(alpha: 0.2)
+                : (color ?? const Color(0xFFFF4D85)).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon,
@@ -540,8 +540,8 @@ class ProfileDrawer extends StatelessWidget {
         trailing: trailing ?? Icon(Icons.arrow_forward_ios,
             size: 12,
             color: backgroundColor != null
-                ? Colors.white.withOpacity(0.7)
-                : Theme.of(context).hintColor.withOpacity(0.5)),
+                ? Colors.white.withValues(alpha: 0.7)
+                : Theme.of(context).hintColor.withValues(alpha: 0.5)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
         visualDensity: VisualDensity.compact,
@@ -557,7 +557,7 @@ class ProfileDrawer extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: Theme.of(context).dividerColor.withOpacity(0.05),
+        color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -578,7 +578,7 @@ class ProfileDrawer extends StatelessWidget {
           ),
           Switch.adaptive(
             value: isDark,
-            activeColor: const Color(0xFFFF4D85),
+            activeThumbColor: const Color(0xFFFF4D85),
             onChanged: (_) => themeProvider.toggleTheme(),
           ),
         ],
@@ -595,7 +595,7 @@ class ProfileDrawer extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.redAccent.withOpacity(0.1),
+            color: Colors.redAccent.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: const Icon(Iconsax.logout, color: Colors.redAccent, size: 20),
@@ -611,9 +611,9 @@ class ProfileDrawer extends StatelessWidget {
             style: const TextStyle(fontSize: 12)),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: Colors.redAccent.withOpacity(0.2)),
+          side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.2)),
         ),
-        tileColor: Colors.redAccent.withOpacity(0.05),
+        tileColor: Colors.redAccent.withValues(alpha: 0.05),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
     );

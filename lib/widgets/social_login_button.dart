@@ -22,7 +22,7 @@ class SocialLoginButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         backgroundColor: Theme.of(context).cardColor,
         side: BorderSide(
-          color: Theme.of(context).dividerColor.withOpacity(0.4),
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.4),
           width: 1.5,
         ),
         surfaceTintColor: Theme.of(context).cardColor,

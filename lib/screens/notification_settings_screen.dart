@@ -82,7 +82,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                     setState(() => _masterEnabled = val);
                     _updatePref('notif_master', val);
                   },
-                  activeColor: primaryPink,
+                  activeThumbColor: primaryPink,
                 ),
                 const SizedBox(height: 10),
                 AnimatedOpacity(
@@ -103,7 +103,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                             setState(() => _soundEnabled = val);
                             _updatePref('notif_sound', val);
                           },
-                          activeColor: primaryPink,
+                          activeThumbColor: primaryPink,
                         ),
                         _buildSwitchTile(
                           icon: Iconsax.repeate_one,
@@ -114,7 +114,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                             setState(() => _vibrateEnabled = val);
                             _updatePref('notif_vibrate', val);
                           },
-                          activeColor: primaryPink,
+                          activeThumbColor: primaryPink,
                         ),
                         const SizedBox(height: 10),
                         _buildSectionHeader(languageProvider.currentLanguageCode == 'sw' ? 'AINA ZA ARIFA' : 'NOTIFICATION TYPES'),
@@ -127,7 +127,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                             setState(() => _matchesEnabled = val);
                             _updatePref('notif_matches', val);
                           },
-                          activeColor: primaryPink,
+                          activeThumbColor: primaryPink,
                         ),
                         _buildSwitchTile(
                           icon: Iconsax.message,
@@ -138,7 +138,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                             setState(() => _messagesEnabled = val);
                             _updatePref('notif_messages', val);
                           },
-                          activeColor: primaryPink,
+                          activeThumbColor: primaryPink,
                         ),
                         _buildSwitchTile(
                           icon: Iconsax.like_1,
@@ -149,7 +149,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                             setState(() => _likesEnabled = val);
                             _updatePref('notif_likes', val);
                           },
-                          activeColor: primaryPink,
+                          activeThumbColor: primaryPink,
                         ),
                         _buildSwitchTile(
                           icon: Iconsax.call,
@@ -160,7 +160,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                             setState(() => _callsEnabled = val);
                             _updatePref('notif_calls', val);
                           },
-                          activeColor: primaryPink,
+                          activeThumbColor: primaryPink,
                         ),
                         _buildSwitchTile(
                           icon: Iconsax.video_play,
@@ -171,7 +171,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                             setState(() => _liveInvitesEnabled = val);
                             _updatePref('notif_live_invites', val);
                           },
-                          activeColor: primaryPink,
+                          activeThumbColor: primaryPink,
                         ),
                       ],
                     ),
@@ -203,7 +203,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
-    required Color activeColor,
+    required Color activeThumbColor,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -212,7 +212,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
+            color: Colors.black.withValues(alpha:
                 Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -224,10 +224,10 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         secondary: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: activeColor.withOpacity(0.1),
+            color: activeThumbColor.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: activeColor, size: 22),
+          child: Icon(icon, color: activeThumbColor, size: 22),
         ),
         title: Text(
           title,
@@ -241,7 +241,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           ),
         ),
         value: value,
-        activeColor: activeColor,
+        activeThumbColor: activeThumbColor,
         onChanged: onChanged,
       ),
     );

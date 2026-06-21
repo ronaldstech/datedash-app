@@ -135,7 +135,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                            color: isDark ? Colors.white.withValues(alpha: 	0.05) : Colors.black.withValues(alpha: 	0.03),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Iconsax.receipt_21, size: 64, color: Colors.blueGrey),
@@ -180,12 +180,12 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 	0.05) : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03)),
+        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 	0.05) : Colors.black.withValues(alpha: 	0.03)),
         boxShadow: isDark ? [] : [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 	0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -200,7 +200,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: (isSubscription ? const Color(0xFFFF4D85) : Colors.blueAccent).withOpacity(0.1),
+                color: (isSubscription ? const Color(0xFFFF4D85) : Colors.blueAccent).withValues(alpha: 	0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -275,7 +275,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
+                        color: statusColor.withValues(alpha: 	0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(

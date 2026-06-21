@@ -135,7 +135,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
+            color: Colors.black.withValues(alpha: 	
                 Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -147,7 +147,7 @@ class SettingsScreen extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF4D85).withOpacity(0.1),
+            color: const Color(0xFFFF4D85).withValues(alpha: 	0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: const Color(0xFFFF4D85), size: 22),
@@ -177,16 +177,16 @@ class SettingsScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.06),
+        color: Colors.orange.withValues(alpha: 	0.06),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.orange.withOpacity(0.2)),
+        border: Border.all(color: Colors.orange.withValues(alpha: 	0.2)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.orange.withOpacity(0.15),
+            color: Colors.orange.withValues(alpha: 	0.15),
             shape: BoxShape.circle,
           ),
           child: const Icon(Iconsax.refresh, color: Colors.orange, size: 22),
@@ -408,7 +408,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
+            color: Colors.black.withValues(alpha: 	
                 Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -420,7 +420,7 @@ class SettingsScreen extends StatelessWidget {
         secondary: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.deepPurple.withOpacity(0.1),
+            color: Colors.deepPurple.withValues(alpha: 	0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -443,7 +443,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
         value: themeProvider.isDarkMode,
-        activeColor: const Color(0xFFFF4D85),
+        activeThumbColor: const Color(0xFFFF4D85),
         onChanged: (_) => themeProvider.toggleTheme(),
       ),
     );
@@ -457,9 +457,9 @@ class SettingsScreen extends StatelessWidget {
         Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: Colors.orange.withOpacity(0.05),
+            color: Colors.orange.withValues(alpha: 	0.05),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.orange.withOpacity(0.1)),
+            border: Border.all(color: Colors.orange.withValues(alpha: 	0.1)),
           ),
           child: ListTile(
             leading: Container(
@@ -485,9 +485,9 @@ class SettingsScreen extends StatelessWidget {
         // Delete Account Tile
         Container(
           decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.05),
+            color: Colors.red.withValues(alpha: 	0.05),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.red.withOpacity(0.1)),
+            border: Border.all(color: Colors.red.withValues(alpha: 	0.1)),
           ),
           child: ListTile(
             leading: Container(
@@ -786,7 +786,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
+            color: Colors.black.withValues(alpha: 	
                 Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -798,7 +798,7 @@ class SettingsScreen extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 	0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(iconData, color: iconColor, size: 22),
@@ -882,7 +882,7 @@ class SettingsScreen extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.3),
+                    color: Colors.grey.withValues(alpha: 	0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1077,7 +1077,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
+            color: Colors.black.withValues(alpha: 	
                 Theme.of(context).brightness == Brightness.light ? 0.03 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -1089,7 +1089,7 @@ class SettingsScreen extends StatelessWidget {
         secondary: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF4D85).withOpacity(0.1),
+            color: const Color(0xFFFF4D85).withValues(alpha: 	0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -1112,10 +1112,10 @@ class SettingsScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.15),
+                  color: Colors.amber.withValues(alpha: 	0.15),
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                      color: Colors.amber.withOpacity(0.3), width: 0.5),
+                      color: Colors.amber.withValues(alpha: 	0.3), width: 0.5),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
@@ -1144,7 +1144,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
         value: value,
-        activeColor: const Color(0xFFFF4D85),
+        activeThumbColor: const Color(0xFFFF4D85),
         onChanged: onChanged,
       ),
     );
@@ -1208,7 +1208,7 @@ class SettingsScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFFFF4D85).withOpacity(0.1)
+                              ? const Color(0xFFFF4D85).withValues(alpha: 	0.1)
                               : Colors.transparent,
                           shape: BoxShape.circle,
                         ),

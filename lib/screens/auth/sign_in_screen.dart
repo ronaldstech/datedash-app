@@ -142,7 +142,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   elevation: 5,
-                  shadowColor: const Color(0xFFFF4D85).withOpacity(0.5),
+                  shadowColor: const Color(0xFFFF4D85).withValues(alpha: 	0.5),
                 ),
                 child: _isLoading
                     ? const SizedBox(
@@ -239,7 +239,7 @@ class _SignInScreenState extends State<SignInScreen> {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.4),
+          color: Theme.of(context).dividerColor.withValues(alpha: 	0.4),
         ),
       ),
       child: TextField(

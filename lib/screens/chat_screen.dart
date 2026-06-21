@@ -809,7 +809,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       CircleAvatar(
                         radius: 16,
                         backgroundColor:
-                            const Color(0xFFFF4D85).withOpacity(0.2),
+                            const Color(0xFFFF4D85).withValues(alpha: 0.2),
                         backgroundImage: widget.otherUserPhoto != null
                             ? NetworkImage(widget.otherUserPhoto!)
                             : null,
@@ -982,7 +982,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     children: [
                       Divider(
                         height: 1,
-                        color: Theme.of(context).dividerColor.withOpacity(0.3),
+                        color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
                       ),
                       // Search bar
                       if (_showSearch)
@@ -1028,7 +1028,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 12),
-                          color: Colors.amber.withOpacity(0.12),
+                          color: Colors.amber.withValues(alpha: 0.12),
                           child: Row(
                             children: [
                               const Icon(Icons.info_outline,
@@ -1128,7 +1128,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                             padding: const EdgeInsets.all(20),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFFFF4D85)
-                                                  .withOpacity(0.1),
+                                                  .withValues(alpha: 0.1),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
@@ -1220,7 +1220,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                   decoration: BoxDecoration(
                                                     color: Theme.of(context)
                                                         .dividerColor
-                                                        .withOpacity(0.05),
+                                                        .withValues(alpha: 0.05),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             12),
@@ -1272,7 +1272,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               children: [
                                 CircleAvatar(
                                   radius: 12,
-                                  backgroundColor: const Color(0xFFFF4D85).withOpacity(0.15),
+                                  backgroundColor: const Color(0xFFFF4D85).withValues(alpha: 0.15),
                                   backgroundImage: widget.otherUserPhoto != null
                                       ? NetworkImage(widget.otherUserPhoto!)
                                       : null,
@@ -1298,7 +1298,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                         '${widget.otherUserName} is typing',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                                          color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                                         ),
                                       ),
                                       const SizedBox(width: 4),
@@ -1349,7 +1349,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         color: Theme.of(context).scaffoldBackgroundColor,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -1415,7 +1415,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: const Color(0xFFFF4D85).withOpacity(0.05),
+      color: const Color(0xFFFF4D85).withValues(alpha: 0.05),
       child: Row(
         children: [
           const Icon(Icons.circle, color: Color(0xFFFF4D85), size: 10),
@@ -1454,7 +1454,7 @@ class _ChatScreenState extends State<ChatScreen> {
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: Theme.of(context).dividerColor.withOpacity(0.1),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
           ),
         ),
       ),
@@ -1487,7 +1487,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       IconButton(
                         icon: Icon(Icons.emoji_emotions_outlined,
                             color: isRestricted
-                                ? Colors.grey.withOpacity(0.3)
+                                ? Colors.grey.withValues(alpha: 0.3)
                                 : Colors.grey.shade400,
                             size: 22),
                         onPressed: isRestricted
@@ -1560,7 +1560,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.2),
+                    color: Colors.grey.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child:
@@ -1591,7 +1591,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 height: 4,
                 width: 40,
                 decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
+                  color: Colors.grey.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1671,7 +1671,7 @@ class _ChatScreenState extends State<ChatScreen> {
         color: Theme.of(context).cardColor,
         border: Border(
             top: BorderSide(
-                color: Theme.of(context).dividerColor.withOpacity(0.1))),
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.1))),
       ),
       child: Row(
         children: [
@@ -1710,7 +1710,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         .textTheme
                         .bodyMedium
                         ?.color
-                        ?.withOpacity(0.6),
+                        ?.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -1761,7 +1761,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 if (!isMe) ...[
                   CircleAvatar(
                     radius: 12,
-                    backgroundColor: const Color(0xFFFF4D85).withOpacity(0.15),
+                    backgroundColor: const Color(0xFFFF4D85).withValues(alpha: 0.15),
                     backgroundImage: widget.otherUserPhoto != null
                         ? NetworkImage(widget.otherUserPhoto!)
                         : null,
@@ -1799,7 +1799,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             style: TextStyle(
                               fontSize: 9,
                               color:
-                                  Theme.of(context).hintColor.withOpacity(0.6),
+                                  Theme.of(context).hintColor.withValues(alpha: 0.6),
                             ),
                           ),
                         ),
@@ -1827,9 +1827,9 @@ class _ChatScreenState extends State<ChatScreen> {
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor.withOpacity(0.5),
+        color: Theme.of(context).cardColor.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1873,7 +1873,7 @@ class _ChatScreenState extends State<ChatScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isMe
-              ? const Color(0xFFFF4D85).withOpacity(0.4)
+              ? const Color(0xFFFF4D85).withValues(alpha: 0.4)
               : Theme.of(context).cardColor,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
@@ -1881,7 +1881,7 @@ class _ChatScreenState extends State<ChatScreen> {
             bottomLeft: Radius.circular(isMe ? 20 : 4),
             bottomRight: Radius.circular(isMe ? 4 : 20),
           ),
-          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1953,7 +1953,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 5,
                 offset: const Offset(0, 2),
               ),
@@ -1976,7 +1976,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       return Container(
                         height: 160,
                         width: 200,
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withValues(alpha: 0.1),
                         child: const Center(
                             child: CircularProgressIndicator(strokeWidth: 2)),
                       );
@@ -1985,7 +1985,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       return Container(
                         height: 160,
                         width: 200,
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withValues(alpha: 0.1),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -2051,7 +2051,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -2109,7 +2109,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.2),
+            color: Colors.orange.withValues(alpha: 0.2),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -2121,7 +2121,7 @@ class _ChatScreenState extends State<ChatScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Text(
@@ -2144,7 +2144,7 @@ class _ChatScreenState extends State<ChatScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.2),
+              color: Colors.orange.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -2199,7 +2199,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -2251,10 +2251,10 @@ class _ChatScreenState extends State<ChatScreen> {
                       opacity: canAfford ? 1.0 : 0.4,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: gift.color.withOpacity(0.05),
+                          color: gift.color.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: gift.color.withOpacity(0.1),
+                            color: gift.color.withValues(alpha: 0.1),
                           ),
                         ),
                         child: Column(
@@ -2294,7 +2294,7 @@ class _ChatScreenState extends State<ChatScreen> {
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: Theme.of(context).dividerColor.withOpacity(0.1),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
           ),
         ),
       ),
@@ -2306,20 +2306,20 @@ class _ChatScreenState extends State<ChatScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFFFF4D85).withOpacity(0.08),
-                const Color(0xFFFF85B3).withOpacity(0.03),
+                const Color(0xFFFF4D85).withValues(alpha: 0.08),
+                const Color(0xFFFF85B3).withValues(alpha: 0.03),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: const Color(0xFFFF4D85).withOpacity(0.15),
+              color: const Color(0xFFFF4D85).withValues(alpha: 0.15),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -2331,7 +2331,7 @@ class _ChatScreenState extends State<ChatScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF4D85).withOpacity(0.1),
+                  color: const Color(0xFFFF4D85).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -2392,7 +2392,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         backgroundColor: const Color(0xFFFF4D85),
                         foregroundColor: Colors.white,
                         elevation: 2,
-                        shadowColor: const Color(0xFFFF4D85).withOpacity(0.4),
+                        shadowColor: const Color(0xFFFF4D85).withValues(alpha: 0.4),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -2420,7 +2420,7 @@ class _ChatScreenState extends State<ChatScreen> {
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: Theme.of(context).dividerColor.withOpacity(0.1),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
           ),
         ),
       ),
@@ -2430,10 +2430,10 @@ class _ChatScreenState extends State<ChatScreen> {
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.06),
+            color: Colors.red.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.red.withOpacity(0.2),
+              color: Colors.red.withValues(alpha: 0.2),
               width: 1,
             ),
           ),
@@ -2442,7 +2442,7 @@ class _ChatScreenState extends State<ChatScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -2547,7 +2547,7 @@ class _CallSheet extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-                color: color.withOpacity(0.1), shape: BoxShape.circle),
+                color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, color: color, size: 28),
           ),
         ),
@@ -2653,7 +2653,7 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble> with WidgetsBindingO
         widget.isMe ? const Color(0xFFFF4D85) : Theme.of(context).cardColor;
     final contentColor = widget.isMe ? Colors.white : const Color(0xFFFF4D85);
     final textColor = widget.isMe
-        ? Colors.white.withOpacity(0.85)
+        ? Colors.white.withValues(alpha: 0.85)
         : Theme.of(context).textTheme.bodySmall?.color;
 
     return Container(
@@ -2669,7 +2669,7 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble> with WidgetsBindingO
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -2685,7 +2685,7 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble> with WidgetsBindingO
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: contentColor.withOpacity(0.15),
+                color: contentColor.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -2708,7 +2708,7 @@ class _VoiceNoteBubbleState extends State<_VoiceNoteBubble> with WidgetsBindingO
                         const RoundSliderThumbShape(enabledThumbRadius: 5),
                     overlayShape: SliderComponentShape.noOverlay,
                     activeTrackColor: contentColor,
-                    inactiveTrackColor: contentColor.withOpacity(0.25),
+                    inactiveTrackColor: contentColor.withValues(alpha: 0.25),
                     thumbColor: contentColor,
                   ),
                   child: Slider(

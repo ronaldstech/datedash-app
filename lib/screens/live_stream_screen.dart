@@ -136,10 +136,10 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.35),
+                          Colors.black.withValues(alpha: 	0.35),
                           Colors.transparent,
                           Colors.transparent,
-                          Colors.black.withOpacity(0.80),
+                          Colors.black.withValues(alpha: 	0.80),
                         ],
                         stops: const [0, 0.2, 0.6, 1],
                       ),
@@ -200,7 +200,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
         ),
         Container(
           height: 2,
-          color: const Color(0xFFFF4D85).withOpacity(0.5),
+          color: const Color(0xFFFF4D85).withValues(alpha: 	0.5),
         ),
         Expanded(
           child: _buildSingleVideoPlayer(guestPhoto, '$guestName (Co-host)', guestCamOff),
@@ -250,7 +250,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: Colors.black.withValues(alpha: 	0.6),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -342,7 +342,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.85),
+                color: Colors.red.withValues(alpha: 	0.85),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -584,8 +584,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: active
-              ? activeColor.withOpacity(0.75)
-              : Colors.black.withOpacity(0.45),
+              ? activeColor.withValues(alpha: 	0.75)
+              : Colors.black.withValues(alpha: 	0.45),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -636,10 +636,10 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
                   height: 44,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.18),
+                    color: Colors.white.withValues(alpha: 	0.18),
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(
-                        color: Colors.white.withOpacity(0.25)),
+                        color: Colors.white.withValues(alpha: 	0.25)),
                   ),
                   child: TextField(
                     controller: _messageController,
@@ -701,7 +701,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
           CircleAvatar(
             radius: 12,
             backgroundColor:
-                const Color(0xFFFF4D85).withOpacity(0.3),
+                const Color(0xFFFF4D85).withValues(alpha: 	0.3),
             backgroundImage: msg.senderPhoto.isNotEmpty
                 ? NetworkImage(msg.senderPhoto)
                 : null,
@@ -794,9 +794,9 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        color: gift.color.withOpacity(0.05),
+                        color: gift.color.withValues(alpha: 	0.05),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: gift.color.withOpacity(0.1)),
+                        border: Border.all(color: gift.color.withValues(alpha: 	0.1)),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,

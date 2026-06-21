@@ -199,10 +199,10 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.04) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 	0.04) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.04),
+          color: isDark ? Colors.white.withValues(alpha: 	0.08) : Colors.black.withValues(alpha: 	0.04),
           width: 1,
         ),
       ),
@@ -226,7 +226,7 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.12),
+                    color: Colors.amber.withValues(alpha: 	0.12),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -373,7 +373,7 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
                   scale: 0.85,
                   child: Switch.adaptive(
                     value: isPremiumLocked ? false : value,
-                    activeColor: isPremiumLocked ? Colors.amber : activeColor,
+                    activeThumbColor: isPremiumLocked ? Colors.amber : activeColor,
                     onChanged: onChanged,
                   ),
                 ),
@@ -517,7 +517,7 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       style: IconButton.styleFrom(
-                        backgroundColor: isDark ? Colors.white12 : Colors.black.withOpacity(0.04),
+                        backgroundColor: isDark ? Colors.white12 : Colors.black.withValues(alpha: 	0.04),
                         minimumSize: const Size(32, 32),
                       ),
                       icon: const Icon(Icons.close, size: 16),
@@ -555,7 +555,7 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
                             Container(
                               height: 42,
                               decoration: BoxDecoration(
-                                color: isDark ? Colors.black26 : Colors.black.withOpacity(0.04),
+                                color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 	0.04),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
@@ -623,7 +623,7 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: _primaryColor.withOpacity(0.1),
+                                    color: _primaryColor.withValues(alpha: 	0.1),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
@@ -641,9 +641,9 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
                             SliderTheme(
                               data: SliderThemeData(
                                 activeTrackColor: _primaryColor,
-                                inactiveTrackColor: _primaryColor.withOpacity(0.15),
+                                inactiveTrackColor: _primaryColor.withValues(alpha: 	0.15),
                                 thumbColor: Colors.white,
-                                overlayColor: _primaryColor.withOpacity(0.1),
+                                overlayColor: _primaryColor.withValues(alpha: 	0.1),
                                 trackHeight: 4,
                                 rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 10, elevation: 4),
                               ),
@@ -692,7 +692,7 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: _secondaryColor.withOpacity(0.1),
+                                    color: _secondaryColor.withValues(alpha: 	0.1),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
@@ -710,9 +710,9 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
                             SliderTheme(
                               data: SliderThemeData(
                                 activeTrackColor: _secondaryColor,
-                                inactiveTrackColor: _secondaryColor.withOpacity(0.15),
+                                inactiveTrackColor: _secondaryColor.withValues(alpha: 	0.15),
                                 thumbColor: Colors.white,
-                                overlayColor: _secondaryColor.withOpacity(0.1),
+                                overlayColor: _secondaryColor.withValues(alpha: 	0.1),
                                 trackHeight: 4,
                                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10, elevation: 4),
                               ),
@@ -880,7 +880,7 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Colors.blueAccent.withOpacity(0.1),
+                                    color: Colors.blueAccent.withValues(alpha: 	0.1),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
@@ -902,9 +902,9 @@ class _SwipeFiltersScreenState extends State<SwipeFiltersScreen> {
                                 child: SliderTheme(
                                   data: SliderThemeData(
                                     activeTrackColor: Colors.blueAccent,
-                                    inactiveTrackColor: Colors.blueAccent.withOpacity(0.15),
+                                    inactiveTrackColor: Colors.blueAccent.withValues(alpha: 	0.15),
                                     thumbColor: Colors.white,
-                                    overlayColor: Colors.blueAccent.withOpacity(0.1),
+                                    overlayColor: Colors.blueAccent.withValues(alpha: 	0.1),
                                     trackHeight: 4,
                                     thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10, elevation: 4),
                                   ),
